@@ -1,0 +1,36 @@
+
+
+\begin{table}[!h]
+    \centering
+    \begin{small}
+    \begin{tabular}{lccc}
+        \toprule
+\rowcolor{ai2lightpink}  {\bf \olmothreebase 7B} & {\bf Pretraining} & {\bf Midtraining} & {\bf Long-context ext} \\[2pt]
+{Learning Rate Schedule} & \begin{tabular}{c}Modified cosine\\[-3pt] (see Figure~\ref{fig:pretrain:7b-lr-and-loss})\end{tabular}  & Linear decay & Linear decay \\
+        \rowcolor{midgrey}{LR warmup from 0} & 2000 steps & 0 steps & 200 steps \\
+        {Peak LR} & $3.0 \times 10^{-4}$ & $2.074 \times 10^{-4}$ & $2.074 \times 10^{-4}$ \\
+        \rowcolor{midgrey} {Final LR} & $3.0 \times 10^{-5}$ & 0 & 0 \\
+        {Batch size (\# instances)} & 512 & 256 & 64 \\
+        \rowcolor{midgrey} {Sequence length} & 8{,}192 & 8{,}192 & 65{,}536 \\
+        {Batch size (\# tokens)} & 4{,}194{,}304 & 2{,}097{,}152 & 4{,}194{,}304 \\
+        \rowcolor{midgrey} {Total training tokens} & 5.93T & 100B & 50B \\[1pt]
+        {Peak training temperature} ($\tfrac{\text{LR}^{2}}{\textit{bsz}}$) & $2.146 \times 10^{-14}$ & $2.051 \times 10^{-14}$ & $1.026 \times 10^{-14}$ \\[2pt]
+        \midrule
+\rowcolor{ai2lightpink}  {\bf \olmothreebase 32B} & {\bf Pretraining} & {\bf Midtraining} & {\bf Long-context ext} \\[2pt]
+{Learning rate schedule} & 
+        \begin{tabular}{c}5.93T cosine trunc.\\[-3pt] at 5.5T tokens\end{tabular} & Linear decay & Linear decay \\
+        \rowcolor{midgrey}{LR warmup from 0} & 2000 steps & 0 steps & 200 steps \\
+        {Peak LR} & $6.0 \times 10^{-4}$ & $2.071 \times 10^{-4}$ & $2.071 \times 10^{-4}$ \\
+        \rowcolor{midgrey} {Final LR} & $6.0 \times 10^{-5}$ & 0 & 0 \\
+        {Batch size (\# instances)} & 1{,}024 & 512 & 128 \\
+        \rowcolor{midgrey} {Sequence length} & 8{,}192 & 8{,}192 & 65{,}536 \\
+        {Batch size (\# tokens)} & 8{,}388{,}608 & 4{,}194{,}304 & 8{,}388{,}608 \\
+        \rowcolor{midgrey} {Total training tokens} & 5.5T & 100B (twice) & 100B \\[1pt]
+        {Peak training temperature} ($\tfrac{\text{LR}^{2}}{\textit{bsz}}$) & $4.292 \times 10^{-14}$ & $1.023 \times 10^{-14}$ & $5.113 \times 10^{-15}$ \\[2pt]
+        \bottomrule
+    \end{tabular}
+    \end{small}
+    \caption{\textbf{Training hyperparameters for each stage} of \olmothreebase 7B and 32B. Compared to the 7B, for the 32B we use a cosine learning rate schedule (truncated early at 5.5T tokens), double the batch size in all steps, run midtraining twice (with different data order seeds, and average model weights of resulting checkpoints), and increase the long-context extension stage from 50B to 100B tokens.}
+    \label{tab:training_stages_7b_32b}
+\end{table}
+

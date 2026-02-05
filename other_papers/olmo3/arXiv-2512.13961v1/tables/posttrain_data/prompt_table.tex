@@ -1,0 +1,35 @@
+\begin{table}[t!]
+\centering
+\setlength\tabcolsep{5pt}
+{\small
+\begin{tabular}{ll r r l}
+\toprule
+{\bf Category} & {\bf Prompt Dataset}  & {\bf 7B Count} & {\bf 32B Count} & {\bf Reference} \\
+\midrule
+\rowcolor{ai2offwhite} Chat \&  & WildChat & 83,054 & 76,209 & \citet{zhao2024wildchat} \\ %
+\rowcolor{ai2offwhite} Precise IF & OpenAssistant & 6,800 & 6,647 & \citet{kopf2024openassistant} \\ %
+\rowcolor{ai2offwhite} & \dolcithink Persona Precise IF & 223,123 & 220,530 & -- \\ %
+\rowcolor{ai2offwhite}  & \dolcithink Precise IF & 135,792 & 135,722 & -- \\ %
+Math & \dolcithink OpenThoughts 3+ Math$^\Uparrow$ & 752,997 & 752,997 & \citet{guha2025openthoughts} \\
+ & \dolcithink OpenThoughts 3+ STEM$^\Uparrow$ & 99,269 & 99,268 & \citet{guha2025openthoughts} \\ %
+ & SYNTHETIC-2-SFT-Verified & 104,569 & 104,548 & \citet{primeintellect2025synthetic2} \\ %
+\rowcolor{ai2offwhite} Coding & Nemotron Post-Training Code   & 113,777 & 113,777 & \citet{nvidia2025nemotron_post_training_dataset} \\ %
+ \rowcolor{ai2offwhite}  & \dolcithink OpenThoughts 3+ Code$^\Uparrow$ & 88,900 & 88,899 & \citet{guha2025openthoughts} \\ %
+\rowcolor{ai2offwhite}  & \dolcithink Python Algorithms$^\Uparrow$ & 466,677 & 466,676 & -- \\ %
+Safety & CoCoNot & 10,227 & 9,549 & \citet{brahman2024art} \\ %
+ & WildGuardMix & 38,315 & 36,673 & \citet{han2024wildguard} \\ %
+ & WildJailbreak & 41,100 & 40,002 & \citet{jiang2024wildteaming} \\ %
+\rowcolor{ai2offwhite} Multilingual & Aya & 98,597 & 97,156 & \citet{singh2024aya} \\ %
+Other & TableGPT & 4,981 & 4,973 & \citet{zha2023tablegpt} \\ %
+& Olmo Identity Prompts & 290 & 290 & -- \\ 
+\rowcolor{ai2offwhite} {\bf{Total}} & & 2,268,468 & 2,253,916 & \\
+\bottomrule
+\end{tabular}}
+\vspace{3pt}
+\caption{\textbf{\olmothreethinking SFT prompt sources}. %
+$^\Uparrow$ indicates prompt datasets where the datasets are upsampled by repeating prompts with different completions. 
+Prior to \olmothree 32B training, we filter responses with non-Olmo model identities and irrelevant prompts (e.g. generate a photo).
+}
+\label{tab:olmo3_thinking_sft}
+\end{table}
+

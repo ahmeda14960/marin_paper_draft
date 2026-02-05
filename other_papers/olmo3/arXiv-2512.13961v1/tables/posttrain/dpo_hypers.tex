@@ -1,0 +1,23 @@
+\begin{table}[th]
+    \centering
+    \begin{small}
+    \adjustbox{max width=\linewidth}{
+    \begin{tabular}{lccc}
+        \toprule
+        & {\bf 7B Thinking DPO} & {\bf 32B Thinking DPO} & {\bf 7B Instruct DPO}  \\
+        \midrule
+        \rowcolor{ai2offwhite}{\bf Num. Preference Pairs} & 150K & 200K & 260K \\
+        {\bf Num. Epochs} & 1 & 1 & 1 \\
+        \rowcolor{ai2offwhite}{\bf DPO $\beta$} & 5 & 5 & 5 \\
+        {\bf Learning Rate} & $8.0 \times 10^{-8}$ & $7.0 \times 10^{-8}$  & $1.0 \times 10^{-6}$ \\
+        \rowcolor{ai2offwhite}{\bf LR Schedule} & Linear decay & Linear decay & Linear decay \\
+        {\bf Warmup Ratio} & 0.1 & 0.1 & 0.1 \\        
+        \rowcolor{ai2offwhite}{\bf Num. GPUs} & 32 & 64-128 & 16 \\
+        {\bf Batch Size} & 128 & 128 & 128 \\        
+        \rowcolor{ai2offwhite}{\bf Max Sequence Length} & 16K & 8K & 16K \\
+        \bottomrule
+    \end{tabular}}
+    \end{small}
+    \caption{\textbf{Training hyperparameters for \olmothreethinking DPO and \olmothreeinstruct DPO}. GPU hours assume NVIDIA H100 accelerator.}
+    \label{tab:dpo_training_settings}
+\end{table}

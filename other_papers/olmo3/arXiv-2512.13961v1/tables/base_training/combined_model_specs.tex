@@ -1,0 +1,19 @@
+
+\begin{table}[!h]
+    \centering
+    \begin{small}
+    \begin{tabular}{lclc}
+        \toprule
+        \rowcolor{midgrey}{Layers} & \textcolor[HTML]{d3327e}{\bf{32}} / \textcolor[HTML]{00ab72}{\bf{64}} & {Gradient clipping} & 1.0 \\
+        {Hidden size~$(d_\text{model})$}  & \textcolor[HTML]{d3327e}{\bf{4096}} / \textcolor[HTML]{00ab72}{\bf{5120}} & {Z-loss weight} & $10^{-5}$ \\
+        \rowcolor{midgrey}{Q heads} & \textcolor[HTML]{d3327e}{\bf{32}} / \textcolor[HTML]{00ab72}{\bf{40}} & {Weight decay on embeddings} & No \\
+        {KV heads} & \textcolor[HTML]{d3327e}{\bf{32}} / \textcolor[HTML]{00ab72}{\bf{8}} & {Sliding window attention} & 3/4 of layers; 4{,}096 tokens \\
+        \rowcolor{midgrey}{Activation} & SwiGLU & {RoPE scaling} & YaRN on full attn. layers \\
+        {QKV normalization} & QK-Norm & {RoPE $\theta$} & $5 \cdot 10^{5}$ \\
+        \rowcolor{midgrey}{Layer norm} & RMSNorm & {Layer norm applied to} & Outputs \\
+        \bottomrule
+    \end{tabular}
+    \end{small}
+    \caption{\textbf{Model architecture for \textcolor[HTML]{d3327e}{\olmothree~7B} and \textcolor[HTML]{00ab72}{\olmothree~32B}.} The 7B model uses multi-head attention, while the 32B model uses grouped-query attention~\citep{ainslie2023gqatraininggeneralizedmultiquery} for increased efficiency.}
+    \label{tab:combined_model_specs}
+\end{table}

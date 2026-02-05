@@ -1,0 +1,337 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{dubey2024llama}
+\citation{qwen2.5,qwen3}
+\citation{team2025gemma3}
+\citation{Groeneveld2024OLMoAT,biderman2023pythia,liu2023llm360,dclm,olmo20242olmo2furious}
+\citation{Hall2025marin}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
+\newlabel{sec:intro}{{1}{1}{Introduction}{section.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{What are ``8B'' and ``32B''?}{1}{section*.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{What are the ``issues'' in the retrospectives?}{1}{section*.2}\protected@file@percent }
+\citation{Hall2025marin}
+\citation{olmo20242olmo2furious}
+\citation{Dehghani2023ScalingVT}
+\citation{dubey2024llama}
+\citation{qwen2.5,qwen3}
+\citation{team2025gemma3}
+\citation{Groeneveld2024OLMoAT}
+\citation{olmo20242olmo2furious}
+\citation{biderman2023pythia}
+\citation{liu2023llm360}
+\citation{dclm}
+\citation{Hall2025marin}
+\citation{soldaini2024dolma}
+\citation{su2025nemotroncctransformingcommoncrawl}
+\citation{lozhkov2024starcoder}
+\citation{wei2021flan}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Contributions}{2}{subsection.1.1}\protected@file@percent }
+\newlabel{subsec:contrib}{{1.1}{2}{Contributions}{subsection.1.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Paper Roadmap}{2}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
+\newlabel{sec:related}{{2}{2}{Related Work}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Open-Weight LLMs}{2}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Fully Open Training Releases}{2}{subsection.2.2}\protected@file@percent }
+\citation{gururangan2020dontStopPretraining}
+\citation{abdin2024phi,openai2024midtraining,olmo20242olmo2furious}
+\citation{blakeney2024doesdatasparkjoy}
+\citation{Dehghani2023ScalingVT}
+\citation{palm,chameleon,mitch}
+\citation{olmo20242olmo2furious,spikenomore}
+\citation{lambert2024tulu3}
+\citation{olmo20242olmo2furious}
+\citation{Hall2025marin,marin8bretro,marin32bretro}
+\citation{Groeneveld2024OLMoAT,olmo20242olmo2furious}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Data Curation and Web-Scale Corpora}{3}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Multi-Stage Training and Midtraining}{3}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Training Stability and Optimization}{3}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.6}Post-Training}{3}{subsection.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methods and Open Artifacts}{3}{section.3}\protected@file@percent }
+\newlabel{sec:methods}{{3}{3}{Methods and Open Artifacts}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Fully Open Artifacts (Model Flow)}{3}{subsection.3.1}\protected@file@percent }
+\citation{dclm}
+\citation{soldaini2024dolma}
+\citation{su2025nemotroncctransformingcommoncrawl}
+\citation{lozhkov2024starcoder}
+\citation{marin32bretro,megamath,commonpile}
+\citation{magnusson2024palomabenchmarkevaluatinglanguage,marin8bretro}
+\citation{marin8bretro}
+\citation{qwen3,Dehghani2023ScalingVT,marin32bretro}
+\citation{loshchilov2017decoupled}
+\citation{marin8bretro}
+\citation{marin8bretro,wen2024wsds}
+\citation{marin8bretro}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Data Sources}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{subsec:data}{{3.2}{4}{Data Sources}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {paragraph}{Why format diversity matters.}{4}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Model Architectures}{4}{subsection.3.3}\protected@file@percent }
+\newlabel{subsec:arch}{{3.3}{4}{Model Architectures}{subsection.3.3}{}}
+\@writefile{toc}{\contentsline {paragraph}{Marin 8B.}{4}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Marin 32B.}{4}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Optimization, Schedules, and Stability Tooling}{4}{subsection.3.4}\protected@file@percent }
+\newlabel{subsec:optim}{{3.4}{4}{Optimization, Schedules, and Stability Tooling}{subsection.3.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Optimizer.}{4}{section*.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Learning-rate schedules: WSD-S and WSD.}{4}{section*.7}\protected@file@percent }
+\citation{palm,chameleon,mitch}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin32bretro}
+\citation{marin8bretro}
+\citation{marin32bretro}
+\citation{levanterprp}
+\citation{levanterprp}
+\citation{marin32bretro,levanterprp}
+\citation{marin32bretro}
+\citation{levanterprp}
+\citation{levanterprp}
+\citation{marin32bretro}
+\@writefile{toc}{\contentsline {paragraph}{EMA monitoring.}{5}{section*.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{z-loss for deep cooldowns.}{5}{section*.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Hardware, Attention Kernels, and Checkpointing}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{subsec:infra}{{3.5}{5}{Hardware, Attention Kernels, and Checkpointing}{subsection.3.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Shuffling and Sampling Permutations}{5}{subsection.3.6}\protected@file@percent }
+\newlabel{subsec:shuffle}{{3.6}{5}{Shuffling and Sampling Permutations}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {paragraph}{Motivation.}{5}{section*.10}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Stateless PRP shuffling in Levanter.}{5}{section*.11}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Linear/LCG (affine) permutation.}{5}{section*.12}\protected@file@percent }
+\newlabel{eq:lcg_perm}{{1}{5}{Linear/LCG (affine) permutation}{equation.1}{}}
+\citation{marin8bretro,marin32bretro}
+\citation{marin8bretro,marin32bretro}
+\citation{hendryckstest2021}
+\citation{cobbe2021gsm8k}
+\citation{hendrycksmath2021}
+\citation{chen2021codex}
+\citation{suzgun2022challenging}
+\citation{rein2024gpqa}
+\citation{wang2024mmlu}
+\citation{magnusson2024palomabenchmarkevaluatinglanguage}
+\citation{marin32bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{dclm,marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\@writefile{toc}{\contentsline {paragraph}{Feistel permutation.}{6}{section*.13}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Takeaway.}{6}{section*.14}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments and Retrospectives}{6}{section.4}\protected@file@percent }
+\newlabel{sec:experiments}{{4}{6}{Experiments and Retrospectives}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Evaluation Setup}{6}{subsection.4.1}\protected@file@percent }
+\newlabel{subsec:eval}{{4.1}{6}{Evaluation Setup}{subsection.4.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Harness.}{6}{section*.15}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Benchmarks.}{6}{section*.16}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Contamination caveat.}{6}{section*.17}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Marin 8B Retrospective}{6}{subsection.4.2}\protected@file@percent }
+\newlabel{subsec:marin8b}{{4.2}{6}{Marin 8B Retrospective}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Phase 1: Kestrel (DCLM + WSD-S)}{6}{subsubsection.4.2.1}\protected@file@percent }
+\newlabel{subsubsec:kestrel}{{4.2.1}{6}{Phase 1: Kestrel (DCLM + WSD-S)}{subsubsection.4.2.1}{}}
+\@writefile{toc}{\contentsline {paragraph}{Scope.}{6}{section*.19}\protected@file@percent }
+\citation{wen2024wsds,marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{olmo20242olmo2furious}
+\citation{wei2021flan,marin8bretro}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Phase partitioning for the Marin 8B run (reproduced from the retrospective)~\citep  {marin8bretro}.}}{7}{figure.caption.18}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:marin8b_timeline}{{1}{7}{Phase partitioning for the Marin 8B run (reproduced from the retrospective)~\citep {marin8bretro}}{figure.caption.18}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Marin 8B Phase 1 (Kestrel) data mix (normalized shares)~\citep  {marin8bretro}.}}{7}{table.caption.21}\protected@file@percent }
+\newlabel{tab:marin8b_kestrel_mix}{{1}{7}{Marin 8B Phase 1 (Kestrel) data mix (normalized shares)~\citep {marin8bretro}}{table.caption.21}{}}
+\@writefile{toc}{\contentsline {paragraph}{Data.}{7}{section*.20}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Schedule.}{7}{section*.22}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Phase 2: Ocelot (Batch/LR scaling + EMA)}{7}{subsubsection.4.2.2}\protected@file@percent }
+\newlabel{subsubsec:ocelot}{{4.2.2}{7}{Phase 2: Ocelot (Batch/LR scaling + EMA)}{subsubsection.4.2.2}{}}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Marin 8B Phase 3 (Jellyfish) data mix (normalized shares)~\citep  {marin8bretro}.}}{8}{table.caption.25}\protected@file@percent }
+\newlabel{tab:marin8b_jellyfish_mix}{{2}{8}{Marin 8B Phase 3 (Jellyfish) data mix (normalized shares)~\citep {marin8bretro}}{table.caption.25}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Interlude: Microannealing}{8}{subsubsection.4.2.3}\protected@file@percent }
+\newlabel{subsubsec:microanneal}{{4.2.3}{8}{Interlude: Microannealing}{subsubsection.4.2.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.4}Phase 3: Jellyfish (First cooldown)}{8}{subsubsection.4.2.4}\protected@file@percent }
+\newlabel{subsubsec:jellyfish}{{4.2.4}{8}{Phase 3: Jellyfish (First cooldown)}{subsubsection.4.2.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.5}Phase 4: Phoenix (Reheat + Nemotron-CC transition)}{8}{subsubsection.4.2.5}\protected@file@percent }
+\newlabel{subsubsec:phoenix}{{4.2.5}{8}{Phase 4: Phoenix (Reheat + Nemotron-CC transition)}{subsubsection.4.2.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.6}Deeper cooldowns: Raccoon and Spoonbill (z-loss)}{8}{subsubsection.4.2.6}\protected@file@percent }
+\newlabel{subsubsec:deep_cooldowns}{{4.2.6}{8}{Deeper cooldowns: Raccoon and Spoonbill (z-loss)}{subsubsection.4.2.6}{}}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Marin 8B Phase 5 (Starling) cooldown mix, as reported in the retrospective~\citep  {marin8bretro}.}}{9}{table.caption.28}\protected@file@percent }
+\newlabel{tab:marin8b_starling_mix}{{3}{9}{Marin 8B Phase 5 (Starling) cooldown mix, as reported in the retrospective~\citep {marin8bretro}}{table.caption.28}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Selected base-model results reported in the Marin 8B retrospective (LM Eval Harness defaults)~\citep  {marin8bretro}. ``MMLU (5)'' denotes 5-shot.}}{9}{table.caption.30}\protected@file@percent }
+\newlabel{tab:marin8b_base_results}{{4}{9}{Selected base-model results reported in the Marin 8B retrospective (LM Eval Harness defaults)~\citep {marin8bretro}. ``MMLU (5)'' denotes 5-shot}{table.caption.30}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.7}Phase 5: Starling (Second cooldown + new datasets)}{9}{subsubsection.4.2.7}\protected@file@percent }
+\newlabel{subsubsec:starling}{{4.2.7}{9}{Phase 5: Starling (Second cooldown + new datasets)}{subsubsection.4.2.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.8}Base-model benchmark results (8B)}{9}{subsubsection.4.2.8}\protected@file@percent }
+\newlabel{subsubsec:marin8b_base_results}{{4.2.8}{9}{Base-model benchmark results (8B)}{subsubsection.4.2.8}{}}
+\citation{olmo20242olmo2furious,marin8bretro}
+\citation{marin8bretro}
+\citation{marin8bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Selected SFT/instruct results reported in the Marin 8B retrospective (Open LLM Leaderboard hard set + additional tasks)~\citep  {marin8bretro}.}}{10}{table.caption.31}\protected@file@percent }
+\newlabel{tab:marin8b_sft_results}{{5}{10}{Selected SFT/instruct results reported in the Marin 8B retrospective (Open LLM Leaderboard hard set + additional tasks)~\citep {marin8bretro}}{table.caption.31}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Marin 32B pretraining mixture (normalized share), reused across Phases 1--3~\citep  {marin32bretro}.}}{10}{table.caption.32}\protected@file@percent }
+\newlabel{tab:marin32b_pretraining_mix}{{6}{10}{Marin 32B pretraining mixture (normalized share), reused across Phases 1--3~\citep {marin32bretro}}{table.caption.32}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Marin 8B Supervised Fine-Tuning (SFT)}{10}{subsection.4.3}\protected@file@percent }
+\newlabel{subsec:marin8b_sft}{{4.3}{10}{Marin 8B Supervised Fine-Tuning (SFT)}{subsection.4.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Marin 32B Retrospective}{10}{subsection.4.4}\protected@file@percent }
+\newlabel{subsec:marin32b}{{4.4}{10}{Marin 32B Retrospective}{subsection.4.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Phase 1: Baseline scale-up and loss spikes}{10}{subsubsection.4.4.1}\protected@file@percent }
+\newlabel{subsubsec:marin32b_phase1}{{4.4.1}{10}{Phase 1: Baseline scale-up and loss spikes}{subsubsection.4.4.1}{}}
+\citation{marinissue1368}
+\citation{marinissue1390}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{Dehghani2023ScalingVT,marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Marin 32B Phase 1 batch schedule (4096 sequence length)~\citep  {marin32bretro}.}}{11}{table.caption.33}\protected@file@percent }
+\newlabel{tab:marin32b_batch_schedule}{{7}{11}{Marin 32B Phase 1 batch schedule (4096 sequence length)~\citep {marin32bretro}}{table.caption.33}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Phase 2: Recovery attempts (discarded)}{11}{subsubsection.4.4.2}\protected@file@percent }
+\newlabel{subsubsec:marin32b_phase2}{{4.4.2}{11}{Phase 2: Recovery attempts (discarded)}{subsubsection.4.4.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.3}Phase 3: QK-norm switch}{11}{subsubsection.4.4.3}\protected@file@percent }
+\newlabel{subsubsec:marin32b_qknorm}{{4.4.3}{11}{Phase 3: QK-norm switch}{subsubsection.4.4.3}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.4}Phase 4: Cooldowns (Bison vs Mantis) and shuffling}{11}{subsubsection.4.4.4}\protected@file@percent }
+\newlabel{subsubsec:marin32b_cooldowns}{{4.4.4}{11}{Phase 4: Cooldowns (Bison vs Mantis) and shuffling}{subsubsection.4.4.4}{}}
+\@writefile{toc}{\contentsline {paragraph}{Attempt 1: Bison cooldown.}{11}{section*.37}\protected@file@percent }
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro,megamath,commonpile}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marin32bretro,olmo20242olmo2furious}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Marin 32B Bison cooldown mixture (normalized share), reproduced from the retrospective~\citep  {marin32bretro}.}}{12}{table.caption.38}\protected@file@percent }
+\newlabel{tab:marin32b_bison_mix}{{8}{12}{Marin 32B Bison cooldown mixture (normalized share), reproduced from the retrospective~\citep {marin32bretro}}{table.caption.38}{}}
+\@writefile{toc}{\contentsline {paragraph}{Contamination: GSM8K.}{12}{section*.39}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Shuffling: phase shift under linear permutation.}{12}{section*.40}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Attempt 2: Mantis cooldown.}{12}{section*.41}\protected@file@percent }
+\citation{marin32bretro}
+\citation{marin32bretro}
+\citation{marinsummary}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Marin 32B Mantis cooldown mixture (normalized share), reproduced from the retrospective~\citep  {marin32bretro}.}}{13}{table.caption.42}\protected@file@percent }
+\newlabel{tab:marin32b_mantis_mix}{{9}{13}{Marin 32B Mantis cooldown mixture (normalized share), reproduced from the retrospective~\citep {marin32bretro}}{table.caption.42}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.5}Base-model benchmark results (32B)}{13}{subsubsection.4.4.5}\protected@file@percent }
+\newlabel{subsubsec:marin32b_results}{{4.4.5}{13}{Base-model benchmark results (32B)}{subsubsection.4.4.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Open Development and Experiment History}{13}{subsection.4.5}\protected@file@percent }
+\newlabel{subsec:open_dev}{{4.5}{13}{Open Development and Experiment History}{subsection.4.5}{}}
+\citation{marin32bretro}
+\citation{marin8bretro,marin32bretro}
+\citation{Hall2025marin}
+\citation{Dehghani2023ScalingVT,marin32bretro}
+\citation{palm,chameleon,mitch,marin8bretro}
+\citation{marin32bretro}
+\bibstyle{plainnat}
+\bibdata{references}
+\bibcite{abdin2024phi}{{1}{2024}{{Abdin et~al.}}{{Abdin, Aneja, Awadalla, Awadallah, Awan, Bach, Bahree, Bakhtiari, Bao, Behl, et~al.}}}
+\@writefile{lot}{\contentsline {table}{\numberline {10}{\ignorespaces Selected 32B base-model results from the Marin 32B retrospective (LM Eval Harness defaults)~\citep  {marin32bretro}.}}{14}{table.caption.44}\protected@file@percent }
+\newlabel{tab:marin32b_results}{{10}{14}{Selected 32B base-model results from the Marin 32B retrospective (LM Eval Harness defaults)~\citep {marin32bretro}}{table.caption.44}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Limitations and Conclusion}{14}{section.5}\protected@file@percent }
+\newlabel{sec:conclusion}{{5}{14}{Limitations and Conclusion}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Limitations}{14}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Conclusion}{14}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Future work.}{14}{section*.45}\protected@file@percent }
+\bibcite{biderman2023pythia}{{2}{2023}{{Biderman et~al.}}{{Biderman, Schoelkopf, Anthony, Bradley, O'Brien, Hallahan, Khan, Purohit, Prashanth, Raff, et~al.}}}
+\bibcite{blakeney2024doesdatasparkjoy}{{3}{2024}{{Blakeney et~al.}}{{Blakeney, Paul, Larsen, Owen, and Frankle}}}
+\bibcite{chameleon}{{4}{2024}{{Chameleon Team}}{{}}}
+\bibcite{chen2021codex}{{5}{2021}{{Chen et~al.}}{{Chen, Tworek, Jun, Yuan, de~Oliveira~Pinto, Kaplan, Edwards, Burda, Joseph, Brockman, Ray, Puri, Krueger, Petrov, Khlaaf, Sastry, Mishkin, Chan, Gray, Ryder, Pavlov, Power, Kaiser, Bavarian, Winter, Tillet, Such, Cummings, Plappert, Chantzis, Barnes, Herbert-Voss, Guss, Nichol, Paino, Tezak, Tang, Babuschkin, Balaji, Jain, Saunders, Hesse, Carr, Leike, Achiam, Misra, Morikawa, Radford, Knight, Brundage, Murati, Mayer, Welinder, McGrew, Amodei, McCandlish, Sutskever, and Zaremba}}}
+\bibcite{palm}{{6}{2022}{{Chowdhery et~al.}}{{Chowdhery, Narang, Devlin, Bosma, Mishra, Roberts, Barham, Chung, Sutton, Gehrmann, Schuh, Shi, Tsvyashchenko, Maynez, Rao, Barnes, Tay, Shazeer, Prabhakaran, Reif, Du, Hutchinson, Pope, Bradbury, Austin, Isard, Gur-Ari, Yin, Duke, Levskaya, Ghemawat, Dev, Michalewski, Garc{\'i}a, Misra, Robinson, Fedus, Zhou, Ippolito, Luan, Lim, Zoph, Spiridonov, Sepassi, Dohan, Agrawal, Omernick, Dai, Pillai, Pellat, Lewkowycz, Moreira, Child, Polozov, Lee, Zhou, Wang, Saeta, D{\'i}az, Firat, Catasta, Wei, Meier-Hellstern, Eck, Dean, Petrov, and Fiedel}}}
+\bibcite{cobbe2021gsm8k}{{7}{2021}{{Cobbe et~al.}}{{Cobbe, Kosaraju, Bavarian, Chen, Jun, Kaiser, Plappert, Tworek, Hilton, Nakano, Hesse, and Schulman}}}
+\bibcite{Dehghani2023ScalingVT}{{8}{2023}{{Dehghani et~al.}}{{Dehghani, Djolonga, Mustafa, Padlewski, Heek, Gilmer, Steiner, Caron, Geirhos, Alabdulmohsin, Jenatton, Beyer, Tschannen, Arnab, Wang, Riquelme, Minderer, Puigcerver, Evci, Kumar, van Steenkiste, Elsayed, Mahendran, Yu, Oliver, Huot, Bastings, Collier, Gritsenko, Birodkar, Vasconcelos, Tay, Mensink, Kolesnikov, Paveti'c, Tran, Kipf, Luvci'c, Zhai, Keysers, Harmsen, and Houlsby}}}
+\bibcite{team2025gemma3}{{9}{2025}{{Gemma 3 Team}}{{}}}
+\bibcite{dubey2024llama}{{10}{2024}{{Grattafiori et~al.}}{{Grattafiori, Dubey, Jauhri, Pandey, Kadian, Al-Dahle, Letman, Mathurx, Schelten, Vaughan, Yang, Fan, Goyal, Hartshorn, Yang, Mitra, Sravankumar, Korenev, Hinsvark, Rao, Zhang, Rodriguez, Gregerson, Spataru, Roziere, Biron, Tang, Chern, Caucheteux, Nayak, Bi, Marra, McConnell, Keller, Touret, Wu, Wong, Ferrer, Nikolaidis, Allonsius, Song, Pintz, Livshits, Wyatt, Esiobu, Choudhary, Mahajan, Garcia-Olano, Perino, Hupkes, Lakomkin, AlBadawy, Lobanova, Dinan, Smith, Radenovic, Guzm{\'a}n, Zhang, Synnaeve, Lee, Anderson, Thattai, Nail, Mialon, Pang, Cucurell, Nguyen, Korevaar, Xu, Touvron, Zarov, Ibarra, Kloumann, Misra, Evtimov, Zhang, Copet, Lee, Geffert, Vranes, Park, Mahadeokar, Shah, van~der Linde, Billock, Hong, Lee, Fu, Chi, Huang, Liu, Wang, Yu, Bitton, Spisak, Park, Rocca, Johnstun, Saxe, Jia, Alwala, Prasad, Upasani, Plawiak, Li, Heafield, Stone, El-Arini, Iyer, Malik, Chiu, Bhalla, Lakhotia, Rantala-Yeary, van~der Maaten, Chen, Tan, Jenkins, Martin, Madaan, Malo, Blecher, Landzaat, de~Oliveira, Muzzi, Pasupuleti, Singh, Paluri, Kardas, Tsimpoukelli, Oldham, Rita, Pavlova, Kambadur, Lewis, Si, Singh, Hassan, Goyal, Torabi, Bashlykov, Bogoychev, Chatterji, Zhang, Duchenne, {\c {C}}elebi, Alrassy, Zhang, Li, Vasic, Weng, Bhargava, Dubal, Krishnan, Koura, Xu, He, Dong, Srinivasan, Ganapathy, Calderer, Cabral, Stojnic, Raileanu, Maheswari, Girdhar, Patel, Sauvestre, Polidoro, Sumbaly, Taylor, Silva, Hou, Wang, Hosseini, Chennabasappa, Singh, Bell, Kim, Edunov, Nie, Narang, Raparthy, Shen, Wan, Bhosale, Zhang, Vandenhende, Batra, Whitman, Sootla, Collot, Gururangan, Borodinsky, Herman, Fowler, Sheasha, Georgiou, Scialom, Speckbacher, Mihaylov, Xiao, Karn, Goswami, Gupta, Ramanathan, Kerkez, Gonguet, Do, Vogeti, Albiero, Petrovic, Chu, Xiong, Fu, Meers, Martinet, Wang, Wang, Tan, Xia, Xie, Jia, Wang, Goldschlag, Gaur, Babaei, Wen, Song, Zhang, Li, Mao, Coudert, Yan, Chen, Papakipos, Singh, Srivastava, Jain, Kelsey, Shajnfeld, Gangidi, Victoria, Goldstand, Menon, Sharma, Boesenberg, Baevski, Feinstein, Kallet, Sangani, Teo, Yunus, Lupu, Alvarado, Caples, Gu, Ho, Poulton, Ryan, Ramchandani, Dong, Franco, Goyal, Saraf, Chowdhury, Gabriel, Bharambe, Eisenman, Yazdan, James, Maurer, Leonhardi, Huang, Loyd, Paola, Paranjape, Liu, Wu, Ni, Hancock, Wasti, Spence, Stojkovic, Gamido, Montalvo, Parker, Burton, Mejia, Liu, Wang, Kim, Zhou, Hu, Chu, Cai, Tindal, Feichtenhofer, Gao, Civin, Beaty, Kreymer, Li, Adkins, Xu, Testuggine, David, Parikh, Liskovich, Foss, Wang, Le, Holland, Dowling, Jamil, Montgomery, Presani, Hahn, Wood, Le, Brinkman, Arcaute, Dunbar, Smothers, Sun, Kreuk, Tian, Kokkinos, Ozgenel, Caggioni, Kanayet, Seide, Florez, Schwarz, Badeer, Swee, Halpern, Herman, Sizov, Guangyi, Zhang, Lakshminarayanan, Inan, Shojanazeri, Zou, Wang, Zha, Habeeb, Rudolph, Suk, Aspegren, Goldman, Zhan, Damlaj, Molybog, Tufanov, Leontiadis, Veliche, Gat, Weissman, Geboski, Kohli, Lam, Asher, Gaya, Marcus, Tang, Chan, Zhen, Reizenstein, Teboul, Zhong, Jin, Yang, Cummings, Carvill, Shepard, McPhie, Torres, Ginsburg, Wang, Wu, U, Saxena, Khandelwal, Zand, Matosich, Veeraraghavan, Michelena, Li, Jagadeesh, Huang, Chawla, Huang, Chen, Garg, A, Silva, Bell, Zhang, Guo, Yu, Moshkovich, Wehrstedt, Khabsa, Avalani, Bhatt, Mankus, Hasson, Lennie, Reso, Groshev, Naumov, Lathi, Keneally, Liu, Seltzer, Valko, Restrepo, Patel, Vyatskov, Samvelyan, Clark, Macey, Wang, Hermoso, Metanat, Rastegari, Bansal, Santhanam, Parks, White, Bawa, Singhal, Egebo, Usunier, Mehta, Laptev, Dong, Cheng, Chernoguz, Hart, Salpekar, Kalinli, Kent, Parekh, Saab, Balaji, Rittner, Bontrager, Roux, Dollar, Zvyagina, Ratanchandani, Yuvraj, Liang, Alao, Rodriguez, Ayub, Murthy, Nayani, Mitra, Parthasarathy, Li, Hogan, Battey, Wang, Howes, Rinott, Mehta, Siby, Bondu, Datta, Chugh, Hunt, Dhillon, Sidorov, Pan, Mahajan, Verma, Yamamoto, Ramaswamy, Lindsay, Lindsay, Feng, Lin, Zha, Patil, Shankar, Zhang, Zhang, Wang, Agarwal, Sajuyigbe, Chintala, Max, Chen, Kehoe, Satterfield, Govindaprasad, Gupta, Deng, Cho, Virk, Subramanian, Choudhury, Goldman, Remez, Glaser, Best, Koehler, Robinson, Li, Zhang, Matthews, Chou, Shaked, Vontimitta, Ajayi, Montanez, Mohan, Kumar, Mangla, Ionescu, Poenaru, Mihailescu, Ivanov, Li, Wang, Jiang, Bouaziz, Constable, Tang, Wu, Wang, Wu, Gao, Kleinman, Chen, Hu, Jia, Qi, Li, Zhang, Zhang, Adi, Nam, Yu, Wang, Zhao, Hao, Qian, Li, He, Rait, DeVito, Rosnbrick, Wen, Yang, Zhao, and Ma}}}
+\bibcite{Groeneveld2024OLMoAT}{{11}{2024}{{Groeneveld et~al.}}{{Groeneveld, Beltagy, Walsh, Bhagia, Kinney, Tafjord, Jha, Ivison, Magnusson, Wang, Arora, Atkinson, Authur, Chandu, Cohan, Dumas, Elazar, Gu, Hessel, Khot, Merrill, Morrison, Muennighoff, Naik, Nam, Peters, Pyatkin, Ravichander, Schwenk, Shah, Smith, Strubell, Subramani, Wortsman, Dasigi, Lambert, Richardson, Zettlemoyer, Dodge, Lo, Soldaini, Smith, and Hajishirzi}}}
+\bibcite{gururangan2020dontStopPretraining}{{12}{2020}{{Gururangan et~al.}}{{Gururangan, Marasovi{\'c}, Swayamdipta, Lo, Beltagy, Downey, and Smith}}}
+\bibcite{Hall2025marin}{{13}{2025}{{Hall et~al.}}{{Hall, Chou, Garg, Ravi, Liu, Shandilya, Ahmed, Liang, Kuditipudi, {J38}, Lee, Power, Salahi, Held, Wang, {chiheem}, Niklaus, Mai, {dependabot[bot]}, Zhou, Li, Yang, Karamcheti, Williams, Zhou, Ramaswami, {whenwen}, Kotha, Miguel, and Xu}}}
+\bibcite{hendryckstest2021}{{14}{2021{}}{{Hendrycks et~al.}}{{Hendrycks, Burns, Basart, Zou, Mazeika, Song, and Steinhardt}}}
+\bibcite{hendrycksmath2021}{{15}{2021{}}{{Hendrycks et~al.}}{{Hendrycks, Burns, Kadavath, Arora, Basart, Tang, Song, and Steinhardt}}}
+\bibcite{commonpile}{{16}{2025}{{Kandpal et~al.}}{{Kandpal, Lester, Raffel, Majstorovic, Biderman, Abbasi, Soldaini, Shippole, Cooper, Skowron, Kirchenbauer, Longpre, Sutawika, Albalak, Xu, Penedo, Ben~Allal, Bakouch, Pressman, Fan, Stander, Song, Gokaslan, Goldstein, Bartoldson, Kailkhura, and Murray}}}
+\bibcite{lambert2024tulu3}{{17}{2024}{{Lambert et~al.}}{{Lambert, Morrison, Pyatkin, Huang, Ivison, Brahman, Miranda, Liu, Dziri, Lyu, Gu, Malik, Graf, Hwang, Yang, Bras, Tafjord, Wilhelm, Soldaini, Smith, Wang, Dasigi, and Hajishirzi}}}
+\bibcite{levanterprp}{{18}{2025}{{Levanter Authors}}{{}}}
+\bibcite{dclm}{{19}{2024}{{Li et~al.}}{{Li, Fang, Smyrnis, Ivgi, Jordan, Gadre, Bansal, Guha, Keh, Arora, Garg, Xin, Muennighoff, Heckel, Mercat, Chen, Gururangan, Wortsman, Albalak, Bitton, Nezhurina, Abbas, Hsieh, Ghosh, Gardner, Kilian, Zhang, Shao, Pratt, Sanyal, Ilharco, Daras, Marathe, Gokaslan, Zhang, Chandu, Nguyen, Vasiljevic, Kakade, Song, Sanghavi, Faghri, Oh, Zettlemoyer, Lo, El-Nouby, Pouransari, Toshev, Wang, Groeneveld, Soldaini, Koh, Jitsev, Kollar, Dimakis, Carmon, Dave, Schmidt, and Shankar}}}
+\bibcite{liu2023llm360}{{20}{2023}{{Liu et~al.}}{{Liu, Qiao, Neiswanger, Wang, Tan, Tao, Li, Wang, Sun, Pangarkar, et~al.}}}
+\bibcite{loshchilov2017decoupled}{{21}{2017}{{Loshchilov and Hutter}}{{}}}
+\bibcite{lozhkov2024starcoder}{{22}{2024}{{Lozhkov et~al.}}{{Lozhkov, Li, Allal, Cassano, Lamy-Poirier, Tazi, Tang, Pykhtar, Liu, Wei, et~al.}}}
+\bibcite{magnusson2024palomabenchmarkevaluatinglanguage}{{23}{2024}{{Magnusson et~al.}}{{Magnusson, Bhagia, Hofmann, Soldaini, Jha, Tafjord, Schwenk, Walsh, Elazar, Lo, Groeneveld, Beltagy, Hajishirzi, Smith, Richardson, and Dodge}}}
+\bibcite{marin32bretro}{{24}{2025{}}{{Marin Community}}{{}}}
+\bibcite{marin8bretro}{{25}{2025{}}{{Marin Community}}{{}}}
+\bibcite{marinissue1368}{{26}{2025{}}{{Marin Community}}{{}}}
+\bibcite{marinissue1390}{{27}{2025{}}{{Marin Community}}{{}}}
+\bibcite{marinsummary}{{28}{2025{}}{{Marin Community}}{{}}}
+\bibcite{olmo20242olmo2furious}{{29}{2024}{{OLMo et~al.}}{{OLMo, Walsh, Soldaini, Groeneveld, Lo, Arora, Bhagia, Gu, Huang, Jordan, Lambert, Schwenk, Tafjord, Anderson, Atkinson, Brahman, Clark, Dasigi, Dziri, Guerquin, Ivison, Koh, Liu, Malik, Merrill, Miranda, Morrison, Murray, Nam, Pyatkin, Rangapur, Schmitz, Skjonsberg, Wadden, Wilhelm, Wilson, Zettlemoyer, Farhadi, Smith, and Hajishirzi}}}
+\bibcite{openai2024midtraining}{{30}{2024}{{OpenAI}}{{}}}
+\bibcite{qwen2.5}{{31}{2024}{{Qwen et~al.}}{{Qwen, :, Yang, Yang, Zhang, Hui, Zheng, Yu, Li, Liu, Huang, Wei, Lin, Yang, Tu, Zhang, Yang, Yang, Zhou, Lin, Dang, Lu, Bao, Yang, Yu, Li, Xue, Zhang, Zhu, Men, Lin, Li, Xia, Ren, Ren, Fan, Su, Zhang, Wan, Liu, Cui, Zhang, and Qiu}}}
+\bibcite{rein2024gpqa}{{32}{2024}{{Rein et~al.}}{{Rein, Hou, Stickland, Petty, Pang, Dirani, Michael, and Bowman}}}
+\bibcite{soldaini2024dolma}{{33}{2024}{{Soldaini et~al.}}{{Soldaini, Kinney, Bhagia, Schwenk, Atkinson, Authur, Bogin, Chandu, Dumas, Elazar, Hofmann, Jha, Kumar, Lucy, Lyu, Lambert, Magnusson, Morrison, Muennighoff, Naik, Nam, Peters, Ravichander, Richardson, Shen, Strubell, Subramani, Tafjord, Walsh, Zettlemoyer, Smith, Hajishirzi, Beltagy, Groeneveld, Dodge, and Lo}}}
+\bibcite{su2025nemotroncctransformingcommoncrawl}{{34}{2025}{{Su et~al.}}{{Su, Kong, Lin, Jennings, Norick, Kliegl, Patwary, Shoeybi, and Catanzaro}}}
+\bibcite{suzgun2022challenging}{{35}{2022}{{Suzgun et~al.}}{{Suzgun, Scales, Sch{\"a}rli, Gehrmann, Tay, Chung, Chowdhery, Le, Chi, Zhou, et~al.}}}
+\bibcite{spikenomore}{{36}{2024}{{Takase et~al.}}{{Takase, Kiyono, Kobayashi, and Suzuki}}}
+\bibcite{wang2024mmlu}{{37}{2024}{{Wang et~al.}}{{Wang, Ma, Zhang, Ni, Chandra, Guo, Ren, Arulraj, He, Jiang, et~al.}}}
+\bibcite{wei2021flan}{{38}{2021}{{Wei et~al.}}{{Wei, Bosma, Zhao, Guu, Yu, Lester, Du, Dai, and Le}}}
+\bibcite{wen2024wsds}{{39}{2024}{{Wen et~al.}}{{Wen, Li, Wang, Hall, Liang, and Ma}}}
+\bibcite{mitch}{{40}{2023}{{Wortsman et~al.}}{{Wortsman, Liu, Xiao, Everett, Alemi, Adlam, Co-Reyes, Gur, Kumar, Novak, Pennington, Sohl-dickstein, Xu, Lee, Gilmer, and Kornblith}}}
+\bibcite{qwen3}{{41}{2025}{{Yang et~al.}}{{Yang, Li, Yang, Zhang, Hui, Zheng, Yu, Gao, Huang, Lv, et~al.}}}
+\bibcite{megamath}{{42}{2025}{{Zhou et~al.}}{{Zhou, Wang, Ranjan, Cheng, Tang, He, Liu, and Xing}}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces WSD-S diagnostics from Marin 8B Phase 1 (reproduced)~\citep  {marin8bretro}.}}{22}{figure.caption.23}\protected@file@percent }
+\newlabel{fig:marin8b_wsds}{{2}{22}{WSD-S diagnostics from Marin 8B Phase 1 (reproduced)~\citep {marin8bretro}}{figure.caption.23}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces The ``EMA gap'' during Ocelot: the difference between hot-model and EMA-model evaluation loss remains surprisingly stable at high learning rates (reproduced)~\citep  {marin8bretro}.}}{23}{figure.caption.24}\protected@file@percent }
+\newlabel{fig:marin8b_ema_gap}{{3}{23}{The ``EMA gap'' during Ocelot: the difference between hot-model and EMA-model evaluation loss remains surprisingly stable at high learning rates (reproduced)~\citep {marin8bretro}}{figure.caption.24}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Phoenix transition loss curve: a brief spike followed by recovery to slightly better loss than pre-cooldown (reproduced)~\citep  {marin8bretro}.}}{23}{figure.caption.26}\protected@file@percent }
+\newlabel{fig:marin8b_phoenix_transition}{{4}{23}{Phoenix transition loss curve: a brief spike followed by recovery to slightly better loss than pre-cooldown (reproduced)~\citep {marin8bretro}}{figure.caption.26}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Deep cooldown stability: loss creep and the z-loss intervention (reproduced)~\citep  {marin8bretro}.}}{24}{figure.caption.27}\protected@file@percent }
+\newlabel{fig:marin8b_zloss}{{5}{24}{Deep cooldown stability: loss creep and the z-loss intervention (reproduced)~\citep {marin8bretro}}{figure.caption.27}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Starling cooldown diagnostics (reproduced)~\citep  {marin8bretro}.}}{24}{figure.caption.29}\protected@file@percent }
+\newlabel{fig:marin8b_starling}{{6}{24}{Starling cooldown diagnostics (reproduced)~\citep {marin8bretro}}{figure.caption.29}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Marin 32B Phase 1 instability diagnostics (reproduced)~\citep  {marin32bretro}.}}{25}{figure.caption.34}\protected@file@percent }
+\newlabel{fig:marin32b_spikes}{{7}{25}{Marin 32B Phase 1 instability diagnostics (reproduced)~\citep {marin32bretro}}{figure.caption.34}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Phase 2 recovery attempts (reproduced)~\citep  {marin32bretro}.}}{26}{figure.caption.35}\protected@file@percent }
+\newlabel{fig:marin32b_recovery_attempts}{{8}{26}{Phase 2 recovery attempts (reproduced)~\citep {marin32bretro}}{figure.caption.35}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces QK-norm warm-start recovery: loss returns to the pre-switch trajectory after a short recovery window (reproduced)~\citep  {marin32bretro}.}}{26}{figure.caption.36}\protected@file@percent }
+\newlabel{fig:marin32b_qk_recovery}{{9}{26}{QK-norm warm-start recovery: loss returns to the pre-switch trajectory after a short recovery window (reproduced)~\citep {marin32bretro}}{figure.caption.36}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Shuffling pathology and fix during Marin 32B cooldowns (reproduced)~\citep  {marin32bretro}.}}{27}{figure.caption.43}\protected@file@percent }
+\newlabel{fig:marin32b_shuffle}{{10}{27}{Shuffling pathology and fix during Marin 32B cooldowns (reproduced)~\citep {marin32bretro}}{figure.caption.43}{}}
+\gdef \@abspage@last{27}

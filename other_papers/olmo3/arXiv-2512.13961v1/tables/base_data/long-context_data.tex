@@ -1,0 +1,43 @@
+\begin{table}[h]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{l l rr ll}
+\toprule
+{\bf Source} & 
+\bf Length bucket & 
+\multicolumn{2}{c}{{\bf 600B Pool}} & 
+\multicolumn{2}{c}{{\bf 50B Mix}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+& & {\bf Tokens} & {\bf Docs} & {\bf Tokens} & {\bf Docs} \\
+\midrule
+\rowcolor{ai2offwhite}olmOCR PDFs & 8K-16K & 144B (22.5\%) & 12.7M & 2.27B (4.55\%) & 235K \\
+olmOCR PDFs & 16K-32K  & 115B (18.0\%) & 5.06M & 1.85B (3.70\%) & 110K \\
+\rowcolor{ai2offwhite} olmOCR PDFs & 32K-64K & 106B (16.6\%) & 2.30M & 4.81B (9.63\%) & 177K  \\
+
+olmOCR PDFs &  64K-128K & 96.0B (15.0\%) & 1.05M & -- & -- \\
+\rowcolor{ai2offwhite} olmOCR PDFs & 128K-256K  & 60.8B (9.5\%) & 342K & -- & -- \\
+olmOCR PDFs  & 256K-512K & 35.1B (5.49\%) & 97.1K & -- &  -- \\
+\rowcolor{ai2offwhite}olmOCR PDFs  & 512K-1M & 21.5B (3.36\%) & 30.2K & -- & -- \\
+olmOCR PDFs & 1M+ & 26.9B (4.21\%) & 12.2K & -- & -- \\
+\rowcolor{ai2offwhite} olmOCR PDFs + synth {\bf{CWE}} & 32K-64K & 8.77B (1.37\%) & 189K & 1.94B (3.88\%) & 71.3K  \\
+olmOCR PDFs + synth {\bf{REX}}  & 32K-64K  & 24.1B (3.77\%) & 492K & 6.08B (12.2\%) & 217K \\ 
+\rowcolor{ai2offwhite}Midtraining data mix & Variable & -- & -- & 33.0B (66.1\%) & 79.2M \\
+{\bf Total} & & {\bf 639B} & {\bf 22.3M} & {\bf 50.0B (100\%)} & {\bf 80.0M} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Composition of \longminomix}. The 100B mix for \olmothree 32B maintains the same proportions as the 50B mix. Length buckets are reported in \dolmatoo tokens.}
+\label{table:data-stage-3}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+

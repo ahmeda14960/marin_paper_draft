@@ -1,0 +1,74 @@
+\begin{table}[ht!]
+\setlength\tabcolsep{2pt} 
+\renewcommand{\arraystretch}{0.9}
+{\fontsize{8}{8}\selectfont
+\begin{center}
+\begin{footnotesize}
+\begin{tabular}{lc|ccccc|cccc}
+\toprule
+    &\multicolumn{6}{c}{\quad \quad \quad \quad \textbf{\texttt{Base Aggregate Scores}}} & \multicolumn{4}{c}{\textbf{\texttt{Select Base Benchmarks}}} \\
+    {\textbf{\fontsize{8}{8}\selectfont~Model}} &
+    {\textbf{\fontsize{8}{8}\selectfont~$\#$ Toks}} & 
+    {\textbf{\fontsize{8}{8}\selectfont~Math}} & 
+    {\textbf{\fontsize{8}{8}\selectfont~Code}} & 
+    {$\textbf{\fontsize{8}{8}\selectfont~MC}_\textbf{\fontsize{6}{6}\selectfont~STEM}$} & 
+    {$\textbf{\fontsize{8}{8}\selectfont~MC}_\textbf{\fontsize{6}{6}\selectfont~Non-STEM}$} & 
+    {\textbf{\fontsize{8}{8}\selectfont~GenQA}} & 
+    {\textbf{\fontsize{8}{8}\selectfont~Minerva}} &
+    {\textbf{\fontsize{8}{8}\selectfont~GenXL}} &
+    {\textbf{\fontsize{8}{8}\selectfont~MMLU}} & 
+    {\textbf{\fontsize{8}{8}\selectfont~BCB}}
+    \\
+\midrule
+
+
+\rowcolor{midgrey} \multicolumn{11}{c}{\textbf{7B scale}} \\
+\rowcolor{lightgrey}    \olmotoo 7B Stage 1              & 4T & 12.7 & 7.1 & 61.0 & 70.6 & 68.6 & 5.6 & 15.8 & 59.8 & 81.6 \\
+\rowcolor{lightgrey}    \olmotoo 7B Stage 2 Ingredient 1 & 4.05T & 40.4 & 10.4 & 64.1 & 74.6 & 72.1 & 18.9 & 21.3 & 63.1 & 85.1 \\
+\rowcolor{lightgrey}    \olmotoo 7B Stage 2 Ingredient 2 & 4.05T & 41.4 & 10.4 & 64.3 & 74.9 & 71.8 & 18.7 & 21.0 & 63.8 & 85.8 \\
+\rowcolor{lightgrey}    \olmotoo 7B Stage 2 Ingredient 3 & 4.05T & 40.8 & 10.1 & 64.0 & 74.9 & 72.1 & 19.1 & 21.9 & 63.8 & 85.6 \\
+\rowcolor{lightgrey}    \olmotoo 7B Stage 2 Soup         & 4.15T & 41.7 & 10.4 & 64.6 & 75.2 & 72.4 & 19.1 & 21.2 & 63.7 & 85.7 \\
+\rowcolor{lightgrey}    Apertus 8B Phase 3               & 12T & 19.2 & 9.9 & 61.1 & 68.4 & 68.3 & 7.3 & 19.0 & 58.3 & 81.4 \\
+\rowcolor{lightgrey}    Apertus 8B Phase 4               & 13.5T & 26.0 & 16.2 & 65.1 & 73.8 & 69.7 & 10.8 & 30.5 & 63.3 & 86.8 \\
+\rowcolor{lightgrey}    Apertus 8B Phase 5               & 15T & 29.3 & 19.0 & 66.7 & 75.0 & 70.1 & 12.9 & 31.0 & 65.0 & 88.6 \\
+\rowcolor{lightgrey}    Marin 8B Phoenix                 & 11.1T & 11.2 & 8.0 & 60.9 & 71.1 & 68.7 & 4.7 & 15.0 & 58.5 & 83.1 \\
+\rowcolor{lightgrey}    Marin 8B Starling                & 12.4T & 40.5 & 20.8 & {\bf{68.3}} & 78.7 & 75.7 & 23.2 & 36.2 & {\bf{67.8}} & 89.1 \\
+\rowcolor{lightgrey}    Marin 8B Deeper Starling         & 12.7T & 39.4 & 21.3 & 68.1 & {\bf{78.8}} & {\bf{75.9}} & 23.9 & 37.0 & 67.7 & 89.2 \\
+\rowcolor{ai2lightpink} \olmothree 7B Stage 1            & 5.9T & 23.5 & 19.8 & 64.0 & 71.9 & 68.5 & 12.2 & 34.7 & 62.3 & 84.8 \\
+\rowcolor{ai2lightpink} \olmothree 7B Stage 2            & 6T & {\bf{59.8}} & {\bf{31.9}} & 67.2 & 78.2 & 71.3 & {\bf{41.4}} & {\bf{49.1}} & 66.9 & {\bf{89.7}} \\
+\rowcolor{ai2lightpink} \olmothree 7B Stage 3            & 6.05T & 54.4 & 30.6 & 66.4 & 78.2 & 72.5 & 39.8 & 43.6 & 66.9 & 89.2 \\
+
+\rowcolor{midgrey} \multicolumn{11}{c}{\textbf{32B scale}} \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 1                & 6.5T & 33.2 & 16.0 & 73.0 & 81.7 & 75.8 & 13.6 & 29.2 & 72.3 & 93.5 \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 2 Ingredient 1   & 6.6T & 51.6 & 19.9 & 75.1 & 84.5 & 78.5 & 30.3 & 36.8 & 75.5 & 94.8 \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 2 Ingredient 2   & 6.6T & 51.9 & 20.0 & 74.1 & 83.8 & 79.1 & 30.7 & 35.2 & 74.0 & 94.1 \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 2 Ingredient 3   & 6.6T & 51.5 & 19.6 & 74.4 & 83.6 & 79.0 & 29.2 & 35.7 & 74.3 & 93.8 \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 2 Ingredient 4   & 6.8T & 51.9 & 19.2 & 74.6 & 83.3 & 78.3 & 31.0 & 37.1 & 74.3 & 94.0 \\
+\rowcolor{lightgrey}    \olmotoo 32B Stage 2 Soup           & 7.1T & 53.9 & 20.5 & 75.3 & 84.2 & 79.1 & 31.0 & 37.1 & 75.0 & 94.4 \\
+\rowcolor{lightgrey}    Apertus 70B Phase 3                 & 12T & 34.2 & 17.8 & 68.6 & 78.2 & 74.6 & 13.4 & 31.9 & 67.3 & 88.8 \\
+\rowcolor{lightgrey}    Apertus 70B Phase 4                 & 13.5T & 39.8 & 21.5 & 70.5 & 79.5 & 75.8 & 16.3 & 34.8 & 69.5 & 91.0 \\
+\rowcolor{lightgrey}    Apertus 70B Phase 5                 & 15T & 40.6 & 23.0 & 70.5 & 79.4 & 75.5 & 17.5 & 37.7 & 69.3 & 91.4 \\
+\rowcolor{lightgrey}    K2 70B Stage 1                      & 1.2T & 34.0 & 27.5 & 69.5 & 78.2 & 73.8 & 16.2 & 42.6 & 67.9 & 89.2 \\
+\rowcolor{lightgrey}    K2 70B Stage 2                      & 1.4T & 43.3 & 29.6 & 68.2 & 78.0 & 73.5 & 25.7 & 46.6 & 67.8 & 88.3 \\
+\rowcolor{lightgrey}    Marin 32B Phase 3                   & 5.4T & 25.8 & 13.9 & 70.4 & 80.2 & 75.1 & 9.7 & 19.6 & 69.5 & 90.8 \\
+\rowcolor{lightgrey}    Marin 32B Mantis                    & 6.5T & 49.3 & 30.8 & {\bf{75.9}} & 84.5 & {\bf{80.3}} & 36.8 & 52.1 & 75.7 & 93.4 \\
+\rowcolor{ai2lightpink} \olmothree 32B Stage 1              & 5.5T & 48.4 & 29.8 & 72.3 & 80.6 & 76.1 & 26.7 & 47.8 & 71.7 & 92.6 \\
+\rowcolor{ai2lightpink} \olmothree 32B Stage 2 Ingredient 1 & 5.6T & 66.8 & 38.4 & 74.6 & 85.6 & 78.9 & 46.5 & 59.6 & 75.9 & 94.7 \\
+\rowcolor{ai2lightpink} \olmothree 32B Stage 2 Ingredient 2 & 5.6T & 65.4 & 39.3 & 74.8 & 85.0 & 78.9 & 44.1 & {\bf{60.0}} & 76.3 & 94.3 \\
+\rowcolor{ai2lightpink} \olmothree 32B Stage 2 Soup         & 5.7T & {\bf{69.7}} & {\bf{39.7}} & 75.6 & {\bf{85.7}} & 79.4 & {\bf{46.9}} & 59.7 & {\bf{76.9}} & {\bf{95.0}} \\
+\rowcolor{ai2lightpink} \olmothree 32B Stage 3              & 6.2T & 61.4 & {\bf{39.7}} & 74.3 & 85.6 & 79.7 & 42.9 & 59.4 & 76.2 & 94.8 \\
+
+
+\bottomrule
+\end{tabular}
+\end{footnotesize}
+\vspace{2mm}
+\caption{
+\textbf{Results comparing \olmothree to open base models across stages of pretraining, midtraining and long context}.
+As of writing, Marin has undergone learning rate cooldown (Mantis), but not long-context (LC) extension stage.
+Apertus also has a two-stage cooldown (Phase 4 and 5) and performed long-context extension by mixing-in data to their Phase 5 training. Token counts are presented in "Cumulative training tokens", so each row denotes the number of tokens that model has seen up to that point in training. For \olmotoo and \olmothree models, Stage 1 is the standard pretraining phase, Stage 2 is midtraining, and Stage 3 is LC extension. 
+}
+\label{tab:base_evals_overview}
+\end{center}
+}
+\end{table}

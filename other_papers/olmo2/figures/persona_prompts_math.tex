@@ -1,0 +1,27 @@
+\begin{figure}[h]
+    \centering
+    \begin{tcolorbox}[colframe=black!80!white, colback=black!2!white, boxrule=0.5mm, width=\textwidth, arc=2mm, auto outer arc, title=Hard Math Problems (prompt), fonttitle=\color{white}\bfseries]
+    \setstretch{1.2}
+Create a math problem related to the following persona:\\\\
+\texttt{\{persona\}}\\\\
+Note:\\\\
+1. The math problem should be challenging and involve advanced mathematical skills and knowledge. Only top talents can solve it correctly.\\
+2. You should make full use of the persona description to create the math problem to ensure that the math problem is unique and specific to the persona.\\
+3. Your response should always start with "Math problem:". Your response should not include a solution to the created math problem.\\
+4. Your created math problem should include no more than 2 sub-problems.
+    \end{tcolorbox}
+    \caption{Prompt used to generate hard math word problems. \texttt{\{persona\}} are borrowed from \citet{chan2024scaling}.}
+    \label{fig:persona-prompt-sft-math}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{tcolorbox}[colframe=black!80!white, colback=black!2!white, boxrule=0.5mm, width=\textwidth, arc=2mm, auto outer arc, title=Hard Math Problems (response), fonttitle=\color{white}\bfseries]
+    \setstretch{1.2}
+    Provide solution to the given math problem.\\\\
+    Problem: \texttt{\{generated\_math\_problem\}}\\\\
+    Note: Provide your solution step-by-step, and end your solution in a new line in the following format: \\ Final Answer: The final answer is \$final\_answer\$. I hope it is correct.
+    \end{tcolorbox}
+    \caption{Prompt used to generate solutions for hard math word problems.}
+    \label{fig:persona-prompt-sft-math-res}
+\end{figure}

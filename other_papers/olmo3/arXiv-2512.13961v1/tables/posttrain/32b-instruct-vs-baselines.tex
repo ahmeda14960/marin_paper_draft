@@ -1,0 +1,64 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{5pt}
+\renewcommand{\arraystretch}{0.95}
+\adjustbox{max width=\linewidth}{
+{\fontsize{8}{8}\selectfont
+\begin{NiceTabular}{@{}Hl
+C{35pt}C{35pt}P{35pt}|
+C{35pt}C{35pt}C{35pt}C{35pt}C{35pt}C{35pt}C{35pt}@{}}
+\toprule
+& & \multicolumn{3}{c}{\quad \quad \textbf{\texttt{Olmo 3.1 32B Instruct}}} & \multicolumn{7}{c}{\textbf{\texttt{Baselines}}} \\
+\textbf{Skill} &
+& \textbf{SFT} & \textbf{DPO} & \textbf{Final \mbox{Instruct} 3.1} & \textbf{Apertus 70B} & \textbf{Qwen 3 32B (No Thinking)} & \textbf{Qwen 3 VL 32B Instruct} & \textbf{Qwen 2.5 32B} & \textbf{Gemma 3 27B} & \textbf{Gemma 2 27B} & \textbf{OLMo 2 32B} \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Math} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{MATH} & 74.4 & 86.6 & 93.4 & 36.2 & 84.3 & 95.1 & 80.2 & 87.4 & 51.5 & 49.2 \\
+\rowcolor{lightgrey} -- & \metric{AIME 2024} & 12.7 & 35.2 & 67.8 & 0.31 & 27.9 & 75.4 & 15.7 & 28.9 & 4.7 & 4.6 \\
+\rowcolor{lightgrey} -- & \metric{AIME 2025} & 8.2 & 23.3 & 57.9 & 0.1 & 21.3 & 64.2 & 13.4 & 22.9 & 0.9 & 0.9 \\
+\rowcolor{lightgrey} -- & \metric{OMEGA} & 15.5 & 33.3 & 42.2 & 5.6 & 23.4 & 44.0 & 19.2 & 24.0 & 9.1 & 9.8 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Reasoning} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{BigBenchHard} & 69.0 & 82.1 & 84.0 & 57.0 & 80.4 & 89.0 & 80.9 & 82.4 & 66.0 & 65.6 \\
+\rowcolor{lightgrey} -- & \metric{ZebraLogic} & 30.6 & 51.1 & 61.7 & 9.0 & 28.4 & 86.7 & 24.1 & 24.8 & 17.2 & 13.3 \\
+\rowcolor{lightgrey} -- & \metric{AGI Eval English} & 71.7 & 79.4 & 79.5 & 61.6 & 82.4 & 89.4 & 78.9 & 76.9 & 70.9 & 68.4 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Coding} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{HumanEvalPlus} & 80.8 & 85.7 & 86.7 & 42.9 & 83.9 & 89.3 & 82.6 & 79.2 & 67.5 & 44.4 \\
+\rowcolor{lightgrey} -- & \metric{MBPP+} & 61.5 & 63.6 & 65.1 & 45.8 & 67.9 & 69.0 & 66.6 & 65.7 & 61.2 & 49.0 \\
+\rowcolor{lightgrey} -- & \metric{LiveCodeBench v3} & 35.4 & 49.6 & 54.7 & 9.7 & 57.5 & 70.2 & 49.9 & 39.0 & 28.7 & 10.6 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{IF} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{IFEval} & 87.7 & 87.3 & 88.8 & 70.4 & 87.5 & 88.1 & 81.9 & 85.4 & 62.1 & 85.8 \\
+\rowcolor{lightgrey} -- & \metric{IFBench} & 29.7 & 36.3 & 39.7 & 26.0 & 31.3 & 37.2 & 36.7 & 31.3 & 27.8 & 36.4 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Knowledge \& QA} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{MMLU} & 79.0 & 81.9 & 80.9 & 70.2 & 85.8 & 88.7 & 84.6 & 74.6 & 76.1 & 77.1 \\
+\rowcolor{lightgrey} -- & \metric{PopQA} & 23.7 & 28.5 & 25.0 & 33.5 & 25.9 & 25.7 & 28.0 & 30.2 & 30.4 & 37.2 \\
+\rowcolor{lightgrey} -- & \metric{GPQA} & 41.3 & 47.9 & 48.6 & 27.9 & 54.4 & 61.4 & 44.6 & 45.0 & 39.9 & 36.4 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Chat} & & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{AlpacaEval 2 LC} & 42.2 & 69.7 & 59.8 & 19.9 & 67.9 & 84.3 & 81.9 & 65.5 & 39.8 & 38.0 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Tool Use} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{SimpleQA} & 82.3 & 85.3 & 84.7 & - & 86.7 & 91.5 & 90 & - & - & - \\
+\rowcolor{lightgrey} -- & \metric{LitQA2} & 47.6 & 53.3 & 55.6 & - & 46.7 & 32 & 26.2 & - & - & - \\
+\rowcolor{lightgrey} -- & \metric{BFCL} & 57 & 58.6 & 58.8 & - & 63.1 & 66.3 & 62.8 & - & - & -  \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Safety} & 92.1 & 88.9 & 89.5 & 77.1 & 81.6 & 85.8 & 82.2 & 68.8 & 74.4 & 84.2 \\
+\bottomrule
+
+\end{NiceTabular}}}
+\caption{\textbf{Results of our model Olmo 3.1~32B Instruct} on our post-training evaluation suite. Olmo 3.1~32B Instruct is the best fully-open model at 32B. %
+}
+\label{tab:32b-instruct-baeslines}
+\end{table}

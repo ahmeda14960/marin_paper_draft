@@ -1,0 +1,19 @@
+\begin{table}[tbp]
+\centering
+\footnotesize
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}l >{}c c c c c c c c c c c@{}}
+\toprule
+& \multicolumn{11}{c}{\textbf{Subset of \olmothreeinstruct Benchmarks}} \\
+\cmidrule(lr){2-12}
+\textbf{Name} & \textbf{Avg.} & \textbf{BBH} & \textbf{GPQA} & \textbf{MATH} & \textbf{GSM8K} & \textbf{OMEGA} & \textbf{CHE} & \textbf{MBPP} & \textbf{LCB} & \textbf{AE} & \textbf{IFEval} \\
+\midrule
+No thinking SFT & 44.5 & 46.5 & 29.7 & 60.3 & 87.6 & 8.6 & 63.8 & 54.1 & 13.0 & 27.0 & 81.0 \\
+With thinking SFT & 47.8 & 46.6 & 34.4 & 65.9 & 91.1 & 12.2 & 68.7 & 57.1 & 17.1 & 27.1 & 84.7 \\
+\midrule
+Gain from thinking SFT first & 3.3 & 0.1 & 4.7 & 5.6 & 3.5 & 3.6 & 4.9 & 3.0 & 4.0 & 0.1 & 3.7 \\
+\bottomrule
+\end{tabular}}
+\caption{\textbf{Results of training an intermediate \olmothreeinstruct 7B checkpoint} with and without thinking SFT first.}
+\label{tab:sft-reasoning-first}
+\end{table}

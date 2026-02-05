@@ -1,0 +1,37 @@
+\begin{table}[t!]
+\centering
+\setlength\tabcolsep{5pt}
+{\small
+\begin{tabular}{ll R{1.8cm} R{2.0cm} l}
+\toprule
+{\bf Category} & {\bf Prompt Dataset} & {\bf \# Prompts Used in Think RL} & {\bf \# Prompts Used in Instruct RL} & {\bf Reference} \\
+\midrule
+
+\rowcolor{ai2offwhite}
+Precise IF & IF-RLVR & 30,186 & 38,000 & \citet{pyatkin2025generalizing} \\
+
+Math & Open-Reasoner-Zero & 3,000 & 14,000 & \citet{hu2025open} \\
+& DAPO-Math & 2,584 & 7,000 & \citet{yu2025dapo} \\
+& AceReason-Math & 6,602 & -- & \citet{chen2025acereason} \\
+& Polaris-Dataset & -- & 14,000 & \citet{Polaris2025} \\
+& KlearReasoner-MathSub & 3,000 & 9,000 & \citet{su2025klear} \\
+& OMEGA-train & 15,000 & 20,000 & \citet{Sun2025OMEGACL} \\
+\rowcolor{ai2offwhite}
+Coding & AceCoder & 9,767 & 20,000 & \citet{zeng2025acecoder} \\
+\rowcolor{ai2offwhite}
+& KlearReasoner-Code & 8,040 & -- & \citet{su2025klear} \\
+\rowcolor{ai2offwhite}
+& Nemotron Post-training Code & 2,303 & -- & \citet{nvidia2025nemotron_post_training_dataset} \\
+\rowcolor{ai2offwhite}
+& SYNTHETIC-2 & 3,000 & -- & \citet{primeintellect2025synthetic2} \\
+General Chat & Tulu 3 SFT & 7,129 & 18,955 & \citet{lambert2024tulu3} \\
+ & Wildchat-4.8M & 7,129  & 18,761 & - \\
+ & Multi-Subject RLVR & 7,129 & 12,234 & \citet{su2025expanding} \\
+\rowcolor{ai2offwhite} 
+{\bf{Total}} &  & 104,869 & 171,950 & \\
+\bottomrule
+\end{tabular}}
+\vspace{3pt}
+\caption{\textbf{Breakdown of datasets in Dolci-Think-RL used for RL training}. See \S\ref{subsec:rl-thinking-data} for further details on how each dataset is processed.}
+\label{tab:olmo3_think_rl_mix}
+\end{table}

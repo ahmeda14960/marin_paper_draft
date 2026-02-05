@@ -1,0 +1,486 @@
+
+\appendix
+
+
+
+
+
+
+
+
+
+
+\section{\olmotoo Evaluation Framework}
+
+We evaluate \olmotoo using OLMES, a unified, standardized evaluation suite and toolkit\footnote{The OLMES (Open Language Model Evaluation System) framework can be found at \href{https://github.com/allenai/olmes}{\path{github.com/allenai/olmes}}} to guide the development and assess performance of language models. 
+
+\subsection{Base Model Eval}
+\label{app:eval-base}
+
+\olmo base models are evaluated on 11 tasks, consisting of 5 multiple-choice tasks, 2 generative tasks, and 4 additional held-out tasks not utilized during model development. 
+See Table~\ref{tab:task-details} for the list of tasks along with details of the task formulations following the principles of the OLMES standard \citep{olmes}, described further below.
+
+
+\begin{table*}[h]
+  \centering
+
+\begin{small}
+\begin{tabular}{llllll}
+\toprule
+\bf{task} & \bf{split} & \bf{\# inst (total)} & \bf{\# shots} & \bf{metric} & \bf{reference}\\
+\midrule
+\rowcolor{midgrey}\multicolumn{6}{c}{\textbf{\textit{Multiple-choice tasks}}} \\
+ARC-Challenge (ARC\_C) & Test &  1172 & 5 & pmi & \citep{clark2018think} \\
+BoolQ & Val &  1000 (3270) & 5  & none & \citep{clark-etal-2019-boolq}\\
+HellaSwag (HSwag) & Val &  1000 (10042) & 5 & char & \citep{zellers-etal-2019-hellaswag}\\
+MMLU$^\dagger$ & Test &  14042 & 5 & char & \citep{hendryckstest2021}\\
+WinoGrande (WinoG) & Val &  1267 &  5 & none & \citep{Sakaguchi_Le_Bras_Bhagavatula_Choi_2020}\\
+\rowcolor{midgrey}\multicolumn{6}{c}{\textbf{\textit{Generative tasks}}} \\
+DROP & Val &  1000 (9536) & 5 & F1 & \citep{dua-etal-2019-drop}\\
+Natural Questions (NatQs) & Val &  1000 (3610) & 5 & F1 & \citep{kwiatkowski-etal-2019-natural} \\
+\rowcolor{midgrey}\multicolumn{6}{c}{\textbf{\textit{Held-out tasks}}} \\
+AGIEval English & Test &  2646 & 1 & MCF & \citep{zhong-etal-2024-agieval} \\
+GSM8K & Test & 1319  & 8 (CoT) & EM & \citep{cobbe2021trainingverifierssolvemath}\\
+MMLU-Pro & Test &  12032 & 5 & MCF & \citep{wang2024mmlu} \\
+TriviaQA & Val &  7993 & 5 & F1 & \citep{joshi-etal-2017-triviaqa}\\
+\bottomrule
+\end{tabular}
+\end{small}
+  \caption{Details of OLMES benchmarks used in \olmotoo evaluation, with standardized choices of dataset split, number of instances to use, along with total number if sampling was used. For multiple-choice tasks, when using the Cloze/Completion Formulation (CF), the ``metric'' column specifies which normalization scheme to use. Following the OLMES standard, we evaluate each model using both the MCF (Multiple-Choice Formulation) and CF formulations, and the best performing one is used. For efficiency reasons, we limit MMLU and held-out multiple-choice evaluations to MCF only as all the relevant models strongly prefer that format for these tasks.}
+  \label{tab:task-details}
+\end{table*}
+
+
+\paragraph{Multiple-choice tasks} We use the formulation of the 10 multiple-choice tasks defined in the OLMES evaluation standard~\citep{olmes}. OLMES (Open Language Model Evaluation Standard) is a set of principles and associated standard (with a reference implementation in the OLMES system framework) for reproducible LM evaluations that is open, practical, and documented, providing recommendations guided by experiments and results from the literature~\citep{biderman2024lessons,eval-harness}. For multiple-choice tasks it is designed to support comparisons between smaller base models that require the cloze/completion formulation of multiple-choice questions (score each answer completion separately) against larger models that can utilize the multiple-choice formulation. To make our evaluations reproducible, we follow the OLMES standard in prompt formatting, choice of in-context examples, probability normalization, and all other details. See Table~\ref{tab:task-details} and see \citet{olmes} for more details. 
+
+
+\paragraph{Generative tasks} Following the principles of OLMES \citep{olmes}, such as prompt formatting and having 5-shot curated in-context examples, we also evaluated on a suite of generative tasks, OLMES-Gen. This suite covers factual knowledge tasks (Natural Questions \citep{kwiatkowski-etal-2019-natural} and Jeopardy \citep{mosaic-jeopardy}) and tasks testing reading comprehension (SQuAD \citep{rajpurkar-etal-2016-squad}, DROP \citep{dua-etal-2019-drop}, and CoQA \citep{reddy-etal-2019-coqa}). For CoQA, the task comprises presenting a passage followed by a conversation so far, where each turn in the conversation contains a question and an answer. In this case, the previous question and answer pairs serve to guide the model in terms of the output format, and we do not include additional few-shot examples. For all other tasks, we follow OLMES in using 5-shot curated in-context examples. As the list of gold answers for these tasks are often incomplete, we use F1 as the primary metric to give partial credit when models produce answers that partially match.  The task details of OLMES-Gen are summarized in Table~\ref{tab:task-details}. 
+
+
+
+\paragraph{Held-out tasks} We also evaluate on a held-out suite of tasks that were not used when making decisions during model development. 
+This suite includes advanced admission and qualification exams (AGIEval English\footnote{Specifically these 8 tasks: aqua-rat, logiqa-en, lsat-ar, lsat-lr, lsat-rc, sat-en, sat-math, gaokao-english} \citep{zhong-etal-2024-agieval}), tasks believed to be challenging to LMs (BigBenchHard, BBH; \citealp{suzgun2022challengingbigbenchtaskschainofthought}), math reasoning (GSM8K; \citealp{cobbe2021trainingverifierssolvemath}), a more challenging and reasoning-focused extension of MMLU (MMLU Pro; \citealp{wang2024mmlu}), and an unseen factual knowledge task (TriviaQA; \citealp{joshi-etal-2017-triviaqa}). We use existing in-context examples where available - for GSM8K, we use the 8-shot CoT examples from \citet{wei2023chainofthoughtpromptingelicitsreasoning}; for BBH we use the 3-shot CoT prompts from the original dataset; in evaluating MMLU-Pro, we used 5-shot examples from the original dataset. We use a 1-shot (with passage context, no CoT) prompt for AGIEval English, and a manually curated 5-shot examples from the train set for TriviaQA. Note that for the case of GSM8K, we never evaluated our models on the entire test set during the development stage, instead we use 200 examples to inform choices during development (e.g., choices of annealing mixtures); in Section \ref{sec:diveAnnealing} we refer to this 200-example subset as GSM*. 
+
+We make all implementations publicly available at \href{https://github.com/allenai/olmes}{\path{github.com/allenai/olmes}}.
+
+
+
+
+
+\subsection{Instruct Model Eval}
+\label{app:eval-post}
+
+\paragraph{Instruct tasks} 
+We perform instruct model evaluation based on existing practices in current literature using the OLMES benchmark suite \citep{olmes} using the configuration reported in \citet{lambert2024tulu3}. 
+
+See Table~\ref{tab:instruct-task-details} for a list of instruct tasks along with their configurations. 
+These tasks include chat variations of our held-out tasks (GSM8k; \citealp{cobbe2021trainingverifierssolvemath}, BBH; \citealp{suzgun2022challengingbigbenchtaskschainofthought}), additional long-tail knowledge (PopQA; \citealp{mallen2023llm_memorization}), misconception (TruthfulQA; \citealp{lin2021truthfulqa}) and instruction-following tasks (IFEval; \citealp{zhou2023instructionfollowingevaluationlargelanguage}, AlpacaEval 2; \citealp{dubois2024length}). 
+For our MMLU instruct evaluation, we use the CoT version from \citet{lambert2024tulu3} using their prompt asking the model to ``summarize'' its reasoning before answering the question. 
+We evaluate Python code completion (HumanEval; \citealp{chen2021codex}, HumanEval+; \citealp{evalplus}) and competition MATH~\citep{hendrycksmath2021} with the same setup and answer extraction in OLMES.
+
+
+\begin{table}[h]
+\centering
+\small
+\begin{small}
+\begin{tabular}{{L{1.7cm} L{2.5cm} C{1cm} C{1cm} C{1cm} C{1.5cm} C{1.5cm}}}
+\toprule
+\textbf{Category} & \textbf{Task} & \textbf{CoT} & \textbf{\# shots} & \textbf{Chat} & \textbf{Multiturn ICL} & \textbf{Metric} \\\midrule
+\multicolumn{7}{c}{\textbf{\textit{Instruct tasks}}} \\
+\rowcolor{ai2offwhite}\cellcolor{white}Knowledge Recall & MMLU & \cmark & 0 & \cmark & \xmark & EM \\
+\rowcolor{ai2offwhite} \cellcolor{white} & PopQA & \xmark & 15 & \cmark & \cmark & EM \\
+\rowcolor{ai2offwhite} \cellcolor{white} & TruthfulQA & \xmark & 6 & \cmark & \xmark & MC2 \\
+\cellcolor{white}Reasoning & BigBenchHard & \cmark & 3 & \cmark & \cmark & EM \\
+& DROP & \xmark & 3 & \xmark & N/A & F1 \\
+\rowcolor{ai2offwhite}\cellcolor{white}Math & GSM8K & \cmark & 8 & \cmark & \cmark & EM \\
+\rowcolor{ai2offwhite}\cellcolor{white} & MATH & \cmark & 4 & \cmark & \cmark & Flex EM \\
+\cellcolor{white}Coding & HumanEval & \xmark & 0 & \cmark & N/A & Pass@10 \\
+& HumanEval+ & \xmark & 0 & \cmark & N/A & Pass@10 \\
+\rowcolor{ai2offwhite}\cellcolor{white}Instruction Following & IFEval & \xmark & 0 & \cmark & N/A & Pass@1 (prompt; loose) \\
+& AlpacaEval 2 & \xmark & 0 & \cmark & N/A & LC Winrate \\
+\rowcolor{ai2offwhite}\cellcolor{white}Safety & T\"ulu 3 Safety & \xmark & 0 & \cmark & N/A & Average$^*$ \\
+\bottomrule
+\end{tabular}
+\end{small}
+\vspace{3pt}
+\caption{Details of OLMES benchmarks used for to evaluate \olmotooinstruct. \textbf{CoT} are evaluations run with chain of thought prompting~\citep{wei2022chain}.
+\textbf{\#Shots} is the number of in-context examples in the evaluation template.
+\textbf{Chat} refers to whether we use a chat template while prompting the model.
+\textbf{Multiturn ICL} refers to a setting where we present each in-context example as a separate turn in a conversation (applicable only when a chat template is used and \# Shots is not 0). 
+$^*$Average over multiple sub-evaluations
+}
+\label{tab:instruct-task-details}
+\end{table}
+
+
+
+
+
+\section{\olmotoo 1B}
+\label{app:1b}
+
+While the goal of this work is to develop development recipes for our target 7B, 13B and 32B sizes, often it is useful to perform experimentation at the 1B model size. We define \olmotoo 1B similar to \olmotoo 7B, but with the following departures:
+\begin{itemize}
+    \item \textbf{Layers:} 16 instead of 32
+    \item \textbf{Hidden Size ($d_{model}$: } 2048 instead of 4096
+    \item \textbf{Attention Heads (Q/KV): } 16/16 (MHA) instead of 32/32 (MHA)
+    \item \textbf{Batch Size: } 512 instead of 1024
+    \item \textbf{Peak LR: } $4.0 \cdot 10\text{E}{-4}$ instead of $3.0 \cdot 10\text{E}{-4}$
+\end{itemize}
+
+
+\subsection{Difficulties with \olmotoo 1B}
+\label{app:1b-results}
+
+
+We developed our \olmotoo recipe developed using the \olmotoo 1B model (Appendix~\ref{app:1b}) and have found findings to generalize well to the 7B, 13B and 32B scales, as seen by our competitive results in Table~\ref{tab:evals_overview}.
+Yet, we have found scaling the number of training tokens for \olmotoo 1B to be difficult.
+
+\paragraph{Training} We pretrain \olmotoo 1B to 4 trillion tokens on \olmomix and perform a single 50B token anneal on \dolminos. 
+Similar to \olmotoo 7B, we use 2000 steps of warmup, set the schedule to 5 trillion tokens but truncate at the 4 trillion mark. We use a higher peak learning rate of $4.0 \cdot 10\text{E}{-4}$.
+
+\paragraph{Base Results} Table~\ref{tab:1b_results} presents experimental results on our main base model evaluation suite. We find that while \olmotoo remains competitive with other similarly-sized models like SmolLM 2, it lags behind the smaller Gemma 2 and Qwen 2.5 base models. 
+
+
+
+\begin{table}[h]
+\setlength\tabcolsep{2pt} 
+\renewcommand{\arraystretch}{1.1}
+\begin{center}
+\begin{small}
+\begin{tabular}{lcc|cccccc|cccc}
+\toprule
+    &&\multicolumn{7}{c}{\quad \quad \quad \quad \textbf{\texttt{Dev Benchmarks}}} & \multicolumn{4}{c}{\textbf{\texttt{Held-out Evals}}} \\
+    {\textbf{Model}} &
+    {\textbf{Avg}} &
+    {\textbf{FLOPs}} & 
+    {\textbf{MMLU}} & 
+    {$\textbf{ARC$_C$}$} & 
+    {\textbf{HS}} & 
+    {\textbf{WG}} & 
+    {\textbf{NQ}} & 
+    {\textbf{DROP}} & 
+    {\textbf{AGI}} & 
+    {\textbf{GSM}} & 
+    {\textbf{MMLU$_P$}} &
+    {\textbf{TQA}} 
+    \\
+\midrule
+\rowcolor{ai2offwhite}
+\multicolumn{13}{c}{\textbf{Open-weights models 1-2B Parameters}} \\
+Qwen 2.5 1.5B & 51.5 & 1.7 & 61.4 & 77.3 & 67.0 & 65.4 & 17.7 & 36.4 & 47.9 & 63.2 & 29.9 & 49.1 \\
+Gemma 2 2B & 47.9 & 0.2 & 53.1 & 67.4 & 74.4 & 70.8 & 24.1 & 36.9 & 38.4 & 26.8 & 22.2 & 65.2 \\
+\rowcolor{ai2offwhite}
+\multicolumn{13}{c}{\textbf{Fully-open models}} \\
+SmolLM 2 1.7B & 44.7 & 1.1 & 50.9 & 62.0 & 73.3 & 66.9 & 19.1 & 26.5 & 35.3 & 30.3 & 22.0 & 60.6 \\
+\rowcolor{ai2lightpink} \olmotoo 1B & 43.7 & 0.4 & 44.3 & 51.3 & 69.5 & 66.5 & 20.8 & 34.0 & 36.3 & 43.8 & 16.1 & 54.7 \\
+\bottomrule
+\end{tabular}
+\end{small}
+  \caption{
+  \olmotoo 1B vs.~comparable models (size, architecture) with known pretraining FLOPs (relative to $10\text{E}{23}$).
+  }
+\label{tab:1b_results}
+\end{center}
+\end{table}
+
+
+
+\paragraph{Analysis} We postulate that our \olmotoo 1B may struggle with pretraining token efficiency due to model capacity.
+\olmotoo is smaller than the smallest variants of other competitive model families like Qwen 2.5 or Gemma 2. 
+We hypothesize that below a certain model size, the optimal pretraining recipe may require the inclusion of task-specific data, such as that seen in supervised fine-tuning (SFT) to achieve non-random performance over more challenging tasks in our evaluation suite.
+Better performance could also be achieved by distilling from a more powerful model, a strategy used by the smaller Gemma 2 models.
+
+For example, Table~\ref{tab:evals-pre-post-anneal} shows the benefit of \dolminos is higher with smaller base models:
++37.0\% for the 1B model, +18.7\% for the 7B model, +15.9\% for the 13B model, and +12.3\% for the 32B model.
+These results also show that \olmotoo 1B with only Stage 1 pretraining struggles to break out of random performance for multiple-choice formatted tasks (25\% for MMLU and ARC Challenge, 10\% for MMLU Pro). 
+
+As further evidence of this, Table~\ref{tab:instruct_results_1b} shows that applying our same \olmotooinstruct post-training recipe to \olmotoo 1B results in \olmotooinstruct 1B with highly competitive performance to even Qwen 2.5 and even Gemma 3. 
+
+
+
+\begin{table}[t]
+\centering
+\setlength\tabcolsep{3pt}
+{\small
+\begin{tabular}{lccccccccccc}
+\toprule
+    \textbf{Model} & 
+    \textbf{Avg} & 
+    \textbf{AE2} & 
+    \textbf{BBH} & 
+    \textbf{DROP} & 
+    \textbf{GSM} & 
+    \textbf{IFE} & 
+    \textbf{MATH} & 
+    \textbf{MMLU} & 
+    \textbf{Safety} & 
+    \textbf{PQA} & 
+    \textbf{TQA}
+\\
+\midrule
+\rowcolor{ai2offwhite}\multicolumn{12}{c}{\textbf{Open weights models 1–2B Parameters}} \\
+Gemma 3 1B & 38.3 & 20.4 & 39.4 & 25.1 & 35.0 & 60.6 & 40.3 & 38.9 & 70.2 & 9.6 & 43.8 \\
+Llama 3.2 1B & 39.3 & 10.1 & 40.2 & 32.2 & 45.4 & 54.0 & 21.6 & 46.7 & 87.2 & 13.8 & 41.5 \\
+Qwen 2.5 1.5B & 41.7  & 7.4 & 45.8 & 13.4 & 66.2 & 44.2 & 40.6 & 59.7 & 77.6 & 15.5 & 46.5 \\
+\rowcolor{ai2offwhite}
+\multicolumn{12}{c}{\textbf{Fully-open models}} \\
+SmolLM2 1.7B & 34.2  & 5.8 & 39.8 & 30.9 & 45.3 & 51.6 & 20.3 & 34.3 & 52.4 & 16.4 & 45.3 \\
+\rowcolor{ai2lightpink} \olmotoo 1B     & 42.7    & 9.1       & 35.0   & 34.6   & 68.3   & 70.1   & 20.7   & 40.0   & 87.6        & 12.9   & 48.7 \\
+\bottomrule
+\end{tabular}
+}
+\caption{
+\olmotooinstruct 1B's performance vs open-weights models of comparable size.
+}
+\label{tab:instruct_results_1b}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\clearpage
+\section{Additional Instruct Details}
+
+\subsection{Additional Hyperparameters}
+All of the models used to generate preference data for \olmotooinstruct are listed in Table~\ref{tab:pref-data}.
+The prompt sources for the preference datasets are listed in Table~\ref{tab:prompt_sources} -- for more information on their contents, refer to~\citet{lambert2024tulu3}.
+The hyperparameters used to train the reward models for RLVR value network initialization are shown in Table~\ref{tab:rm-hypers}.
+
+\subsection{Additional RLVR Learning Curves}
+\label{appendix:rlvr-13b}
+The additional 13B RLVR learning curves of can be found at Figure~\ref{fig:the-rl-chart-13b2-1}, Figure~\ref{fig:the-rl-chart-13b2-2}, and Figure~\ref{fig:the-rl-chart-13b2-3}.
+
+
+\subsection{\olmotooinstruct Preview Models}
+We made an initial release\footnote{\url{https://allenai.org/blog/olmo2}} prior to this report. However, soon after the release, a tokenizer issue came to our attention: \textbf{ Our base model’s pre-tokenization logic differs from our instruct model’s tokenizer.}
+
+Specifically, the OLMo-2 base models utilized the \texttt{GPT2Tokenizer} tokenizer class, with custom pre-tokenization logic (e.g., on splitting or truncating sequences), which is lost during the instruct model’s training. Figure~\ref{fig:borked} shows the filediff between the base model’s \texttt{tokenizer.json} and the instruct model’s \texttt{tokenizer.json}.
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/borked_tokenizer.png}
+    \end{minipage}
+    \caption{The file diff between the \olmotooinstruct and \olmotooinstruct Preview's \texttt{tokenizer.json}: the pre-tokenization logic is lost during \olmotooinstruct Preview's training, so we have decided to re-train \olmotooinstruct models.}
+    \label{fig:borked}
+\end{figure}
+
+Because of this, we have decided to retrain our \olmotooinstruct models to be consistent with our base models and mark the existing post-trained models as \emph{preview} models. 
+
+Nevertheless, the \olmotooinstruct Preview learning curves can be found at Figure~\ref{fig:the-rl-chart-13b-legacy} and Figure~\ref{fig:the-rl-chart-7b-legacy}.
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-rlvr.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-rlvr-eval.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo-2-1124-13B-RLVR1
+    \caption{The top row shows the training curves of OLMo-2-1124-13B-RLVR1 showing verifiable rewards, KL divergence, and response lengths. The bottom row shows the corresponding downstream evaluations and the average scores across our evaluation suites.}
+    \label{fig:the-rl-chart-13b2-1}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-rlvr2.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-rlvr2-eval.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo-2-1124-13B-RLVR2
+    \caption{The top row shows the training curves of OLMo-2-1124-13B-RLVR2 showing verifiable rewards, KL divergence, and response lengths. The solid lines in the bottom row show the corresponding downstream evaluation and the average scores across our evaluation suites. }
+    \label{fig:the-rl-chart-13b2-2}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-instruct.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo-2-13b-instruct-eval.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo-2-1124-13B-Instruct
+    \caption{The top row shows the training curves of OLMo-2-1124-13B-Instruct showing verifiable rewards, KL divergence, and response lengths. The solid lines in the bottom row show the corresponding downstream evaluation and the average scores across our evaluation suites. }
+    \label{fig:the-rl-chart-13b2-3}
+\end{figure}
+
+
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo13b.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/x5.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo-2-1124-13B-Instruct-Preview 
+    \caption{The OLMo-2-1124-13B-Instruct-Preview results. The top row shows the training curves of OLMo-2-1124-7B-Instruct on verifiable rewards, KL divergence, and response lengths. In the bottom row, the y-axes show the average scores across our evaluation suites and GSM8K scores. Overall, RLVR increases both training rewards and evaluation scores.}
+    \label{fig:the-rl-chart-13b-legacy}
+\end{figure}
+
+
+
+\begin{figure}[t]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo7b.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/x6.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo-2-1124-7B-Instruct-Preview
+    \caption{The top row shows the training curves of OLMo-2-1124-13B-Instruct-Preview on verifiable rewards, KL divergence, and response lengths. In the bottom row, the y-axes show the average scores across our evaluation suites and GSM8K, IFEval, and MATH Flex scores, respectively. Overall, we found RLVR increases not only the training rewards of our 13B models but also the downstream evaluations such as GSM8K.}
+    \label{fig:the-rl-chart-7b-legacy}
+\end{figure}
+
+\input{tables/instruct-unseen}
+
+
+
+
+
+
+\clearpage
+\section{Additional Hyperparameters}
+The models used for the on-policy preference data generation are listed in Table~\ref{tab:pref-data}.
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Model Name} & \textbf{Reference} \\ \midrule
+\href{https://huggingface.co/01-ai/Yi-34B-Chat}{Yi-34B-Chat} & \citep{young2024yi} \\ 
+\href{https://huggingface.co/01-ai/Yi-6B-Chat}{Yi-6B-Chat} & \citep{young2024yi} \\ 
+\href{https://huggingface.co/allenai/tulu-2-7b}{T\"ulu 2 7B} & \citep{ivison2023camels}\\ 
+\href{https://huggingface.co/allenai/tulu-2-13b}{T\"ulu 2 13B} & \citep{ivison2023camels} \\ 
+\href{https://huggingface.co/google/gemma-2-27b-it}{Google Gemma 2 27B it} & \citep{gemma2} \\ 
+\href{https://huggingface.co/google/gemma-2-9b-it}{Google Gemma 2 9B it} & \citep{gemma2} \\ 
+\href{https://platform.openai.com/docs/models#gpt-4o}{GPT-4o} & \citep{hurst2024gpt} \\ 
+\href{https://huggingface.co/mosaicml/mpt-30b-chat}{MPT 30B Chat} & \citep{MosaicML2023Introducing} \\ 
+\href{https://huggingface.co/mosaicml/mpt-7b-8k-chat}{MPT 7B 8k Chat} & \citep{MosaicML2023Introducing} \\ 
+\href{https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2}{Mistral 7B Instruct v0.2} & \citep{jiang2023mistral} \\ 
+\href{https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407}{Mistral Nemo Instruct 2407} & \citep{mistralnemo} \\ 
+\href{https://huggingface.co/Qwen/Qwen2.5-32B-Instruct}{Qwen2.5 32B Instruct} & \citep{qwen2.5} \\ 
+\href{https://huggingface.co/Qwen/Qwen2.5-14B-Instruct}{Qwen2.5 14B Instruct} & \citep{qwen2.5} \\ 
+\href{https://huggingface.co/Qwen/Qwen2.5-7B-Instruct}{Qwen 2.5 7B Instruct} & \citep{qwen2.5} \\ 
+\href{https://huggingface.co/tiiuae/falcon-7b-instruct}{Falcon 7B} & \citep{falcon40b} \\ 
+\href{https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct}{SmolLM2 1.7B Instruct} & \citep{allal2024SmolLM2} \\
+\href{https://huggingface.co/microsoft/Phi-3-mini-128k-instruct}{Phi 3 Mini 128k Instruct} & \citep{abdin2024phi} \\
+\href{https://huggingface.co/microsoft/Phi-3.5-mini-instruct}{Phi 3.5 Mini Instruct} & \citep{abdin2024phi} \\
+\href{https://huggingface.co/numind/NuExtract-1.5}{NuExtract-1.5} & \citep{NuExtract15} \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\caption{External models used to sample off-policy data in the synthetic preference pipeline. 
+These are in addition to the on-policy samples from the SFT checkpoints.
+\label{tab:pref-data}
+}
+\end{table}
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+Learning Rate & $3 \cdot 10^{-6}$ \\
+Gradient Norm Threshold & 1.0 \\
+Learning Rate Schedule & Linear \\
+Batch Size (effective) & 256 \\
+Max Token Length &2,048 \\
+Number of Epochs & 1 \\
+\bottomrule
+\end{tabular}
+\vspace{3pt}
+\caption{This table shows the hyperparameters used to train the reward model for RLVR value network initialization.}
+\label{tab:rm-hypers}
+\end{table}
+
+\begin{table}[h!]
+    \centering
+    \begin{tabular}{llll}
+    \toprule
+    \textbf{Dataset} & \textbf{Counts} & \textbf{7B DPO} & \textbf{13B DPO} \\
+    \midrule
+       SFT Reused  & 117,025 & $\checkmark$ & $\checkmark$   \\
+       SFT IF & 65,792 & $\checkmark$ & $\checkmark$  \\
+       WildChat Unused & 84,105 & $\checkmark$ & $\checkmark$ \\
+       WildChat Reused & 17,703 &  $\checkmark$ & $\checkmark$ \\
+       WildChat IF & 10,794 &  & $\checkmark$ \\
+       Ultrafeedback (cleaned) & 60,816 & $\checkmark$ & $\checkmark$ \\
+       DaringAnteater IF & 1,618 & $\checkmark$ & $\checkmark$ \\
+       T\"ulu 3 Personas IF & 19,890 & $\checkmark$ & $\checkmark$ \\
+       \midrule
+       \textit{Total} & 377,743 & & \\
+    \bottomrule
+    \end{tabular}
+    \caption{Prompt sources for preference finetuning datasets.}
+    \label{tab:prompt_sources}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/olmo7b1.pdf}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.98\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/rlplots/x7.pdf}
+    \end{minipage}
+    {\cblock{240}{82}{156}} OLMo 2 7B Instruct Preview (alternative) 
+    \caption{The top row shows the training curves of OLMo-2-1124-13B-Instruct on verifiable rewards, KL divergence, and response lengths. In the bottom row, the y-axes show the average scores across our evaluation suites and GSM8K, IFEval, and MATH Flex scores, respectively. Overall, we found RLVR increases not only the training rewards of our 13B models but also the downstream evaluations such as GSM8K.}
+    \label{fig:the-rl-chart-7b-alt}
+\end{figure}
+
+\clearpage
+
+
+
+
+
+
+
+
+\clearpage
+
+\section{Annealing Data Details}
+\label{app:data_details}
+
+\input{figures/persona_prompts_math}

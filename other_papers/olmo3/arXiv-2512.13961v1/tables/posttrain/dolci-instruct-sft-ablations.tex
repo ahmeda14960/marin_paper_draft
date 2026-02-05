@@ -1,0 +1,23 @@
+\begin{table}[tbp]
+\centering
+\footnotesize
+\begin{tabular}{@{}l >{\columncolor{ai2pink!18}}c c c c c c c c c@{}}
+\toprule
+& \multicolumn{9}{c}{\texttt{Subset of \olmothreeinstruct Benchmarks}} \\
+\cmidrule(lr){2-10}
+\textbf{Name} & \cellcolor{ai2pink!18}\textbf{Avg.} & \textbf{MMLU} & \textbf{BBH} & \textbf{GPQA} & \textbf{MATH} & \textbf{GSM8K} & \textbf{CHE} & \textbf{AE} & \textbf{IFEval} \\
+\midrule
+Base mix & 29.0 & 50.0 & 29.5 & 25.2 & 6.6 & 30.1 & 23.2 & 5.8 & 61.7 \\
+Base mix + Aya & 29.1 & 51.9 & 28.2 & 28.1 & 6.9 & 31.4 & 21.3 & 4.9 & 60.3 \\
+Base mix + Code & 28.7 & 51.1 & 28.8 & 25.0 & 6.9 & 28.2 & 26.8 & 5.8 & 57.3 \\
+Base mix + Flan & 30.3 & 51.9 & 35.0 & 26.8 & 6.6 & 34.7 & 21.3 & 5.8 & 60.3 \\
+Base mix + IF & 30.7 & 51.4 & 24.7 & 25.5 & 7.9 & 42.2 & 14.6 & 5.5 & 74.1 \\
+Base mix + Math & 29.3 & 49.9 & 23.9 & 29.2 & 14.2 & 39.7 & 18.3 & 5.4 & 54.0 \\
+Base mix + Safety & 27.0 & 51.7 & 28.3 & 24.8 & 6.5 & 28.2 & 14.0 & 6.8 & 56.0 \\
+Base mix + Science & 29.4 & 53.4 & 25.3 & 28.1 & 8.3 & 34.9 & 20.7 & 6.8 & 57.3 \\
+Base mix + Wildchat & 30.9 & 51.9 & 30.7 & 23.7 & 6.9 & 32.2 & 23.2 & 19.2 & 59.7 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Results of our instruct SFT mixing ablations} on top of \olmotoo.}
+\label{tab:instruct-sft-ablate}
+\end{table}

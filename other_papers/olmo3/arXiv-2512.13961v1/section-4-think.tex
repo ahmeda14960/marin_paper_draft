@@ -1,0 +1,578 @@
+\section{\olmothreethinking}
+\label{sec:posttrain-thinking}
+We train \olmothreethinking{} to reason by first generating extended thought sequences and then producing a final answer (Figure~\ref{fig:olmo3_pipeline}).
+To achieve this, we curate high-quality reasoning data ({\bf \dolcithink}), harness a three-stage training recipe (SFT, DPO, and RLVR), and introduce {\bf \olmothreerl} approach, which merges our new algorithmic and engineering advances with a strong community platform of research in reinforcement learning with verifiable rewards.
+
+Through these data, training, and algorithmic innovations, \olmothreethinking{} achieves strong performance in math, coding, reasoning, and general conversation.
+At the 32B scale, it stands as the best fully-open thinking model, outperforming Qwen 2.5 32B, Gemma 2 and 3 27B, and narrowing the gap to top open-weight systems like Qwen 3 32B while being trained on fewer FLOPs (\autoref{tab:32b-think-baeslines}).
+
+
+\begin{enumerate}
+\item {\bf Data: \dolcithink} 
+Building on prior open-source datasets~\citep{guha2025openthoughts,lambert2024tulu3,primeintellect2025synthetic2} \emph{inter alia}, we introduce \dolcithinksft, \dolcithinkdpo, and \dolcithinkrl, new cutting-edge post-training datasets designed to target a broad range of key capabilities such as math, coding, instruction following, and general conversation.
+The dataset includes synthetic examples with long thinking traces for supervised finetuning, high-contrast paired data for contrastive learning via preference optimization, and challenging prompts for reinforcement learning across diverse domains. Our data curation pipeline is shown in Figure \ref{fig:posttrain-data-pipeline}.
+\item {\bf Three-Stage training recipe}
+We employ a three-stage post-training process comprising Supervised Finetuning (SFT), Preference Finetuning via Direct Preference Optimization (DPO), and then Reinforcement Learning with Verifiable Rewards (RLVR).
+We observe consistent gains across all three stages, demonstrating the impact of careful data curation, algorithmic refinement, and infrastructure development. This contrasts with most recent prior work on open thinking models, which typically employs only a subset of these training stages.\footnote{More concretely, OpenThought3 and S1 only used supervised finetuning; SmolLM used SFT and DPO, but did not apply RL.} For example, we find that our RL framework yields greater improvements when applied after contrastive learning with DPO rather than directly following SFT (\autoref{fig:dpo_sft_rl_comparison}).
+\item {\bf \olmothreerl} We present \olmothreerl, our RL training approach which builds upon GRPO and extends it with improvements from recent work. Additionally, we expand verifiable reasoning to multiple domains, going beyond the math and code settings typically explored in prior work. \olmothreerl enables longer and more stable RL runs across diverse domains and increases the overall efficiency of training cycles (Section~\S\ref{sec:thinking_rl_recipe}).
+\end{enumerate}
+
+
+
+
+\subsection{Main Results for \olmothreethinking}
+\label{sec:posttrain_eval}
+
+\subsubsection{Evaluation Details}
+We establish a suite of benchmarks to evaluate \olmothree post-trained models on math, reasoning, coding, precise instruction following, question answering, knowledge recall, and general chat. We expand upon the evaluation suite of \olmotoo~\citep{olmo20242olmo2furious} by adding new, more challenging benchmarks and removing saturated or noisy ones. 
+Table~\ref{tab:task-details-chat} shows our evaluation benchmarks and describes the task configurations and metrics for the \olmothree post-training evaluation suite. 
+Details of our evaluation settings are provided in Appendix~\ref{appx:eval-details}.
+
+Evaluation with reasoning models is both computationally expensive and often high variance.
+In our development of our recipe on versions of our 7B model---i.e., before the hyperparameter sweeps for final models---we find that evaluation costs between 10 and 20\% of our compute budget.
+When compiling results, we measure the variance of every evaluation in our suite by taking the mean of the standard deviation from 3 runs of 14 models (both baselines and our final models).
+By taking the variance per model and then the average variance per evaluation, we can bucket the evaluations by their variance.
+We partition evaluations based on their variance as follows:
+\begin{itemize}
+    \item {\bf{High variance}}:
+GPQA: 1.4798,
+AlpacaEval 3: 1.2406,
+IFEval: 0.8835.
+\item {\bf{Stable}}:
+ZebraLogic: 0.5638,
+Omega: 0.5579,
+AIME 24 (Avg@32): 0.5437,
+HumanEvalPlus: 0.4615,
+AgiEval: 0.4339,
+BigBenchHard: 0.3866.
+\item {\bf{Very stable}}:
+LiveCodeBench (Avg@10): 0.2852,
+MBPPPlus: 0.2749,
+MATH: 0.2522,
+MMLU: 0.2219,
+PopQA: 0.1554.
+\end{itemize}
+
+
+\input{tables/posttrain/32b-think-vs-baselines}
+\input{tables/posttrain/ours-vs-baseline-evals}
+
+
+
+
+\input{tables/posttrain/eval_config_posttrain}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsubsection{Main Results} \label{sec:thinkresults} Table~\ref{tab:32b-think-baeslines} and Table~\ref{tab:post-train-eval-overview} show the performance of \olmothreethinking across different training stages and compare it with other baselines of similar scale on our benchmarks\footnote{Running AlpacaEval on K2-V2-Instruct led to token-parsing errors on the output of the LLM judge, resulting in null preference scores. If we are able to devise a solution, we will update the report accordingly.}. As described before, \olmothreethinking 32B is the best fully-open model at the 32B scale, outperforming other models including Gemma 2 27B, Gemma 3 27B, and Qwen 2.5 32B-Instruct. It narrows the gap to the best open-weight models at this scale, Qwen 3 and Qwen 3VL, while being trained with 6x fewer tokens.   Similarly, \olmothreethinking-7B outperforms OpenReasoning Nemotron 7B, DeepSeek-R1-Distill-Qwen-7B, and OpenThinker-7B, some of the best open-weight thinking models. In addition, it performs similarly to Nemotron-Nano-9B-v2 despite being smaller. At 7B, it lags the Qwen 3 series of models in knowledge tasks. We think that this is mainly due to the fact that Qwen 3 models are trained through distillation from Qwen's largest model. %
+
+Notably, we introduce {\bf \olmothreeonethink 32B} to illustrate that extended \olmothreerl training, via additional epochs on our \dolcithinkrl dataset\footnote{While \olmothreethinking 32B was trained for 750 steps, we continued the run past our initial release, going up to 2300 steps for \olmothreeonethink 32B. We stopped there due to compute limitations, but note that \textit{performance had not yet fully saturated}, suggesting even longer runs could further improve performance.}, leads to improved performance. We observe substantial improvements on math, reasoning, and instruction-following benchmarks, including gains of 4+ points on AIME, 4 points on ZebraLogic, 4 points on IFEval, and 20 points on IFBench, suggesting the additional RL training improves the model's reasoning abilities. Most other benchmarks remain largely unchanged, with the exception of AlpacaEval, where we observe a 5-point drop.
+
+
+
+
+\subsection{Supervised Finetuning with \dolcithinksft }
+\label{sec:thinking_sft_recipe}
+
+In this stage, we construct \dolcithinksft, a resource for finetuning the base model to produce explicit thinking traces that support accurate responses. This supervised finetuning step is especially impactful for smaller models, offering an efficient mechanism for acquiring strong reasoning capabilities. We next detail the \dolcithinksft data curation pipeline (Figure~\ref{fig:posttrain-data-pipeline}).
+
+
+
+
+
+
+\subsubsection{\dolcithinksft: Data Curation}
+\label{sec:think-sft}
+
+
+To curate \dolcithinksft, we compile a large collection of prompts across a diverse set of skills from other open efforts (e.g.,~\citealp{guha2025openthoughts, primeintellect2025synthetic2}), substantially filter them, and synthetically generate reasoning traces for their completions.
+An overview of the \dolcithinksft data mix is shown in Table~\ref{tab:olmo3_thinking_sft} and is described below:
+
+\input{tables/posttrain_data/prompt_table}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/rlvr_sft/olmo3_data_pipeline.pdf}
+    \caption{\textbf{Data pipeline for all \olmothree post-training stages.} We share most steps across SFT, DPO and RL to ensure consistent quality.}
+    \label{fig:posttrain-data-pipeline}
+\end{figure}
+
+
+
+
+\paragraph{Step 1: sourcing prompts and generating reasoning traces}
+\begin{itemize}
+
+\item{\bf Math} We source prompts from the math subsets of OpenThoughts3~\citep{guha2025openthoughts} and SYNTHETIC-2~\citep{primeintellect2025synthetic2}.
+For OpenThoughts3 prompts, we use all the available math prompts (maintaining the 16X repetition from the original) and the available reasoning traces with complete solutions.
+For incomplete traces, we generate full reasoning chains and solutions using QwQ-32B, the original model used for the completions, and the same generation settings as OpenThoughts3, except up to 32K tokens instead of the original 16K. We discard any examples that are still incomplete after regenerating. For SYNTHETIC-2, we take completions directly from the verified subsection.
+
+\item {\bf Code} We collect code prompts from different sources and generate completions for them. To create \dolcithink Python Algorithms, we source prompts from AceCoder~\citep{zeng2025acecoder}, the Python subset of The Algorithms~\citep{thealgorithms_python}, Llama Nemotron Post-training~\citep{bercovich2025llamanemotronefficientreasoningmodels}, and OpenCodeReasoning~\citep{ahmad2025opencodereasoning}, and then we generate up to 16 responses per prompt from QwQ-32B, which we filter for correctness using synthetically generated test cases from GPT-4.1. For OpenThoughts 3 code prompts, we downsample each prompt to at most 16 times and regenerate complete responses for all incomplete examples. We combine \dolcithink Python Algorithms with the code prompts from OpenThoughts3, downsample them to 16 repetitions, and regenerate completions for incomplete ones.
+
+\item {\bf Chat \& safety} We source chat prompts from both the T\"ulu 3~\citep{lambert2024tulu3} subset of WildChat~\citep{zhao2024wildchat}, as well as WildChat prompts not used during T\"ulu 3, and the T\"ulu 3 subset of OpenAssistant~\citep{kopf2024openassistant}.
+For safety, we reuse safety prompts used during T\"ulu 3.
+We then generate reasoning traces and completions from DeepSeek R1~\citep{guo2025deepseek}.
+
+\item {\bf Precise instruction following}
+We source precise IF prompts from the overall T\"ulu 3 mix with additional verifiable constraints added from \citet{pyatkin2025generalizing}.
+We also regenerate Persona IF prompts as in T\"ulu 3, but with personas sourced from~\citet{nvidia/Nemotron-Personas-USA}.
+We then generate responses for each prompt using QwQ-32B, and we verify responses using verifiers associated with each constraint, keeping only the correct responses.
+
+\item {\bf Science \& other}
+We source science prompts from the OpenThoughts3 science subset.
+For other data sources, we include the TableGPT~\citep{zha2023tablegpt} subset in T\"ulu 3 for data transformation and Aya~\citep{singh2024aya} for chat and basic multilinguality.
+We regenerate incomplete responses in OpenThoughts3 as we did for the math and code subsets, and we generate responses with reasoning chains for the other datasets using DeepSeek R1.
+
+\end{itemize}
+
+
+
+
+
+\paragraph{Step 2: filtering}
+\label{sec:topic_filtering}
+We perform extensive filtering on the data we have collected and generated.
+\begin{itemize}
+\item {\bf Heuristic filtering} We filter out examples with (1) non-commercial or unclear licenses, (2) incomplete reasoning chains, (3) domain-specific inaccuracies (i.e., verifying the constraint-adherence of instruction-following data or executing test cases against model completions for code), (4) mentions of other model developers and date cutoffs, (5) excessive repetition, and (6) an excessive number of Chinese characters or Chinese political values reflected in reasoning chains.
+\item {\bf Topic filtering}  We classify our dataset by topic using the OpenAI query taxonomy~\citep{Chatterji2025-fs}, and find that filtering out and downsampling topics irrelevant to our model (e.g., requests to generate images or excessive basic greetings) from WildChat qualitatively improves model behavior.\footnote{To evaluate the impact of our filtering process, we manually created an internal benchmark to vibe test the model.} %
+See Appendix~\ref{appendix:filtering-think-sft} for detailed descriptions and links to filter scripts.
+\end{itemize}
+
+
+
+
+\paragraph{Step 3: data mixing}
+For data mixing, we follow a methodology similar to that described in the midtraining section (Section~\S\ref{sec:midtraining}) for parallel data collection, adhering to shared standards for data mixing and conducting multiple rounds of integration testing.
+More specifically, we conduct careful experiments using a small ``base'' mix, consisting of 100K examples taken from our extended OpenThought 3 dataset.
+We found that this base mix was performant enough on key reasoning benchmarks to serve as a strong baseline, while saving substantial amounts of compute versus training on the full mix.
+We then train individual models on the base mix combined with up to 100K training examples (without upsampling) from each category to observe the impact on our evaluation suite.
+As shown in Table~\ref{tab:think-sft-ablate}, we generally find that each dataset is helpful on at least one evaluation, and so our final mix includes at least a portion of each dataset we tested.
+
+\paragraph{Step 4: decontamination} We followed the recommended settings from the T\"ulu 3 Decontamination Procedure and toolkit \citep{lambert2024tulu3} to filter out the portions of all post-training data (all three stages) that matched the evaluation sets. We used n-gram matching with 8-grams and an overlap threshold of 0.5 (i.e., at least 50\% of the n-grams in the test instance match a training instance) for filtering. We developed additional heuristics to mitigate false positives: (1) we ignored matches of task-irrelevant chunks of text, e.g., common generic phrases, with the irrelevance determined per task based on manual inspection; (2) particularly in math datasets, we ignored matches of n-grams where most of the tokens are of length 1 (typically math symbols). %
+
+\input{tables/posttrain/dolci-sft-ablations}
+
+\subsubsection{Training}
+
+For supervised finetuning, we switch from \openinstruct to \olmocore, resulting in an $8\times$ increase in training throughput. See Appendix \ref{appx:sft-details} for more information about our training settings and hyperparameters. We train all models for two epochs to avoid overfitting, and perform a learning-rate sweep to select the best candidate checkpoints based on our evaluation suite. We then test each candidate checkpoint with a series of qualitative ``vibe-test'' questions to inform our final checkpoint selection. Finally, we explore model souping \citep{wortsman2022model, morrison2024mergelearnefficientlyadding}, and our final thinking SFT checkpoint is a linearly weighted merge of two checkpoints trained with different learning rates, merged with mergekit~\citep{goddard-etal-2024-arcees}.
+
+
+
+
+
+\subsection{Preference Tuning with Delta Learning} \label{sec:thinking_dpo_recipe}
+Prior work in general post-training has positioned preference tuning primarily as a means to improve alignment with human values and preferences~\citep{lambert2024tulu3, rlhf2024}. Hence, most recent efforts in building capability-oriented thinking models~\citep{guha2025openthoughts,ahmad2025opencodereasoning} have not incorporated preference tuning (one exception is SmolLM3;~\cite{bakouch2025smollm3}). We rethink preference tuning as a stage of contrastive learning that drives capability gains beyond what SFT alone can provide. We introduce \dolcithinkdpo, a preference dataset containing completion pairs with clear capability deltas. We leverage these relative contrasts to enhance the model’s reasoning capabilities via preference optimization, extending the ideas from Delta Learning~\citep{geng2025delta}.
+
+In particular, we find that further supervised finetuning on thinking traces generated by Qwen3 32B (one of the few open-thought models) outright hurts the performance of \olmothreethinkingsft, indicating that we are approaching saturation on learning from imitation. To extract a useful training signal out of these now-ineffective completions, we apply Delta Learning's principle by pairing these completions with even \textit{worse} responses~\citep{geng2025delta}; minimizing the quality of the rejected completions (thus increasing the quality delta) yields a useful contrastive signal for preference tuning.
+
+
+With these insights in mind, we construct \dolcithinkdpo, which we use to improve the model’s performance across a wide range of benchmarks.
+We use Direct Preference Optimization (DPO)~\citep{rafailov2024direct} for training with pairwise data.
+Details of DPO training are provided in Appendix \ref{appx:dpo-details}.
+
+\paragraph{Delta Learning}
+The intuition behind delta-learning is that the quality of preference data depends primarily on the quality of the \textit{delta} between chosen and rejected responses rather than the quality of either response individually.
+By constructing preference pairs $(x, y_c, y_r)$ that exhibit capability-relevant contrasts with $y_c \succ y_r$,
+tuning to prefer $y_c$ over $y_r$ can improve the model even when supervised finetuning on $y_c$ would not help or even actively hurt~\citep{geng2025delta, d2025anchored, kim2025systematic}.
+
+\subsubsection{\dolcithink-DPO: Preference Data Creation}
+\label{sec:dpo_think_data}
+To construct \dolcithinkdpo, we compile a large pool of prompts covering a wide range of datasets and skills (see Table \ref{tab:olmo3_think_dpo_mix}) and synthesize chosen and rejected responses to exhibit capability deltas.
+Following the delta-learning heuristic \citep{geng2025delta}, for each prompt $x$, we simply decode a chosen completion $y_c$ from one model (Qwen 3 32B, thinking) and a rejected completion $y_r$ from an overall weaker model (Qwen 3 0.6B, thinking) to construct a consistent contrast.\footnote{The UltraFeedback-style LLM-judge preference pipeline employed in \olmotoo and \tulu assumes access to a diverse pool of models to construct preference pairs with useful contrasts; however, there are few open-thought thinking models available to construct such pairs, rendering the \olmotoo pipeline less ideal for this setting. Our \dolciinstructdpo dataset does benefit from model-pool diversity; we are able to further supplement our delta-learning heuristic data with LLM-judged data in \dolciinstructdpo to yield mutually complementary gains (Section~\S\ref{sec:dolci-instruct-dpo}).}
+
+\input{tables/posttrain_data/think_dpo_mix}
+
+\paragraph{Step 1: sourcing prompts and contrastive completions}  \olmothreethinking focuses on reasoning capabilities; we thus construct pairs that exhibit a delta in reasoning quality by pairing model completions from models of differing reasoning capability~\citep{geng2025delta, bakouch2025smollm3, kim2023aligning}.
+Our prompt pool is derived from the \dolciinstructsft dataset supplemented with the DaringAnteater~\citep{wang2024helpsteer2} and UltraFeedback~\citep{cui2023ultrafeedback} subsets from the \olmotoo 7B preference dataset.
+
+\paragraph{Step 2: filtering}
+We apply topic filtering and heuristic model-identity filtering as described from the SFT stage (Section~\S\ref{sec:topic_filtering}) to all \textit{chosen} responses. We leave rejected responses unfiltered with the intuition that an incorrect rejected response may elicit a useful contrast. We further decontaminate all prompts against our evaluation suites.
+
+\paragraph{Step 3: mixing}
+Experimentation with long reasoning traces is significantly more expensive than with non-thinking completions.
+To obtain the final mix of prompts for {\bf \dolcithinkdpo}, we leverage mixing experiments conducted on prompts with non-thinking completions (see Section~\S\ref{sec:posttrain-instruct} for details).
+Specifically, we select the three best-performing prompt distributions from our \olmothreeinstruct experiments and generate chosen and rejected responses for these prompts using the thinking versions of the Qwen models to elicit a delta in reasoning quality. We choose the empirically best-performing mix during our experiments as our final DPO data pool.\footnote{Our \dolciinstructdpo dataset includes additional contrastive pairs, which we obtain through careful experimental analysis. Refer to Section~\S\ref{sec:dolci-instruct-dpo} for more details.}
+
+\subsubsection{Training}
+We train all models for one epoch following previous work \citep{lambert2024tulu3}, sweeping learning rate and dataset size to identify the best candidate checkpoints based on our evaluation suite. Dataset size is an important hyperparameter, as we observe that early stopping is important for performant preference tuning; please see our data mixing experiments on our Instruct model (Section~\S\ref{sec:dpo_mixing}) for our motivating results. Beyond our evaluation suite, we further inspect each checkpoint via the same ``vibe-tests'' as in SFT training to qualitatively assess model behavior. See Appendix~\ref{appx:dpo-details} for full training settings.
+
+
+
+
+
+\subsection{Reinforcement Learning with \olmothreerl: The Cherry on Top} \label{sec:thinking_rl_recipe}
+
+The third stage of post-training is reinforcement learning with a mixture of verifiable and LM-judge rewards across a variety of domains.
+We introduce \olmothreerl, which includes our algorithm and closely intertwined engineering infrastructure to address challenges for reinforcement learning with long reasoning traces, extending RLVR to include a wider variety of verifiable tasks.
+We also release \textsc{Dolci-Think-RL}---a large-scale and diverse dataset of roughly 100K prompts across four domains: mathematics, coding, instruction following, and general chat---to support robust reinforcement learning on varied reasoning tasks while maintaining general utility.
+Next, we describe the RL algorithmic details (\S\ref{olmo3think-rl}), the \dolcithinkrl dataset (\S\ref{subsec:rl-thinking-data}), and finally \olmothreerl infrastructure in \openinstruct (\S\ref{sec:posttraining_infra}).
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/olmo3_rl_teaser_v2.pdf}
+    \caption{\textbf{Verifiers and reward design} for verifiable and non-verifiable tasks.
+    }
+    \label{fig:rl-teaser}
+\end{figure}
+
+
+\subsubsection{\olmothreerl Algorithmic Details}
+\label{olmo3think-rl}
+
+Our reinforcement learning stage is powered by \olmothreerl, an approach that builds on Group Relative Policy Optimization (GRPO)~\citep{shao2024deepseekmath} and integrates a number of recent algorithmic advances. In particular, we adopt improvements from DAPO~\citep{yu2025dapo} and Dr GRPO~\citep{liu2025understanding}, among others~\citep{yao2025offpolicy, pipelinerl}.
+At its core, the objective of RLVR is to maximize the expected reward of a model-generated response $y$ given the prompt $x$, where a verifier checks whether the response \(y\) matches the ground-truth answer associated with $x$.
+
+We make the following improvements\footnote{We experimented with additional changes (e.g., overlong filtering), but did not find these gave consistent improvements.} over vanilla GRPO:
+\begin{itemize}
+    \item {\bf{Zero gradient signal filtering}}: We remove groups of instances whose rewards are all identical (i.e., a batch with zero standard deviation in their advantage) to avoid training on samples that provide zero gradient, similar to DAPO~\citep{yu2025dapo}.
+    \item {\bf{Active sampling}}: We maintain a consistent batch size in spite of zero gradient filtering with a novel, more efficient version of dynamic sampling \citep{yu2025dapo}, see 
+    Section~\S\ref{sec:posttraining_infra} for details.
+    \item {\bf{Token-level loss}}: We use a token-level loss to normalize the loss by the total number of tokens across the batch~\citep{yu2025dapo}, rather than per-sample to avoid a length bias.
+    \item {\bf{No KL loss}}: We remove the KL loss as a common practice~\citep{glm45,yu2025dapo,liu2025understanding} as it allows less-restricted policy updates, and removing it does not lead to over-optimization or destabilized training.
+    \item {\bf{Clip higher}}: We set the upper-bound clipping term in the loss to a slightly higher value than the lower bound to enable larger updates on tokens, as proposed by~\citet{yu2025dapo}.
+      \item {\bf{Truncated importance sampling}}: To adjust for differences between log probabilities from the inference and training engines, we multiply the loss by the truncated importance sampling ratio, following~\citet{yao2025offpolicy}.
+     \item {\bf{No standard deviation normalization}}: When calculating advantage, we do not normalize by the standard deviation of the group, following~\citet{liu2025understanding}.
+     This removes a difficulty bias, where questions with low standard deviation in their rewards (e.g., too hard or too easy) have their advantages significantly increased by the normalization term.
+\end{itemize}
+
+
+\paragraph{\olmothreerl formulation} Our final objective function includes {\color[HTML]{115257} a token-level loss}, {\color[HTML]{f0529c} truncated importance sampling}, {\color[HTML]{0fcb8c} clip-higher}, and {\color[HTML]{b11be8} no standard deviation in the advantage calculation}:
+\begingroup\makeatletter\def\f@size{9.8}\check@mathfonts\def\maketag@@@#1{\hbox{\m@th\normalfont\normalfont#1}}
+\begin{align}
+\mathcal{J}(\mathrm{\theta})
+&= {\color[HTML]{115257}\frac{1}{\sum_{i=1}^{G} |y_i|}
+  \sum_{i=1}^{G} \sum_{t=1}^{|y_i|}}
+  {\color[HTML]{f0529c}\min\!\Big(
+  \frac{\pi\!\left(y_{i,t}\mid x, y_{i,<t};\theta_{\mathrm{old}}\right)}{\pi_{\mathrm{vllm}}\!\left(y_{i,t}\mid x, y_{i,<t};\theta_{\mathrm{old}}\right)}, \rho\Big)}
+  \min \Bigl(
+  r_{i,t}\,  {\color[HTML]{b11be8}{A}_{i,t}},\;
+    \operatorname{clip} \bigl(
+     r_{i,t},\;
+      1 - \varepsilon_{\mathrm{low}},\;
+      1 + {\color[HTML]{0fcb8c} \varepsilon_{\mathrm{high}}}
+    \bigr)\,
+   {\color[HTML]{b11be8}{A}_{i,t}}
+  \Bigr),
+\end{align}
+\endgroup
+where $r_{i,t}=\frac{\pi\left(y_{i, t} \mid x, y_{i,<t};\theta\right)}{\pi\left(y_{i,t} \mid x, y_{i, <t};\theta_{\mathrm{old}}\right)}$, $\varepsilon_{\mathrm{low}}$ and ${\color[HTML]{0fcb8c}\varepsilon_{\mathrm{high}}}$ are the clipping hyperparameters. Here, $y_i \sim \pi_{\text {vllm}}(\cdot \mid x;\theta_{\mathrm{old}})$ and $\pi_{\text {vllm }}(\cdot \mid x;\theta_{\mathrm{old}})$ are the token probabilities returned from vLLM, $\rho$ is the truncated importance sampling cap value~\citep{yao2025offpolicy}, and the advantage $A_{i,t}$ for the $t$-th token $t$ in the response $y_{i}$ is calculated within the group $G$ based on the relative reward of the outputs inside each group:
+\begin{align}
+    {\color[HTML]{b11be8}{A}_{i,t}=\left(r\left(x, y_i\right)-\operatorname{mean}\left(\left\{r\left(x, y_i\right)\right\}_{i=1}^G\right)\right)}.
+\end{align}
+
+$r\left(x, y_i\right)$ is the reward score returned by the corresponding verifier. Our hyperparameters for various runs are in Appendix Table \ref{tab:rlvr_training_settings}.
+
+
+
+\paragraph{Verifiers}
+We extend verifiable rewards beyond math domains from \olmotoo to include general domains.
+For each domain we use a different custom verifier (see Figure~\ref{fig:rl-teaser}):
+\begin{itemize}
+    \item {\bf{Math}} We use a rule-based verifier that performs basic normalization and compares with a reference answer with \texttt{SymPy} to determine answer correctness. The verifier returns 1 if the answer is determined the same as the reference answer and 0 otherwise.
+    \item {\bf{Code}} We use a test-case based verifier that runs a set of test cases over the response. We experiment with (a) using the percentage of passed test cases as the reward and (b) returning 1 when the response passes all test cases and 0 otherwise.\footnote{{\bf Code execution} When performing RL on code environments, we need to actually execute the generated code against test cases to calculate our rewards. We use AWS Lambda to do so. Using a distributed cloud function approach ensures that verification does not block the trainer process, and allows us to scale seamlessly. Many test case suites, such as those present in SYNTHETIC-2 \citep{primeintellect2025synthetic2}, contain test cases designed to penalize programs with poor time complexity, and running these tests can exceed hundreds of MBs for a single program, exceeding the resources of our local machines.}
+    \item {\bf{Instruction-following}} We pass the response through a set of functions that check adherence to a series of constraints from the prompt. A reward of 1 is assigned if all constraints are satisfied, and 0 otherwise.
+    \item {\bf{Chat---reference}} For tasks with a ground-truth response, we pass the response to an LM judge to compare the model's response against a provided reference answer, and ask the judge to give a score in [0, 1] based on the quality of the response.
+    \item {\bf{Chat---open-ended}} We pass the response to an LM judge and ask the judge to give a score in [0, 1] based on the quality of the response without any reference answer.\footnote{Unless otherwise stated, for an LM judge we host Qwen3 32B~\citep{qwen3} with thinking mode turned off using vLLM~\citep{vllm}, and allow a max input prompt of 32768 tokens while only allowing a response length of 2048 tokens. We provide the judge prompts in Figure~\ref{llm-judge-prompt} in the appendix.
+    We additionally experimented with puzzle problem (checking if a puzzle solution is correct relative to a reference answer) and length-control~\citep{aggarwal2025l1controllinglongreasoning} verifiers, but did not find it useful for downstream performance.}
+\end{itemize}
+
+
+
+\subsubsection{\textsc{Dolci-Think-RL}: Curating a State-of-the-art RLVR Dataset}
+\label{subsec:rl-thinking-data}
+
+\input{tables/posttrain_data/rlvr_data}
+
+We curate a large-scale and diverse dataset of roughly 100K samples across four domains: mathematics, coding, instruction following, and general chat to support robust RL on varied reasoning tasks while maintaining general utility.
+Each domain is associated with either a verifiable or non-verifiable reward signal (continuous or binary), ensuring that every instance can be automatically checked for correctness or general quality (see Figure~\ref{fig:rl-teaser}).
+For all domains we take particular care with the provenance and licensing of sources.
+We provide the size of each dataset subsection after sourcing, filtering, and mixing in~\autoref{tab:olmo3_think_rl_mix}.
+
+\paragraph{Step 1: sourcing prompts}
+
+In what follows, we will describe our data construction process.
+
+
+\begin{itemize}
+    \item {\bf{Math}}: We combine community-curated math problems, including Open-Reasoner-Zero~\citep{hu2025open}, DAPO-Math~\citep{yu2025dapo}, AceReason-Math~\citep{chen2025acereason}, DeepScaler~\citep{luo2025deepscaler}, KlearReasoner-MathSub~\citep{su2025klear}, and OMEGA~\citep{Sun2025OMEGACL} covering a wide range of mathematical domains including algebra, combinatorics, number theory, and geometry.
+
+    \item {\bf{Coding}} To construct reinforcement learning (RL) data for code, we required pairs of \emph{(problem, test cases)}.
+    We curate a diverse set of prompts for coding problems, including AceCoder~\citep{zeng2025acecoder}, Klear-Reasoner Code~\citep{su2025klear}, Nemotron Post-training Code \citep{nvidia2025nemotron_post_training_dataset}, SYNTHETIC-2 code \citep{primeintellect2025synthetic2}, and Open-Code Reasoner \citep{ahmad2025opencodereasoning}.
+    We use the Klear-Reasoner and SYNTHETIC-2 test cases directly.
+    For the other datasets, we run prompts through the following synthetic data pipeline: (1) \textit{problem rewriting}, (2)  \textit{solution generation}, and (3) \textit{test case generation}.
+    After generating these triplets (problem, solution, test cases), we executed all model-generated or rewritten test cases against the corresponding solutions and kept examples with solutions that passed more than 80\% of test cases while removing failed test cases.
+    The resulting filtered dataset provided high-quality \emph{(problem, test cases)} pairs suitable for training and experimentation with RL methods for code.
+    We use the AceCoder prompts in function completion format, while all other datasets are in stdio format.
+    Details of each step in code data synthesis pipeline can be found in Appendix \ref{appx:code-data}.
+
+    \item {\bf{Instruction-following}} We use the prompts from IF-RLVR~ \citep{pyatkin2025generalizing} with up to 5 constraints, which are sampled from IFEval~\citep{zhou2023instructionfollowingevaluationlargelanguage} and IFBench-Train~\citep{pyatkin2025generalizing}.
+
+    \item {\bf{General chat}} We sample our general chat instances from three sources: (a) \tulu SFT~\citep{lambert2024tulu3}; (b) the new WildChat-4.8M data\footnote{\href{https://huggingface.co/datasets/allenai/WildChat-4.8M}{\path{huggingface.co/datasets/allenai/WildChat-4.8M}}} containing a broad spectrum of user-chatbot interactions on ambiguous requests, code-switching, topic shifts, political debates, and more; and (c) the Multi-subject-RLVR dataset~\citep{su2025expanding}, consisting of college-level English questions and objective answers written by domain experts for examination purposes.
+    For WildChat, we only sample from instances that are in English and do not require reasoning (such as math and code).
+    For \tulu, we first rewrote samples using GPT-4.1 for better clarity and to extract reference answers from the SFT set.
+    We then generated eight samples per prompt with a Qwen 2.5 7B model finetuned on OpenThoughts 2 and computed the F1 score between the reference answer and each response.
+    We then removed all samples with average F1 score $<0.1$ and $>0.8$.
+    This removes both noisy and overly difficult samples.
+    WildChat in particular has a high prevalence of role-playing and other character-based data.
+    In order to balance the data, we filter any mention of a single character down to a maximum of 10 instances.\footnote{In our intermediate general dataset of 57,819 samples, we found the top characters were   1. \href{https://doki-doki-literature-club.fandom.com/wiki/Natsuki_(DDLC)}{Natsuki}: 1284 appearances, 2. \href{https://doki-doki-literature-club.fandom.com/wiki/Monika_(DDLC)}{Monika}: 1243, 3. \href{https://doki-doki-literature-club.fandom.com/wiki/Sayori_(DDLC)}{Sayori}: 1076, 4. \href{https://doki-doki-literature-club.fandom.com/wiki/Yuri_(DDLC)}{Yuri}: 957, 5. Sakura: 453, and 6. MC: 424. All others were at 60 or lower before filtering.}
+    We then finally performed some post-hoc manual filtering to remove code- and math-centric prompts.
+
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\paragraph{Step 2: offline difficulty filtering}
+As stated previously, to improve the sample efficiency of RL for our reasoner model, we generate eight rollouts for each prompt from the initial checkpoint of the model we train (e.g., if starting from the DPO-trained model, we generate from the DPO checkpoint). We then remove all samples that the model easily solves (that is, those with a pass rate greater than 62.5\%).
+We sample with a temperature of 1.0 and top-p of 1.0, matching how we sample during RL training.
+We used offline filtering for the 7B \olmothreethinking to filter out RL problems that are too easy for our models' training.
+For the 32B, we rely on active sampling, which fills RL batches only on samples with a non-zero GRPO group gradient, and re-using the 7B DPO-filtered data as the starting point for the model due to compute and time constraints.
+
+\paragraph{Step 3: data mixing}
+When developing our data mixture and overall recipe, we found RL experiments were both long and compute-expensive, preventing us from ablating the full space of datasets and algorithmic choices.
+Instead, we established a pipeline in which: (a) we performed dataset-specific runs on an intermediate SFT checkpoint and observed downstream evaluation trends over the first 500-1000 RL steps; (b) focused on math domain training when testing new algorithmic changes; (c) periodically ran overall mixture experiments to ensure mixing was stable.
+When setting up our final run, we then took the most promising datasets, performed offline filtering, and carefully mixed them to ensure higher-quality datasets were upweighted, and roughly equal amounts of data were used for each domain (with slightly more focus on math and instruction following, as training on these domains seemed the most effective in per-dataset runs).
+Additionally, we downsample certain subtasks from OMEGA that the model especially struggled with based on offline filtering results.\footnote{In particular, we downsample the following tasks by 50\% \textit{after} filtering: \texttt{trans\_integrations}, \texttt{logic\_gridworld\_rookmove}, \texttt{logic\_puzzles\_grid\_chip}, \texttt{comp\_grid\_chips}, \texttt{comp\_n\_gon}, \texttt{arithmetic\_matrix\_svd}, \texttt{comp\_parametric\_intersection}, \texttt{comp\_vertex\_color}.}
+We used this pipeline to develop an RL mixture for the 7B model, and then used the same data mixture for the 32B model due to compute and time constraints.
+
+
+For our \olmothreethinking 7B training run, we used an initial version of our infrastructure without pipelineRL or truncation importance sampling, which took approximately 15 days. We later replicated the same run with our newer infrastructure, achieving similar performance in just 6 days of training.
+
+
+
+\subsubsection{\olmothreerl Infrastructure in \openinstruct}
+\label{sec:posttraining_infra}
+
+We made substantial improvements to our reinforcement learning infrastructure to handle longer sequences and faster overall throughput.
+In RL with LLMs, the key technical challenge for finetuning models that generate long sequences is managing inference---also called the rollouts.
+For our final models, we generated rollouts with a maximum size of 32K tokens in length, averaging more than 10K tokens (for the reasoner models). Inference dominated our computational costs, using 8 H100 nodes for training and 20 nodes for inference for the 32B \olmothreerl reasoner model. Given the cost of autoregressive inference, our learner spends 75\% of the time waiting for data, so in terms of GPU utilization, we use approximately 5x as much for inference as for training. In fact, we use the minimal possible sharding configuration to fit the learner in memory and do not prioritize speed at all, unlike in the supervised learning setting. For the 7B reasoner model, where we have less memory pressure on the learner, the situation was more dramatic, as we used 7 nodes for inference and only 2 for the learner. Given the similarly low utilization of the learner, we used approximately 14x as much compute for inference as for training. We suspect that we have a suboptimal sharding configuration for the 32B learner and expect that we could do better in future work.
+
+\paragraph{Fully asynchronous training} Shown in \autoref{fig:actor-learner}, we employ an off-policy asynchronous RL setup \citep{noukhovitch2024asynchronousrlhffasterefficient} featuring a centralized learner distributed across multiple nodes via DeepSpeed~\citep{deepspeed} and a large pool of actors, each running an independent vLLM~\citep{vllm} instance.
+The learner produces prompts that are queued and dispatched to the actors, which execute the prompts, interact with the environment, and return results through a results queue that the learner uses to update the model parameters.%
+\footnote{For the 7B training runs, we use a single GPU for each actor and scale generation via data parallelism.
+The RL setup would be familiar to readers of \cite{horgan2018distributed} or \cite{silver2017alphazero}. For 32B, we use one node per actor and then similarly further scale via data parallelism.}
+Due to the variance in completion length, a long time delta can emerge between completions in an individual batch of RLVR.
+The guiding principles to mitigate this issue are to make efficient use of resources (avoiding idling) and to make processes asynchronous.\footnote{%
+For one of our main RL runs, which was broadly representative of what we experienced across all of our runs, each training step averaged 1000 seconds, of which 125 seconds was spent running training.
+Each batched completion generation took 1000 seconds.
+As we overlap generation and training \citep{noukhovitch2024asynchronousrlhffasterefficient}, the bottleneck is entirely generation.
+Consequently, significant engineering resources were spent improving the way generation is handled, where we could continue to use the training code used in \olmotoo, as we would need to speed up generation by $>8\times$ for that to be a bottleneck. }
+
+
+\begin{figure}[t!]
+    \centering
+    \begin{subfigure}[t]{0.59\textwidth}
+        \includegraphics[width=0.99\linewidth]{figures/rlvr_sft/olmo3_distributed_rl_light.pdf}
+        \caption{Distributed reinforcement learning architecture}
+        \label{fig:actor-learner}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.39\textwidth}
+    \centering
+        \vspace{-15em}
+        \begin{subfigure}{0.7\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/rlvr_sft/static_batching.pdf}
+            \caption{Static batching}
+            \label{fig:static-batching}
+        \end{subfigure}
+        \begin{subfigure}{0.7\textwidth}
+            \centering
+            \includegraphics[width=\linewidth]{figures/rlvr_sft/continuous_batching.pdf}
+            \caption{Continuous batching}
+            \label{fig:continuous-batching-sub}
+        \end{subfigure}
+    \end{subfigure}
+    \caption{\textbf{Overview of \olmorl infrastructure}. On the left: distributed reinforcement learning architecture (Figure~\ref{fig:actor-learner}). On the right: static vs.\ continuous batching.
+    Static batching (Figure~\ref{fig:static-batching}) wastes compute when generations have variable sequence lengths. Pink cells are prefilled tokens, green cells are decoded tokens, with dark green representing EOS.
+    Grey indicates that sequence is not doing anything, so
+    continuous batching (Figure~\ref{fig:continuous-batching-sub}) backfills finished rows immediately, resulting in no wasted compute.}
+    \label{fig:continuous-batching}
+\end{figure}
+
+\begin{figure}
+    \centering
+
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\paragraph{Continuous batching}{We employ continuous batching to constantly enqueue new generations as each one finishes to remove the compute waste for long generations (see Figure~\ref{fig:continuous-batching}).
+    This is in contrast to {\it static batching}, in which a batch of prompts is split over $N$ actors, and each actor generates the entire batch,\footnote{Calling \texttt{llm.generate} in vLLM.} returns the generated responses to the learner, and then receives a new batch of data.
+    Static batching is inefficient, as when one generation finishes that ``slot'' of the batch will remain empty until we get a new batch.
+    The exact wasted compute can be calculated as the maximum sequence length minus the average sequence length divided by the maximum sequence length.
+    With \olmothree, at a 32K generation length, we see a mean generation length of 14628 and a maximum of 32K, which means that up to 54\% of our compute would have been wasted with static batching.
+    See Figure~\ref{fig:continuous-batching} for an illustrated example. %
+
+
+
+
+\paragraph{Active sampling}{To compensate for filtered instances, our fully asynchronous framework enables continuously pulling completions from the actor and resampling prompts into the queue. We actively sample and filter until we reach our desired batch size of non-zero-gradient completions. Previously, \citet{yu2025dapo} dynamic sampling would oversample and generate three times the number of prompts used in each training batch. This was to reasonably guarantee that the batch had enough completions with non-zero standard deviation. In contrast, our active sampling more efficiently uses the infrastructure. As demonstrated in \autoref{sec:rlzero}, we find this significantly stabilizes training and prevents batch size from reducing over the course of training (a common issue with vanilla GRPO).
+
+\paragraph{Inflight updates}{%
+A common goal of RL training for LLMs is to minimize the degree of difference between the actor policy and the learner policy, i.e., to minimize being off-policy~\citep{deadly-triad}.
+This can be achieved by synchronizing the weights after every training step as follows: each actor finishes all of their ongoing generations, dumps the KV cache, and updates its copy of the weights. However, this causes GPUs to be idle and hurts training efficiency.
+Instead, we follow \citet{pipelinerl} to immediately update the weights without pausing the engine, relying on the generation framework to be thread-safe, and continue generating, \emph{without invalidating the KV cache}.
+This enables a significant increase in throughput: up to 4x faster with the same resources, without hurting accuracy.}
+
+\paragraph{Better threading and engineering}{ These changes are primarily around handling the weight synchronization after each training step to make actors more efficient. %
+Our new setup decouples the actors, allowing each one to start and stop by itself, without waiting for the rest of the actors to finish their syncs as well.
+Similarly, we make a large number of optimizations that were not machine learning specific, and were centered around efficiently using the \emph{CPU}.}
+For example, our initial implementation of continuous batching, for instance, was slower than static batching before adding a prefetch thread to our actors that constantly refilled the inference queue to see a throughput improvement.
+
+\input{tables/posttrain/Think-DPO-vs-SFT}
+
+Our final RL run ended up mixing carefully-filtered data from all domains roughly equally and running on top of the DPO checkpoint.
+
+
+
+
+
+\subsection{Key Findings}
+\label{sec:thinkfindings}
+
+\input{tables/posttrain/Think-DPO-RL-sequence}
+
+\begin{table}[t]
+\centering
+\begin{tabular}{l r r r r l}
+\toprule
+                    & \textbf{Total tokens (Mtok)} & \textbf{Tokens/second} & \textbf{MFU (\%)} & \textbf{MBU (\%)} %
+                    \\ \midrule
+\rowcolor{ai2offwhite}
+ \olmotoo                       & $6.34$ &  881               & 0.30     & 12.90   %
+\\
+$\plus$ continuous batching & $7.02$ &  975               & 0.33     & 14.29  %
+\\
+\rowcolor{ai2offwhite}
+$\plus$ better threading    & $9.77$ & 1358               & 0.46     & 19.89   %
+\\
+$\plus$ inflight updates (\olmothree)   & $21.23$ & 2949 & 1.01     & 43.21  %
+\\ \bottomrule
+\end{tabular}
+\caption{\textbf{Effect of core infrastructure improvements to \olmothreerl}. We ablate the effect of each component by measuring the training speed (tokens/second) and utilization metrics as we add each component in turn from the original \olmotoo RL infrastructure. The addition of inflight-updates has the most drastic improvement.
+}
+\label{tab:rl-infra}
+\end{table}
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=\linewidth}{\includegraphics{figures/rlvr_sft/rl_rewards_training.pdf}}
+    \caption{{\textbf{Reward curves during training of \olmothreethinking 7B}}. Average, math, code, and IF reward over RL training for the final RLVR training run of \olmothreethinking. Reward steadily grows across domains, suggesting smooth training. See~\autoref{fig:olmo3_final_rl_run} in Appendix for further RL curves.}
+    \label{fig:rl_rewards_three}
+\end{figure}
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=.9\linewidth}{\includegraphics{figures/rlvr_sft/comparing_sft_dpo.pdf}}
+    \caption{{\textbf{Using DPO as a starting point for RLVR works best}}. AlpacaEval, Omega-500, and AIME 2025 performance over the course of RLVR training when starting from \olmothree 7B SFT or DPO, training using either data filtered via the DPO model (w/ DPO data) or SFT model (w/ SFT data). The importance of starting from DPO or SFT depends on the evaluation, but starting from DPO is overall preferable.}
+    \label{fig:dpo_sft_rl_comparison}
+\end{figure}
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=.68\linewidth}{\includegraphics{figures/rlvr_sft/ifeval_vs_mix.pdf}}
+    \adjustbox{max width=.3\linewidth}{\includegraphics{figures/rlvr_sft/rl_aime_pass_at_k.pdf}}
+    \caption{\textbf{Effect of mixing and DPO on downstream metrics}.
+    Training on mixed data prevents overfitting (left) We plot IFEval and AlpacaEval performance over RL training on \olmothreethinking SFT 7B when training on IFEval data only or on mixed data. Training on mixed data achieves similar IFEval performance while maintaining high AlpacaEval performance. DPO with delta learning displays higher pass@K performance than SFT (right). We plot pass@K for AIME 2024 and 2025 for SFT and DPO thinking models for up to K=32. DPO consistently improves performance, even at higher K.}
+    \label{fig:ifeval_alpacaeval_mix}
+    \end{figure}
+
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=.32\linewidth}{\includegraphics[]{figures/rlvr_sft/general_reward.pdf}} \hspace{-1.5cm}
+    \adjustbox{max width=.4\linewidth}{\includegraphics[]{figures/rlvr_sft/ifeval_reward.pdf}}
+    \hspace{-1cm}
+    \adjustbox{max width=.32\linewidth}{\includegraphics[]{figures/rlvr_sft/math_reward.pdf}}
+    \caption{{\textbf{Per-domain training yields higher train rewards.}} We plot the train reward over RL training for per-domain and overall mix (i.e., final) training runs. In each plot, we train an intermediate SFT model using RLVR with data only from general, IF, and math subsets, and compare to training on our overall mix. While the domain-specific runs achieve higher train reward, \autoref{fig:ifeval_alpacaeval_mix} shows this does not necessarily yield improved downstream performance.}
+    \label{fig:per_domain_vs_mix_training}
+\end{figure}
+
+
+
+
+\paragraph{DPO yields gains where SFT on the same data cannot} Continued supervised finetuning directly on the chosen responses from \dolcithinkdpo outright hurts the initial SFT model (\autoref{tab:dpo_sftchosen}), dropping all evaluation tasks. We conjecture that this is because the chosen responses (generated by Qwen3 32B Thinking) are weaker relative to data the model has already seen in \dolcithinksft, and hence, they are no longer useful targets for imitation. However, by pairing these chosen responses with rejected responses generated by a weaker model, we construct a useful contrast, enabling preference tuning to drive strong gains beyond the initial SFT model (\autoref{tab:dpo_sftchosen}). Promisingly, these gains are not merely converting pass@k into pass@1 but rather expanding the reasoning frontier of the model (e.g., improved pass@k on AIME evaluations; \autoref{fig:ifeval_alpacaeval_mix}). These findings highlight contrastive learning with preference tuning as a useful stage for improving capabilities even when imitation is saturated.
+
+
+\paragraph{DPO and SFT both benefit from RL, but DPO remains a better starting point}
+\autoref{tab:dpo_rl_sequence} shows that running our final RL mix on the DPO model consistently yields better performance than running it on the SFT model. We find three primary differences, highlighted in~\autoref{fig:dpo_sft_rl_comparison}: for evaluations that RL does not improve, the DPO model often performs better and maintains its advantage during RL training (e.g., AlpacaEval). For evaluations explicitly targeted by RL (e.g., Omega), both the DPO and SFT models achieve similar end performance. For evaluations targeted by RL but hard to improve further from DPO (e.g., AIME 2025), the SFT model improves to get close to DPO performance. In no situation does the SFT model improve over the DPO model after RL, and as such we opt to focus on applying RL over our DPO model.
+Curiously, we find that the SFT model performs similarly when trained either with the data offline-filtered using the SFT or DPO model, suggesting that the additional samples filtered out (i.e., solved) by the DPO model do not provide additional signal for improving the SFT model.
+Further investigating this, we find that while the DPO model does display lower entropy, it in fact has higher pass@K performance on AIME evaluations, as shown in \autoref{fig:ifeval_alpacaeval_mix}.
+This suggests that the DPO model remains a strong starting point for RL relative to the SFT model, as prior work~\citep{yue2025limit-of-rlvr,shao2024deepseekmath} suggests RLVR, under certain conditions, helps convert pass@K improvements into pass@1 gains.
+
+
+
+\paragraph{Rewards steadily increase across all domains during RL} ~\autoref{fig:rl_rewards_three} plots per-verifier reward curves along with average output length. We find that reward steadily increases across all domains, albeit at differing rates (with instruction-following data increasing most steadily, and code reward increasing most slowly).
+We plot more RL curves in the appendix (\autoref{fig:olmo3_final_rl_run}).
+Interestingly, we find that sequence lengths first slightly dip and then slowly increase over time. This is likely due to the reasoning SFT and DPO already training the model to produce long reasoning traces of up to the maximum response length of 32K tokens.
+
+
+\paragraph{Mixing RL data from varied domains can prevent over-optimization}
+\autoref{fig:ifeval_alpacaeval_mix} (left) demonstrates that training on specific domains can lead to over-optimization,
+in which performance on evaluations outside that domain drops, while training on a mix yields steady improvements across
+different domains. For example, we observe a trade-off when performing \olmothreerl on IFEval alone, wherein higher
+IFEval scores correlate with lower AlpacaEval scores. However, when we perform our final mixed training,
+we are able to maintain high AlpacaEval scores without compromising IFEval performance, as the LM-judge reward
+ensures that the model continues to produce well-formed chat responses.
+
+
+\paragraph{Mixing data yields lower train reward, but not lower downstream performance}
+While~\autoref{fig:ifeval_alpacaeval_mix} demonstrates that our final mixture run achieves downstream performance similar to or greater than RL training runs on single domains, we find that we observe \textit{lower} train reward across each domain when training on mixed data as opposed to single-domain data, as seen in~\autoref{fig:per_domain_vs_mix_training}.
+This suggests that mixing data may in fact reduce the model's tendency to \textit{over-optimize during training}, preventing some degree of reward-hacking and thus generalizing better to downstream evaluations. This may explain why RL training on broader data mixtures can outperform domain-specific mixtures~\citep{cheng2025revisiting}.
+
+
+
+\paragraph{Continuous batching and inflight updates are crucial to training speed} Using a reasoner SFT or DPO as a starting point stresses RL training to its limits, as the model starts with extremely long average generation lengths. Table~\ref{tab:rl-infra} demonstrates how using continuous batching and inflight updates is crucial to training speed, allowing us to achieve two times faster training on half as many GPUs, making experimentation and long RL runs more tractable.\footnote{While an initial checkpoint took 14 straight days of training across 9 nodes to achieve 1 epoch, with continuous batching and inflight updates, we could achieve 1 epoch on 5 nodes in 7 days.}
+To carefully benchmark this, we ablate the changes to our RL infrastructure between \olmotoo and \olmothree. See Table \ref{tab:rl-infra}. %
+For each ablation, we ran a benchmark experiment for 2 hours using 2 8x A100 nodes. One node was used for training, and one for inference. Since inference is our bottleneck, we report Model FLOPs Utilization (MFU) and Model Bandwidth Utilization (MBU)  based solely on the single node used for inference. A typical full-scale experiment would use many more nodes for inference, typically with a 8:1 ratio (or more) of inference nodes to training nodes. The benchmark experiment generates a batch of 128 completions for each training step, using 64 prompts, each sampled twice, with a maximum output length of 32000, and a maximum input length of 2048, leading to a context length of 2048.\footnote{Script can be found in the \href{https://github.com/allenai/open-instruct}{\path{github.com/allenai/open-instruct}}, at \texttt{scripts/benchmarking/olmo3\_infra.sh}.} %
+
+\paragraph{\olmothreerl shows significant improvement in precise instruction following} The precise instruction-following performance increases across post-training stages, with the final RL training stage leading to the biggest improvements in \olmothree's precise instruction-following abilities, as shown in Table~\ref{tab:if_summary}, for both the development (IFEval) and the unseen (IFBench) evaluations.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{lcccccc}
+\toprule
+                  & \textbf{Think SFT} & \textbf{Think DPO} & \textbf{Think RL}       & \textbf{Instruct SFT} & \textbf{Instruct DPO} & \textbf{Instruct RL} \\ 
+\midrule
+\rowcolor{midgrey} \multicolumn{7}{c}{\textbf{7B scale}} \\
+\rowcolor{lightgrey} \textbf{IFEval}  & 83.9      & 80.6     & {\bf{86.0}} & 81.7           & 82.0         & {\bf{85.8}}         \\
+\rowcolor{lightgrey}\textbf{IFBench} & 30.0      & 28.3      & {\bf{41.6}}  & 27.4         & 29.3         & {\bf 32.3}          \\
+\rowcolor{midgrey} \multicolumn{7}{c}{\textbf{32B scale}} \\
+\rowcolor{lightgrey} \textbf{IFEval}  & 83.7      & 82.3     & 89.0 (3), {\bf 93.8} (3.1) & 87.7           & 87.3         & 88.8         \\
+\rowcolor{lightgrey} \textbf{IFBench} & 37    & 34.4     & 47.6 (3), {\bf 68.1} (3.1)  & 29.7         & 36.3         & 39.7          \\ 
+\bottomrule
+\end{tabular}
+\caption{\textbf{Summary of precise instruction following results on IFEval and IFBench}, for both the \olmothreethinking and \olmothreeinstruct models (at 7B and 32B sizes), across various stages of the post-training pipeline.}
+\label{tab:if_summary}
+\end{table}

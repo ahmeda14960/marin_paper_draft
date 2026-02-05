@@ -1,0 +1,60 @@
+\begin{table}[!h]
+\centering
+\footnotesize
+\small
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{l l rr ll }
+\toprule
+{\bf Type} & 
+{\bf Source} & 
+\multicolumn{2}{c}{{\bf 2T Pool}} & 
+\multicolumn{2}{c}{{\bf 100B Mix}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6}
+& & {\bf Tokens} & {\bf Docs} & {\bf Tokens} & {\bf Docs} \\
+\midrule
+    \rowcolor{ai2offwhite} Math (synth) & TinyMATH Mind** & 899M & 1.42M & 898M (0.9\%) & 1.52M  \\
+    Math (synth) & TinyMATH PoT** & 241M & 729K & 241M (0.24\%) & 758K  \\
+    \rowcolor{ai2offwhite} Math (synth) & CraneMath* & 5.62B & 6.55M & 5.62B (5.63\%) & 7.24M  \\
+     Math (synth) & MegaMatt* & 3.88B & 6.79M & 1.73B (1.73\%) & 3.23M \\
+     \rowcolor{ai2offwhite} Math (synth) & Dolmino Math\^{}\^{} & 10.7B & 21M & 10.7B (10.7\%) & 22.3M  \\
+\midrule
+    Code & StackEdu (FIM)\^{} & 21.4B & 32M & 10.0B  (10.0\%)& 16.2M  \\
+    \rowcolor{ai2offwhite} Python (synth) & CraneCode* & 18.8B & 19.7M & 10.0B  (10.0\%)& 11.7M  \\
+\midrule
+    QA (synth) & Reddit To Flashcards** & 21.6B & 370M & 5.90B (5.9\%) & 101M  \\
+    \rowcolor{ai2offwhite} QA (synth) & Wiki To RCQA** & 4.22B & 22.3M & 3.0B (3.0\%) & 16.3M  \\
+    QA (synth) & Nemotron Synth QA\^{} & 487B & 972M & 5.0B (5.0\%) & 10.6M  \\
+\midrule
+    \rowcolor{ai2offwhite} Thinking (synth) & Math Meta-Reasoning** & 1.05B & 984K & 381M (0.38\%) & 401K \\
+    Thinking (synth) & Code Meta-Reasoning** & 1.27B & 910K & 459M (0.46\%) & 398K \\
+    \rowcolor{ai2offwhite} Thinking (synth) & Program-Verifiable** & 438M & 384K & 159M (0.16\%) & 158K \\
+    Thinking (synth) & OMR Rewrite FullThoughts\^{} & 850M & 291K & 850M (0.85\%) & 394K \\
+    \rowcolor{ai2offwhite} Thinking (synth) & QWQ Reasoning Traces\^{} & 4.77B & 438K & 1.87B (1.87\%) & 401K  \\
+    Thinking (synth) & General Reasoning Mix\^{} & 2.48B & 668K & 1.87B  (1.87\%) & 732K \\
+    \rowcolor{ai2offwhite} Thinking (synth) & Gemini Reasoning Traces\^{} & 246M & 55.2K & 246M (0.25\%)) & 85.1K \\
+    Thinking (synth) & Llama Nemotron Reasoning Traces\^{} & 20.9B & 3.91M & 1.25B (1.25\%) & 368K \\
+    \rowcolor{ai2offwhite} Thinking (synth) & OpenThoughts2 Reasoning Traces\^{} & 5.6B & 1.11M & 1.25B (1.25\%) & 402K \\
+\midrule
+    Instruction (synth) & Tulu 3 SFT\^{}\^{} & 1.61B & 1.95M & 1.1B (1.1\%) & 1.45M \\
+    \rowcolor{ai2offwhite} Instruction (synth) & Dolmino 1 Flan\^{}\^{} & 16.8B & 56.9M & 5.0B (5.0\%) & 14.8M  \\
+\midrule
+    PDFs & \olmocrPDF (HQ subset)\^{} &  240B & 28.7M & 4.99B (5.0\%) & 1.20M \\
+    \rowcolor{ai2offwhite} Web pages & STEM-Heavy Crawl\^{} & 5.21B & 5.16M & 4.99B (5.0\%)& 5.53M \\
+    Web pages & Common Crawl (HQ subset)\^{} & 1.32T & 965M & 22.4B (22.5\%) & 18.3M \\
+    
+\midrule
+\rowcolor{ai2offwhite} {\bf Total} & & {\bf 2.19T} & {\bf 2.52B} & {\bf 99.95B (100\%)} & {\bf 236M} \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Composition of the midtraining data (\dolminostoo)}. 
+Here we show the full composition of the midtraining data mix. **=newly-introduced synthetic dataset. *=novel recreation of existing data. \^{}\^{}=reuse of previously-introduced data. \^{}=filtering or light transformation of existing external data.    
+}
+
+\label{table:stage-2-data}
+\end{table}
+
+
+
+
+

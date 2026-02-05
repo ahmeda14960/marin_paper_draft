@@ -1,0 +1,37 @@
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{5pt}
+\renewcommand{\arraystretch}{0.95}
+\adjustbox{max width=\linewidth}{
+{\fontsize{8}{8}\selectfont
+\begin{NiceTabular}{@{}ll|
+C{35pt}C{35pt}C{35pt}P{35pt}|
+C{35pt}C{35pt}C{35pt}C{35pt}@{}}
+\toprule
+& & \multicolumn{4}{c}{\quad \quad \textbf{\texttt{OLMo 3 32B Think}}} & \multicolumn{4}{c}{\textbf{\texttt{Baselines}}} \\
+\textbf{Benchmark} &
+& \textbf{SFT} & \textbf{DPO} & \textbf{Final Think 3.0} & \textbf{Final Think 3.1} & \textbf{Qwen 3 32B} & \textbf{Qwen 3 VL 32B Think} & \textbf{DS-R1 32B} & \textbf{K2-V2
+70B In-
+struct} \\
+\midrule
+DoAnythingNow &              & 16.7 & 15.6 & 20.2 &54.7 & 59.0 & 88.7 & 46.0 & 100.0\\
+HarmBench &         & 66.5 & 69.7 & 73.5 & 89.7 & 67.3 & 75.2 &  64.0 & 99.7\\
+TrustLLM-JailbreakTrigger   &         & 68.3 & 69.6 & 73.3 & 86.4 & 60.7 & 75.6 & 55.3 & 91.4\\
+WildJailbreak-Test          & Harmful            & 17.6 & 17.5 & 25.6 & 71.7 & 12.6 & 47.0 &  13.7 & 99.6\\
+WildJailbreak-Test & Benign     & 99.2 & 99.6 & 99.7 & 92.3 & 100.0 & 94.0 & 99.2 & 5.7\\
+WildGuard-Test &        & 86.3 & 86.5 & 89.4 & 96.9 & 81.3 & 92.9 & 81.7 & 99.3\\
+XSTest &  & 93.0 & 92.1 & 93.9 & 91.8 &  89.6 & 93.4 & 78.1 & 87.9\\
+\midrule
+BBQ   &   Accuracy      & 90.6 & 88.5 & 88.2 & 85.5 & 89.7 & 90.5 & 88.1 & 89.7\\
+BBQ   &   Bias - Ambig.      & 6.9 & 8.2 & 9.2 & 12.3 & 7.1 & 5.6 &  8.1 & 5.0\\
+BBQ   &   Bias - Disambig.      & 0.8 & 0.2 & 1.1 & -0.2 & 0.1 & 0.0 &  0.4 & -0.1\\
+StrongReject  &            & 75.9 & 77.2 & 80.8 & 90.5 & 79.3 & 88.5 &  79.1 & 90.7\\
+Toxigen    &           & 100.0 & 100.0 & 100.0 & 100.0 & 100.0 & 99.9 & 100.0 & 100.0\\
+
+WMDP &             & 40.2 & 34.9 & 34.8 & 32.7 & 24.0 & 31.0 &  30.9 & 35.6\\
+\bottomrule
+\end{NiceTabular}}}
+\caption{\textbf{Olmo 3 Think 32B and comparisons on the safety benchmarks}. All numbers are the mean of three runs.}
+\label{tab:32b-think-safety-baselines}
+\end{table}

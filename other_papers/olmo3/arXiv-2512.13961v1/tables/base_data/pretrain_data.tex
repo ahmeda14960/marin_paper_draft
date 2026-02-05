@@ -1,0 +1,43 @@
+
+\begin{table}[h]
+\centering
+\footnotesize
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{l l rr ll ll}
+\toprule
+{\bf Source} & 
+{\bf Type} & 
+\multicolumn{2}{c}{{\bf 9T Pool}} & 
+\multicolumn{2}{c}{{\bf 6T Mix}} & 
+\multicolumn{2}{c}{{\bf 150B Mix}} \\
+\cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+& & {\bf Tokens} & {\bf Docs} & {\bf Tokens} & {\bf Docs} & {\bf Tokens} & {\bf Docs} \\
+\midrule
+\rowcolor{ai2offwhite}Common Crawl & Web pages & 8.14T & 9.67B & 4.51T (76.1\%) & 3.15B & 121B (76.9\%) & 84.5M \\ 
+\olmocrPDF & Academic documents & 972B & 101M & 805B (13.6\%) & 83.8M & 19.9B (12.6\%) & 2.25M \\
+\rowcolor{ai2offwhite} Stack-Edu (Rebalanced) & GitHub code & 137B & 167M & 409B (6.89\%) & 526M & 11.1B (7.06\%) & 14.3M \\
+arXiv & Papers with LaTeX & 21.4B & 3.95M & 50.8B (0.86\%) & 9.10M & 1.29B (0.82\%) & 247K \\
+\rowcolor{ai2offwhite}FineMath 3+ & Math web pages & 34.1B & 21.4M & 152B (2.56\%) & 95.5M & 4.10B (2.60\%) & 2.57M \\
+Wikipedia \& Wikibooks & Encyclopedic & 3.69B & 6.67M & 2.51B (0.04\%) & 4.24M & 64.6M (0.04\%) & 119K \\
+\rowcolor{ai2offwhite}{\bf Total} & & {\bf 9.31T} & {\bf 9.97B} & {\bf 5.93T (100\%)} & {\bf 3.87B} & {\bf 157B (100\%)} & {\bf 104M} \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Composition of \dolmatoomix} including our 9T pool of data, the 6T mix we used for final model training, and the 150B mix we used for experimentation. 
+}
+\label{table:data-stage-1}
+\end{table}
+
+
+		
+
+
+
+
+
+
+
+
+
+
+

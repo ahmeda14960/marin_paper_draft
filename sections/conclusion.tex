@@ -1,0 +1,28 @@
+\section{Limitations and Conclusion}
+\label{sec:conclusion}
+
+\subsection{Limitations}
+
+Marin makes explicit several limitations common to fully open base-model releases.
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Base-first focus.} Marin 32B is released only as a base model without instruction tuning or RLHF, limiting immediate end-user utility~\citep{marin32bretro}.
+\item \textbf{Evaluation uncertainty.} Many benchmarks are contaminated in modern pretraining corpora; comparisons should be interpreted cautiously and ideally validated with decontaminated or held-out alternatives~\citep{marin8bretro,marin32bretro}.
+\item \textbf{Language and context scope.} The reported results focus on English (and code) and do not include long-context extension training.
+\item \textbf{Operational drift.} Mid-flight adaptation is powerful, but it also means that the final recipe is the result of multiple reactive decisions; reproducing the trajectory requires careful artifact/version tracking.
+\end{itemize}
+
+\subsection{Conclusion}
+
+Marin is a fully open effort to train strong base language models while keeping the training process legible: data mixes, code, checkpoints, evaluation settings, and a public record of issues and fixes~\citep{Hall2025marin}.
+Across an 8B run that evolves through multiple cooldown/reheat phases and a 32B run that required a mid-training attention-stack change, the retrospectives highlight several transferable lessons:
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{Mid-flight changes can work.} Carefully staged transitions (cooldowns, reheats, and mix shifts) can be executed without catastrophic regressions when instrumentation is strong.
+\item \textbf{Architectural headroom matters at scale.} At 32B, optimizer-side heuristics reduced but did not eliminate loss spikes; QK-norm provided the needed stability margin after a short recovery window~\citep{Dehghani2023ScalingVT,marin32bretro}.
+\item \textbf{Deep cooldowns surface new failure modes.} Very low learning rates exposed \texttt{lm\_head} instability in 8B cooldowns; z-loss was an effective practical fix~\citep{palm,chameleon,mitch,marin8bretro}.
+\item \textbf{Shuffling is not a solved detail.} A valid but poorly mixing permutation can produce late-training pathologies; a Feistel-based shuffle resolved a measurable phase shift in 32B cooldown~\citep{marin32bretro}.
+\end{itemize}
+
+\paragraph{Future work.}
+The retrospectives suggest several next steps: improving the 8B/32B post-training pipeline (SFT with base-retention, preference tuning, RL), adding long-context extension stages, and hardening dataset auditing (especially for contamination and caching hazards).

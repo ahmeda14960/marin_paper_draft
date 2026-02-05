@@ -1,0 +1,20 @@
+\begin{table}[t]
+\centering
+\setlength\tabcolsep{5pt}
+\renewcommand{\arraystretch}{1.2}
+\adjustbox{max width=\linewidth}{
+\begin{NiceTabular}{lcccccc}
+\toprule
+& \multicolumn{3}{c}{\textbf{LitQA2}} & \multicolumn{3}{c}{\textbf{SimpleQA}} \\
+\cmidrule(lr){2-7}
+& \textbf{No tools} & \textbf{ASC} & \textbf{$\Delta$} & \textbf{No tools} & \textbf{SBT} & \textbf{$\Delta$} \\ 
+\midrule
+Olmo 3 Instruct 7B & 24.4 & 38.2 & 13.8 & 3.3 & 79.2 & 75.9 \\
+Qwen 3 8B (w/o reasoning)  & 34.7 & 39.6 & 4.9 & 2.0 & 79.0 & 77.0 \\
+Qwen 3 VL 8B Instruct  & 34.7 & 30.7 & -4.0 & 9.3 & 90.3 & 81.0\\
+Qwen 2.5 7B  & 36.0 & 29.8 & -6.2 & 3.3 & 78.0 & 74.7 \\
+\bottomrule
+\end{NiceTabular}}
+\caption{\textbf{Comparison of agents' performance with and without access to tools on LitQA2 and SimpleQA}. ASC refers to Asta Scientific Corpus tools and SBT refers to search and browsing tools.}
+\label{tab:tools-vs-no-tools}
+\end{table}

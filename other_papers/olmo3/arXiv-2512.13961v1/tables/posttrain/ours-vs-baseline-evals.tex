@@ -1,0 +1,73 @@
+
+
+
+
+
+
+
+
+
+
+
+\begin{table}[t]
+\centering
+\footnotesize
+\setlength\tabcolsep{5pt}
+\renewcommand{\arraystretch}{0.95}
+\adjustbox{max width=\linewidth}{
+{\fontsize{8}{8}\selectfont
+\begin{NiceTabular}{@{}Hl
+C{35pt}C{35pt}P{35pt}|
+C{35pt}C{35pt}C{35pt}C{35pt}C{35pt}C{35pt}@{}}
+\toprule
+& & \multicolumn{3}{c}{\quad \quad \textbf{\texttt{Olmo 3 7B Think}}} & \multicolumn{6}{c}{\textbf{\texttt{Baselines}}} \\
+\textbf{Skill} &
+& \textbf{SFT} & \textbf{DPO} & \textbf{Final Think} & \textbf{OpenThinker3 7B} & \textbf{Nemotron Nano 9B v2} & \textbf{DS-R1 Qwen 7B} & \textbf{Qwen 3 8B} & \textbf{Qwen 3 VL 8B Think} & \textbf{OR Nemotron 7B} \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Math} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{MATH} & 94.4 & 92.4 & 95.1 & 94.5 & 94.4 & 87.9 & 95.1 & 95.2 & 94.6 \\
+\rowcolor{lightgrey} -- & \metric{AIME 2024} & 69.6 & 74.6 & 71.6 & 67.7 & 72.1 & 54.9 & 74.0 & 70.9 & 77.0 \\
+\rowcolor{lightgrey} -- & \metric{AIME 2025} & 57.6 & 62.7 & 64.6 & 57.2 & 58.9 & 40.2 & 67.8 & 61.5 & 73.1 \\
+\rowcolor{lightgrey} -- & \metric{OMEGA} & 37.8 & 40.5 & 45.0 & 38.4 & 42.4 & 28.5 & 43.4 & 38.1 & 43.2 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Reasoning} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{BigBenchHard} & 84.1 & 83.7 & 86.6 & 77.1 & 86.2 & 73.5 & 84.4 & 86.8 & 81.3 \\
+\rowcolor{lightgrey} -- & \metric{ZebraLogic} & 57.9 & 60.6 & 66.5 & 34.9 & 60.8 & 26.1 & 85.2 & 91.2 & 22.4 \\
+\rowcolor{lightgrey} -- & \metric{AGI Eval English} & 77.2 & 79.1 & 81.5 & 78.6 & 83.1 & 69.5 & 87.0 & 90.1 & 81.4 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Coding} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{HumanEvalPlus} & 88.2 & 91.4 & 89.9 & 87.4 & 89.7 & 83.0 & 80.2 & 83.7 & 89.7 \\
+\rowcolor{lightgrey} -- & \metric{MBPP+} & 63.2 & 63.0 & 64.7 & 61.4 & 66.1 & 63.5 & 69.1 & 63.0 & 61.2 \\
+\rowcolor{lightgrey} -- & \metric{LiveCodeBench v3} & 67.8 & 75.1 & 75.2 & 68.0 & 83.4 & 58.8 & 86.2 & 85.5 & 82.3 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{IF} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{IFEval} & 77.9 & 75.9 & 88.2 & 51.7 & 86.0 & 59.6 & 87.4 & 85.5 & 42.5 \\
+\rowcolor{lightgrey} -- & \metric{IFBench} & 30.0 & 28.3 & 41.6 & 23.0 & 34.6 & 16.7 & 37.1 & 40.4 & 23.4 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Knowledge \& QA} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{MMLU} & 74.9 & 74.8 & 77.8 & 77.4 & 84.3 & 67.9 & 85.4 & 86.5 & 80.7 \\
+\rowcolor{lightgrey} -- & \metric{PopQA} & 20.8 & 24.7 & 23.7 & 18.0 & 17.9 & 12.8 & 24.3 & 29.3 & 14.5 \\
+\rowcolor{lightgrey} -- & \metric{GPQA} & 45.8 & 48.6 & 46.2 & 47.6 & 56.2 & 54.4 & 57.7 & 61.5 & 56.6 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Chat} & & & & & & & & & \\
+\rowcolor{lightgrey} -- & \metric{AlpacaEval 2 LC} & 43.9 & 50.6 & 52.1 & 24.0 & 58.0 & 7.7 & 60.5 & 73.5 & 8.6 \\
+\midrule
+
+\rowcolor{midgrey} -- & \textbf{Safety} & 65.8 & 67.7 & 70.7 & 31.6 & 72.1 & 54.0 & 68.3 & 82.9 & 30.3 \\
+\bottomrule
+
+\end{NiceTabular}}}
+\caption{\textbf{Overview of results of \textbf{\olmothreethinking 7B} on our post-training evaluation suite.} All numbers are the mean of three runs. We evaluate all models using our evaluation framework, generating up to a maximum of 32768 tokens.}
+\label{tab:post-train-eval-overview}
+\end{table}
+
+
+
+
+

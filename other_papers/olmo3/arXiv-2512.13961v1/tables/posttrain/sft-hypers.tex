@@ -1,0 +1,18 @@
+\begin{table}[th]
+    \centering
+    \begin{small}
+    \adjustbox{max width=\linewidth}{
+    \begin{tabular}{lccc}
+        \toprule
+        & {\bf 7B Thinking SFT} & {\bf 32B Thinking SFT} & {\bf 7B Instruct SFT}  \\
+        \midrule
+        \rowcolor{ai2offwhite}{\bf Total Tokens} & 45.4B & 45.2B & 3.4M \\
+        {\bf Learning Rate} & $5.0 \times 10^{-5}$ & $1.0 \times 10^{-4}$ souped with $5.0 \times 10^{-5}$  & $8.0 \times 10^{-5}$ \\
+        \rowcolor{ai2offwhite}{\bf Num. GPUs} & 64 & 256 & 8-64 \\
+        {\bf Max Sequence Length} & 32K & 32K & 32K \\
+        \bottomrule
+    \end{tabular}}
+    \end{small}
+    \caption{\textbf{Training hyperparameters for \olmothreethinking SFT and \olmothreeinstruct SFT.} GPU hours assume NVIDIA H100 accelerator.}
+    \label{tab:sft_training_settings}
+\end{table}

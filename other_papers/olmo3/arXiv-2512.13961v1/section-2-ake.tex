@@ -1,0 +1,134 @@
+\section{Model Flow for \olmothree}
+\label{sec:olmo-family}
+
+In this section, we provide a brief overview of all components of the model flow for \olmothree{}, highlighting our methodology for targeting reasoning and tool-use capabilities in ways that advance beyond \olmotoo~\citep{olmo20242olmo2furious} and other open-weight models. Subsequent sections will then provide deep dives into each of the model flow components. \olmothree{} training is divided into major stages of base model training and post-training, each further divided into sub-stages as outlined in Figure~\ref{fig:olmo3_pipeline}.
+
+\begin{figure}[!h]
+\centering
+\includegraphics[width=\textwidth]{figures/olmo3_figure.pdf}
+\caption{\textbf{Depiction of model flow for \olmothree}. Development is divided into major \textcolor[HTML]{f0529c}{\bf{base model training (left)}} and \textcolor[HTML]{105257}{\bf{post-training (right)}} stages, each further divided into sub-stages with their own recipes (i.e., training data and method).
+}
+\label{fig:olmo3_pipeline}
+\end{figure}
+
+\subsection{Base Model Training}
+
+
+
+
+
+
+We develop \olmothreebase in three stages of \emph{pretraining} for up to 5.9T tokens (Section~\S\ref{sec:pretraining}), \emph{midtraining} for 100 billion tokens (Section~\S\ref{sec:midtraining}), and the newly added \emph{long-context extension} for 50B (\olmothreebase 7B) or 100B (\olmothreebase 32B) tokens (Section~\S\ref{sec:long-context}).
+
+\paragraph{Evaluation}
+We develop \olmothreeeval, a collection of benchmarking suites to support decision-making during base model development (pretraining and midtraining). Our goal is to be compute-efficient by making development decisions based on models trained at a small scale. The challenge is that such models can exhibit random-chance performance on certain tasks, and have  small differences in scores that are hard to distinguish from benchmark noise. To address this, we (1) aggregate scores over clusters of tasks that assess similar capabilities (Section~\S\ref{sec:eval:clustering}); (2) develop proxy metrics for evaluating small-scale models (Section~\S\ref{sec:eval:scaling-analysis}); and (3) improve overall signal-to-noise ratio by evaluating on more examples from noisy tasks or even removing them entirely (Section~\S\ref{sec:eval:signal-noise}).
+
+\paragraph{Data curriculum}
+We curate specialized datasets for each training stage,
+with latter stages focused on strengthening capabilities crucial in post-training stages, such as math, code, reasoning, instruction following, and long-context understanding:
+\begin{itemize}
+\item {\bf{Pretraining}} 
+We first train \olmothreebase on {\bf{\dolmatoomix}} (Section~\S\ref{sec:pretraining}), our 6T-token pretraining data mix.
+While \dolmatoomix is largely comprised of the same types of data sources used in other open pretraining recipes~\citep{soldaini2024dolma,bakouch2025smollm3,olmo20242olmo2furious}, we demonstrate three key novelties:
+\begin{itemize}[itemsep=2pt]
+    \item[$\circ$] New tooling for fast and scalable global deduplication at the trillion-token scale;
+    \item[$\circ$]  A novel source of academic PDFs---\olmocrPDF---converted to linearized plain text using \olmocr~\citep{poznanski2025olmocr,poznanski2025olmocr2unittest};
+    \item[$\circ$]  Two new methods for optimizing selection of training tokens: token-constrained mixing and quality-aware upsampling.
+\end{itemize}
+\item {\bf{Midtraining}} We continue training on {\bf{\dolminostoo}} (Section~\S\ref{sec:midtraining}), our 100B-token data curated to boost target capabilities across code, math, and general knowledge QA domains through the introduction of: %
+\begin{itemize}[itemsep=2pt]
+    \item[$\circ$] A new two-part methodological framework combining 1) lightweight, distributed feedback loops on individual data sources, with 2) centralized integration tests to assess candidate mixes on base model quality and post-trainability.
+    \item[$\circ$] Intentional inclusion instruction data and thinking traces to lay groundwork for post-training.
+\end{itemize}
+\item {\bf{Long-context extension}} Through {\bf{\longminomix}} (Section~\S\ref{sec:long-context}), \olmothree  supports long-context input and output, a crucial feature to unlock reasoning and tool-use capabilities.
+\begin{itemize}[itemsep=2pt]
+\item[$\circ$] Documents in \olmocrPDF enable of our long-context approach;
+with over 22.3M documents of length above 8K tokens (640B tokens total), and 4.5M documents over 32K tokens (380B tokens total), this collection is the largest openly available for long-context research.
+\item[$\circ$] As result, \olmothree is our first model with long-context capabilities, supporting up to 65K context after extension. 
+\olmothreebase 32B rivals performance of Qwen 2.5 32B, Mistral Small 3.1 24B, and Gemma 3 27B on long-context benchmarks, despite a short extension stage (50B for 7B, 100B for 32B). 
+\end{itemize}
+\end{itemize}
+
+\paragraph{Open artifacts}
+We release all of our intermediate checkpoints as well as the final models at the end of each stage of training.
+For data, we release both our {\bf{data mixes}}, which are the actual tokens used for base model training,\footnote{A data mix may involve upsampling or repeating data from a data pool.} as well as our full source {\bf{data pools}} for each stage---9T tokens of cleaned source tokens for pretraining, and 2T and 640B tokens of specialized data for midtraining and long-context extension respectively.
+For pretraining, in addition to our actual training mix for \olmothreebase, we also release smaller sample mixes for accessible experimentation with less compute (150B for pretraining and 10B for midtraining).
+
+
+
+\subsection{Post-training}
+We post-train \olmothreebase{} into three model variants:
+
+\begin{itemize}
+\item {\bf \olmothreethinking{}} (Section~\S\ref{sec:posttrain-thinking}) is trained to perform extended reasoning by generating a structured thinking trace before a final answer. We train it via SFT, DPO, and RLVR, observing gains at each stage.
+
+\begin{itemize}[itemsep=2pt]
+    \item[$\circ$] We introduce {\bf\dolcithinksft} (Section~\S\ref{sec:thinking_sft_recipe}), {\bf\dolcithinkdpo} (Section~\S\ref{sec:thinking_dpo_recipe}), and {\bf\dolcithinkrl} (Section~\S\ref{sec:thinking_rl_recipe}), new post-training datasets designed to target a broad range of key capabilities such as math, coding, instruction following, and general conversation.
+    The dataset includes synthetic examples with long thinking traces for supervised finetuning, high-quality contrastive data following the insights from Delta Learning \citep{geng2025delta}, and challenging prompts for reinforcement learning across both verifiable and non-verifiable domains. In particular, our new approach to curating contrastive instances for preference tuning expands the reasoning frontier of the model beyond what SFT alone can provide and primes the model for effective reinforcement learning.
+    \item[$\circ$] We introduce algorithmic and infrastructural advances in reinforcement learning with verifiable rewards (Section~\S\ref{sec:thinking_rl_recipe}). This approach generalizes verifiable reasoning to multiple domains, expanding beyond the settings explored in \olmotoo{} to include code and general chat. Our improvements enable longer and more stable RL runs across diverse domains and increase the overall efficiency of training cycles, leading to a 4x speedup in RL training. Notably, we introduce {\bf \olmothreeonethink 32B} to illustrate that extended \olmothreerl training leads to improved performance.
+\end{itemize}
+\item {\bf \olmothreeinstruct{}} (Section~\S\ref{sec:posttrain-instruct}) is trained to produce efficient and helpful responses to user queries without generating internal thinking traces. This model prioritizes typical user needs, such as avoiding excessive verbosity for easy user understanding and function-calling for user information seeking.
+In such settings, thinking traces are unnecessary, and inference-time efficiency matters more than inference-time scaling.
+\begin{itemize}[itemsep=2pt]
+    \item[$\circ$] We introduce \dolciinstructsft, our new dataset enriched with data specifically created for function calling (Section~\S\ref{sec:tool-use-sft}). To directly optimize model interactivity on top of capabilities, we extend our Delta Learning preference pipeline in \dolciinstructdpo, incorporating multi-turn preference data and targeted data length interventions that encourage concise responses (Section~\S\ref{sec:dolci-instruct-dpo}). Finally, we use reinforcement learning with verifiable rewards (Section~\S\ref{sec:RLVR-instruct}) to further refine core capabilities, where preference tuning synergizes with RL to improve model performance while maintaining learned brevity.
+\end{itemize}
+\item {\bf \olmothreerlzero{}} (Section~\S\ref{sec:rlzero}) %
+To date, all leading open RLVR benchmarks and algorithms train on top of open-weight models that do not reveal their pretraining or mid-training data \citep{scalingllama3,qwen3}.
+This limits the community's ability to study the role of pretraining data on RLVR performance.
+It can lead to myriad issues with benchmark evaluations being contaminated, e.g., mid-training data containing the evaluation, which makes spurious rewards as effective as true reward~\citep{shao2025spuriousrewardsrethinkingtraining,wu2025reasoning} or improvements from fixing prompt templates outweighing the improvements from RL~\citep{liu2025understanding}.
+\begin{itemize}[itemsep=2pt]
+    \item[$\circ$]  We therefore release a fully open dataset \dolcirlzero, an algorithmic RL zero setup for \olmothree, and open-source \olmothreerl code to enable clear benchmarking in the RL research community.
+We perform RLVR from \olmothreebase over four benchmarking domains to create the \olmothreerlzero family: math, code, precise instruction following (IF) and a general mix.
+In all cases, we further decontaminate \dolcirlzero from pretraining and midtraining data to guarantee our setup carefully studies the effect of RLVR without data leakage confounding our conclusions.
+\end{itemize}
+\end{itemize}
+
+
+\input{tables/flagship}
+
+\subsection{Results} Table~\ref{tab:32b-think-flagship-results} demonstrates a snapshot of our evaluation for \olmothreethinking compared to other open-weight and fully-open models. 
+To the best of our knowledge, \olmothreethinking is the strongest fully-open thinking model to date.
+It is better than Qwen2.5-Instruct, Gemma 2 and 3 27B, DeepSeek R1, and Distilled Qwen 32B; it is also close to Qwen 3 and Qwen 3 VL 32B models, narrowing the gap to the best open-weight models of similar scale while training on roughly 6x fewer tokens.
+
+
+For more details and results of other models along our \olmothree model flow, refer to the quick links below.
+
+\begin{itemize}
+    \item {\bf{\olmothreebase}} Section~\S\ref{subsec:pretrain_base_model_results} for detailed evaluation discussion. Table~\ref{tab:transposed-super-base-table-32b} (32B) and Table~\ref{tab:transposed-super-base-table-7b} (7B) for main results. Table~\ref{tab:ruler_baselines} for long context evaluations. Table~\ref{tab:base_evals_overview} for pretraining vs midtraining vs long-context extension stages.
+    \item {\bf{\olmothreethinking}} Section~\S\ref{sec:posttrain_eval} for detailed evaluation discussion. Table~\ref{tab:32b-think-baeslines} (32B) and Table~\ref{tab:post-train-eval-overview} (7B) for main results, including SFT vs DPO vs RL stages.
+    \item {\bf{\olmothreeinstruct}} Section~\S\ref{sec:posttrain_eval_instruct} for detailed evaluation discussion. Table~\ref{tab:32b-instruct-baeslines} (32B) and Table~\ref{tab:7b-instruct-vs-baselines} (7B) for main results, including SFT vs DPO vs RL stages.
+\end{itemize}
+
+
+
+\subsection{Costs} 
+
+
+The cost of training large models is often reported as a single dollar figure, typically by converting GPU-hours at market rates to dollars, such as \$5.576M in H800-hours for DeepSeek V3~\citep{deepseekv3}.
+To provide a more representative view of the resources required to train \olmothree~32B, we instead report the wall-clock time that elapses during training.
+
+In total, approximately 56 days elapsed from the start of training to the evaluation of the \olmothreethinking 32B checkpoint, on a cluster with 1024 H100 GPUs dedicated to \olmothree. 
+The 32B 3.1 Think and Instruct checkpoints were trained after this time period.
+This training time is largely a reflection of \textit{applying our best recipe to the model}\footnote{The recipe was developed on 7B or smaller and applied to 32B rapidly.}, and does not include any substantial modifications or research ideas that could expand the timeline substantially.
+At a price of \$2/H100 hour, this would cost \$2.75M. Runtime breakdown is as follows:
+
+\begin{itemize}
+    \item {\bf{Pretraining:}}~$\mathbf{\sim}${\bf{47 days}} (including midtraining and long-context stages) The initial pretraining phase on 5.5T tokens took about 9.5 days on 512 GPUs, followed by an additional 35 days on 1024 GPUs.
+    These durations include all crash resumptions and other engineering concerns that kept us from running at full speed.
+    Midtraining consisted of two parallel runs on 512 GPUs each, covering 100B tokens per run, followed by model merging and evaluations to decide on final checkpoints, taking about 1.5 days in total.
+    Long-context extension was executed as a single run on 1024 GPUs; the full long-context stage---including training and all associated merges and evaluations---added approximately one additional day.
+    \item {\bf{Post-training:}}~$\mathbf{\sim}${\bf{9 days}} (SFT, DPO, and RL) Post-training follows a different operational pattern in which we run each stage multiple times, sweeping over learning rates and other hyperparameters.
+    The theory for post-training, particularly, RL, is less developed, so we have to run multiple experiments to identify the optimal hyperparameters for a given base model. 
+    We hope to address this in future work.
+    During post-training, checkpoint evaluation consumes a larger proportion of compute resources, in part due to long generations from reasoning models on core benchmarks.
+    For SFT, we swept over four candidate learning rates, on 256 GPUs each, in parallel for 36 hours. Then approximately 12 hours was spent on evaluation, merging, and checkpoint confirmation, totaling approximately two days.
+    DPO training takes less time per run (about 18 hours for a full learning-rate sweep on 64 GPUs per job) but in practice extended over multiple days due to cluster instability.
+    The final RL runs for the initial \olmothreethinking 32B spanned approximately 5 days with at least a day of training time lost due to stability issues.
+    After the initial release of \olmothree, we continued our best RL run for another 21 days on 224 GPUs to produce \olmothreeonethink 32B.
+\end{itemize}
+
+While pretraining accounts for the majority of total GPU hours, a non-trivial share is consumed by post-training and by the repeated checkpoint evaluations required when transitioning between major training stages. These additional costs are not captured when reporting pretraining hours alone but remain significant across the model’s full development cycle. Further pretraining details, which represent the bulk of expenditure, are provided in Appendix \ref{sec:appendixpretrain}.
+
+
+
+

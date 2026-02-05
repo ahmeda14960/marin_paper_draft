@@ -1,0 +1,44 @@
+\section{Introduction}
+\label{sec:intro}
+
+The open-weight LLM ecosystem has grown rapidly, with strong releases at many sizes (e.g., Llama~\citep{dubey2024llama}, Qwen~\citep{qwen2.5,qwen3}, Gemma~\citep{team2025gemma3}).
+However, model weights alone are rarely sufficient to reproduce training dynamics, diagnose failures, or study how data and optimization choices shape capabilities.
+A complementary line of work has advocated ``fully open'' releases: not just final checkpoints, but also training code, data mixtures, intermediate artifacts, and documentation that enables reproduction and scientific inspection~\citep{Groeneveld2024OLMoAT,biderman2023pythia,liu2023llm360,dclm,olmo20242olmo2furious}.
+
+In this paper we document \textsc{Marin}, a community-driven, fully open effort to train competitive base language models with transparent ``model flow'' artifacts (data mixes, code, checkpoints, and a public issue-driven development history)~\citep{Hall2025marin}.
+Our goal is not only to report final scores, but to provide a phase-by-phase retrospective of what actually happened in long, expensive training runs: what broke, what interventions worked, and which fixes were ``one-way doors'' versus easily reversible.
+
+\paragraph{What are ``8B'' and ``32B''?}
+They denote the approximate parameter count of the two primary Marin base models.
+The 8B run targets the widely used single-node or modest-cluster deployment regime, while the 32B run targets a higher-capability regime comparable to recent open-weight 30--32B baselines.
+
+\paragraph{What are the ``issues'' in the retrospectives?}
+They are concrete operational and scientific problems encountered at scale: loss spikes, attention instability, batch/LR transitions, data-mixture regressions, shuffling pathologies, benchmark contamination, and implementation mistakes.
+These issues are often under-emphasized in final model cards, but are central to making training reliable and reproducible.
+
+\subsection{Contributions}
+\label{subsec:contrib}
+
+We make four contributions.
+
+\begin{enumerate}[leftmargin=*]
+\item \textbf{A fully open training record for Marin 8B and 32B.}
+We summarize architectures, data mixtures, hyperparameters, phase boundaries, and evaluation settings, and we point to public experiment specifications and issue threads that motivated major interventions~\citep{Hall2025marin}.
+
+\item \textbf{A pragmatic ``mid-flight adaptation'' methodology.}
+We show how a single long run can incorporate multiple cooldowns, reheats, and data-mixture changes (``tootsie roll'' training), guided by frequent evaluation and low-cost ``microannealing'' experiments (cf. midtraining and micro-annealing in OLMo 2~\citep{olmo20242olmo2furious}).
+
+\item \textbf{Stability lessons at two scales.}
+For Marin 8B, we highlight how EMA monitoring, deep cooldowns, and z-loss became important as learning rates approached very low regimes.
+For Marin 32B, we document how ``optimizer-side'' mitigations softened but did not remove loss spikes, and how a mid-run switch to QK-norm attention eliminated spikes after a short recovery window~\citep{Dehghani2023ScalingVT}.
+
+\item \textbf{A case study in data-system failures and fixes.}
+We describe how shuffling quality can produce late-training phase shifts, motivating a switch from an affine/LCG permutation to a Feistel-network permutation.
+We also document a benchmark contamination incident (GSM8K) introduced via cached data, and the safeguards added afterward.
+\end{enumerate}
+
+\subsection{Paper Roadmap}
+Section~\ref{sec:related} surveys related work.
+Section~\ref{sec:methods} details the Marin pipeline, data, architectures, training schedules, and artifact release.
+Section~\ref{sec:experiments} reports the 8B and 32B retrospectives, including figures reproduced from the official retrospectives and benchmark results.
+Section~\ref{sec:conclusion} concludes with limitations and future directions.

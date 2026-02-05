@@ -1,0 +1,37 @@
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Open-Weight LLMs}
+Recent open-weight technical reports provide strong baselines and highlight engineering tradeoffs in training large models.
+The Llama family~\citep{dubey2024llama} helped popularize detailed reporting and the idea of using mid-training interventions.
+Qwen 2.5 and Qwen 3~\citep{qwen2.5,qwen3} and Gemma 3~\citep{team2025gemma3} provide competitive 27--32B class baselines.
+While these reports provide substantial implementation details, they typically do not release full training data mixtures and intermediate artifacts.
+
+\subsection{Fully Open Training Releases}
+A smaller set of projects release not only weights, but also training code and dataset compositions, enabling reproduction and deeper scientific study.
+Examples include OLMo~\citep{Groeneveld2024OLMoAT} and OLMo 2~\citep{olmo20242olmo2furious}, Pythia~\citep{biderman2023pythia}, LLM360~\citep{liu2023llm360}, and DataComp-LM/DCLM~\citep{dclm}.
+Marin is aligned with this ``fully open'' ethos, emphasizing a public, issue-driven record of experimentation and the release of artifacts along the training lifecycle~\citep{Hall2025marin}.
+
+\subsection{Data Curation and Web-Scale Corpora}
+Open corpora and documented data pipelines are increasingly central to reproducible LLM research.
+Dolma provides an open multi-trillion-token corpus and standardized subsets for experimentation~\citep{soldaini2024dolma}.
+Nemotron-CC offers a refined Common Crawl-derived corpus designed for long-horizon pretraining~\citep{su2025nemotroncctransformingcommoncrawl}.
+For code, StarCoder/Stack-style corpora provide broad coverage of permissively licensed repositories~\citep{lozhkov2024starcoder}.
+Marin's retrospectives highlight that ``high-quality'' sources (e.g., Wikipedia, ArXiv) may be missing structures that matter for few-shot benchmarks; mixing in instruction-like collections such as FLAN can partially counteract this~\citep{wei2021flan}.
+
+\subsection{Multi-Stage Training and Midtraining}
+Chaining multiple training stages is a common strategy to patch deficits, add domains, or increase ``post-trainability.''
+This includes continued pretraining in new domains~\citep{gururangan2020dontStopPretraining} and more explicit midtraining stages described in recent reports~\citep{abdin2024phi,openai2024midtraining,olmo20242olmo2furious}.
+End-of-training domain upsampling can yield gains on target capabilities, but may introduce regressions elsewhere~\citep{blakeney2024doesdatasparkjoy}.
+Marin adopts a practical version of this idea: cooldown phases with targeted data mixes, plus short, low-cost ``microannealing'' runs to evaluate candidate sources before committing substantial compute.
+
+\subsection{Training Stability and Optimization}
+Large runs often exhibit loss spikes and other instabilities that can waste compute and degrade final performance.
+Stability toolkits include architectural interventions such as QK-norm~\citep{Dehghani2023ScalingVT}, regularizers such as z-loss~\citep{palm,chameleon,mitch}, and optimizer-side heuristics such as gradient clipping and skipping outlier steps.
+OLMo 2 provides an extended case study of instability diagnosis and mitigations (e.g., embedding norm dynamics, spike scoring, and skip-step optimizers)~\citep{olmo20242olmo2furious,spikenomore}.
+Marin's 32B run reinforces a similar conclusion: heuristics can reduce severity but may not remove spikes at scale, motivating more fundamental attention-stack changes.
+
+\subsection{Post-Training}
+While this paper focuses on base-model development, Marin's 8B retrospective includes a small supervised fine-tuning (SFT) experiment to probe ``SFT-ability.''
+Open post-training recipes such as Tulu 3~\citep{lambert2024tulu3} provide an end-to-end alignment pipeline (SFT, preference tuning, and RL variants).
+Marin's SFT results echo observations in OLMo 2 that instruction tuning can improve instruction-following metrics while degrading some base-model benchmarks, motivating continued pretraining mixing or more careful SFT data design~\citep{olmo20242olmo2furious}.

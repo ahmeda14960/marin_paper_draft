@@ -1,0 +1,519 @@
+
+\subsection{Post-Training Additional Training Details}
+\subsubsection{Supervised Finetuning Details}
+\label{appx:sft-details}
+
+\paragraph{Using OLMo-core infrastructure for SFT Training}
+Relative to pretraining, this involves a substantially smaller batch size, different data packing, and masking.
+This leads to an ~8x faster training speed than open-instruct, dramatically improving our iteration speed.
+We use between 1 and 8 8xH100 nodes, or 1 to 4 8xB200 nodes to train our 7B reasoner and instruct models. We use 32 8xH100 nodes to train our 32B thinking model
+As a consequence of using olmo-core, our batch size is now measured in tokens instead of instances, and we train with document packing instead of padding.
+We train all of our 7B SFT models with a batch size of 1M tokens and 32B SFT models with a batch size of 4M tokens, for two epochs, with packing, and a 32{,}768 sequence length.
+Our hyperparameter settings are also summarized in Table~\ref{tab:sft_training_settings}.
+
+\input{tables/posttrain/sft-hypers}
+
+
+\subsubsection{Preference Tuning Details}
+\label{appx:dpo-details}
+\paragraph{Training Settings} Given a preference dataset $\mathcal{D} = \left\{(x,y_c,y_r)\right\}$ of prompts $x$ and corresponding chosen and rejected responses $y_c \succ y_r$, we optimize the model policy $\pi_\theta$ on a length-normalized DPO loss~\citep{lambert2024tulu3}:
+\begin{align*}
+    \max_{\pi_\theta} \mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log \sigma \left( \frac{\beta}{|y_c|}\log\frac{\pi_\theta(y_c | x)}{\pi_{\text{ref}}(y_c|x)} - \frac{\beta}{|y_r|}\log\frac{\pi_\theta(y_r | x)}{\pi_{\text{ref}}(y_r|x)}\right) \right]
+\end{align*}
+where $\pi_{\text{ref}}$ is the initial reference policy and $\beta$ is a hyperparameter that regularizes learning via an implicit Kullback–Leibler (KL) divergence penalty between the reference policy and the training policy.
+
+We sweep learning rate and preference dataset size, as we observe that performance increases up until some task-dependent optimal optimization point beyond which further tuning hurts (\autoref{fig:ushape_dpo}). All other hyperparameters are kept fixed. See \autoref{tab:dpo_training_settings} for exact hyperparameters. We train our 7B models using 2–4 8xH100 nodes, and our 32B models with 8–16 8xH100 nodes.
+\input{tables/posttrain/dpo_hypers}
+
+
+\subsubsection{Reinforcement Learning Details}
+We provide full training curves for our 7B reasoner in~\autoref{fig:olmo3_final_rl_run}.
+The overall reward increases steadily over training. The KL divergence grows gradually and reflects stronger deviation from the reference policy. The response length becomes longer and stabilizes at a higher level. Domain-specific verifier rewards display consistent gains in math and moderate fluctuations in code. The IfEval reward rises throughout training. The two general-quality verifiers also show clear and sustained improvement. Together, these trends indicate that the policy improves both specialized skills and overall response quality. The full hyperparameters for all RL experiments are provided in in~\autoref{tab:rlvr_training_settings}.
+
+
+
+
+
+\subsubsection{RL-Zero Details}
+\label{ssub:rl-zero}
+We detail the prompt used for math in \autoref{fig:rlzero-math-prompt}. Prompts of other domains are quite similar, see the open-instruct codebase for details.
+
+We also compare Olmo 3 RL-Zero 7B to one of the more common benchmarks in RLVR, DAPO \citep{yu2025dapo} in \autoref{fig:rlzero-vs-dapo}. Olmo 3 RL-Zero achieves reasonable performance faster and is also much more compute efficient, making it better for experimentation.
+
+Finally, we compare Olmo RL-Zero 3.1 to the initially released, RL-Zero 3.0 in \autoref{fig:rlzero-3.0-vs-3.1} and see a sizable improvement. There were some minor fixes to loss calculation but the major improvement comes from 1. setting completion length to 16k instead of 12k and 2. \textit{not} masking truncated sequences, one of the components of DAPO \citep{yu2025dapo}. Despite initial results suggesting this masking improved the speed of the trainer (by having fewer completions to train on), we ultimately found that variations in batch size caused by some examples masked out to reduce stability. And without training on overlong negative sequences, completion lengths were higher, on average. We therefore found that any efficiency gains in training speed from masking were outweighed by slowdowns from generating longer sequence lengths. 
+
+
+
+
+
+\begin{figure}[h]
+\begin{prompt}{\sans{RL-Zero Math Prompt}}\small
+Solve the following math problem step by step. \\
+The last line of your response should be the answer to the problem in form Answer: \$Answer (without quotes) where \$Answer is the answer to the problem.\\
+
+\{Math Question\}\\
+
+Remember to put your answer on its own line after "Answer:"
+\end{prompt}
+\caption{\textbf{RL-Zero Prompt for Math Task}.}
+\label{fig:rlzero-math-prompt}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rlzero_vs_dapo_steps.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rlzero_vs_dapo_hours.pdf}
+    \end{subfigure}
+    \vspace{-1em}
+    \caption{
+    \textbf{Olmo 3 RL-Zero 7B vs DAPO}~\citep{yu2025dapo} which leverages Qwen 2.5 32B. We compare the two benchmarks in terms of increase in model performance over training steps as well as GPU hours (exact values and GPU hours for DAPO taken from the \href{https://wandb.ai/verl-org/DAPO\%20Reproduction\%20on\%20verl/runs/0qjd0wap?nw=wmb4qxfht0n}{DAPO reproduction on verl}).
+    }
+    \label{fig:rlzero-vs-dapo}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_pass_at_1_comparison.pdf}
+    \end{subfigure}
+    \caption{
+    \textbf{\olmothreerlzero vs \olmothreeonerlzero}. We compare our new baseline to the previously released \olmothreerlzeromath on AIME 2024 and 2025, pass@1. Our new setup improves performance more slowly to begin with but outperforms as training goes longer, plateauing at a higher score $\sim 50\%$. 
+    }
+    \label{fig:rlzero-3.0-vs-3.1}
+\end{figure}
+
+
+
+\begin{figure}[h]
+\begin{prompt}{\sans{Prompt for LLM Judge Reward}}\small
+
+Please act as an impartial judge and evaluate the quality of the answer provided by an
+AI assistant to the conversation history leading up to the answer displayed below.
+Judge whether the provided answer is good by comparing it to the reference answer. \\ \\
+
+Notes:\\
+- Besides comparing to the reference answer, your evaluation should consider factors such as the helpfulness, relevance, accuracy, creativity, appropriate level of detail, and how well the response satisfies the user's explicit constraints or accurately follows their instructions.\\
+- Note that sometimes the reference answer is not the only answer. So any valid variation of the reference answer is also acceptable and can get a full score. \\
+- If there is a system prompt, ensure the AI answer prioritizes following it. \\
+- Begin your evaluation by providing a short explanation. \\
+- Be as objective as possible. After providing your short explanation, please output a score on a scale of 1 to 10. \\
+- Please adhere to the following format. \\ \\
+
+[Conversation History]\\
+\{input\} \\ \\
+
+[AI Answer]\\
+\{output\}\\ \\
+
+[Reference Gold Answer]\\
+\{label\}\\ \\
+
+[Your judgement]\\
+Respond in JSON format. \{"REASONING": "[...]", "SCORE": "<your-score>"\}
+\end{prompt}
+\vspace{-1em}
+\caption{\textbf{LLM judge prompt for non-verifiable tasks}.}
+\label{llm-judge-prompt}
+\end{figure}
+
+\begin{table}[th]
+    \centering
+    \begin{small}
+    \adjustbox{max width=\linewidth}{
+    \begin{tabular}{lcccccc}
+        \toprule
+        & \textbf{7B Think RL} & \textbf{32B Think RL} & \textbf{7B Instruct RL} & \textbf{7B RL-Zero}  \\
+        \midrule
+        \rowcolor{ai2offwhite}{\bf Dataset size} & 104{,}869 & 104{,}869 & 171{,}950 & 13{,}314  \\
+        {\bf Learning rate} & $1.0 \times 10^{-6}$ & $2.0 \times 10^{-6}$ & $1.0 \times 10^{-6}$ & $1.0 \times 10^{-6}$ \\
+        \rowcolor{ai2offwhite}{\bf Minibatches} & 1 & 1 & 4 & 1 \\
+        {\bf LR schedule} & constant & constant & constant & constant \\
+        \rowcolor{ai2offwhite} {\bf Training steps} & 1{,}400 & 750 & 450 & 2{,}000 \\
+        {\bf Max prompt length} & 2{,}048 & 2{,}048 & 2{,}048 & 2{,}048 \\
+        {\bf Response length} & 32{,}768 & 32{,}768 & 8{,}192  & 16{,}384 \\
+        \rowcolor{ai2offwhite}{\bf Unique prompts per batch} & 64 & 128 & 64 & 32 \\
+        {\bf Group size} & 8 & 8 & 8 & 8 \\
+        \rowcolor{ai2offwhite}{\bf TIS cap} & - & 2.0 & - & 2.0 \\
+        {\bf Sampling temperature} & 1.0 & 1.0 & 1.0 & 1.0 \\
+        \rowcolor{ai2offwhite}{\bf Clip-lower} & 0.2 & 0.2 & 0.2 & 0.2 \\
+        {\bf Clip-higher} & 0.272 & 0.272 & 0.272 & 0.272 \\
+        \rowcolor{ai2offwhite} {\bf Num learner GPUs} & 16 & 64 & 8 & 8 \\
+        {\bf Num actor GPUs} & 56 & 160 & 56 & 64 \\
+        \rowcolor{ai2offwhite} {\bf GPUs per actor (TP)} & 1 & 8 & 1 & 1 \\
+        {\bf Max asynchrony} & 1 & 8 & 8 & 8  \\
+        \bottomrule
+    \end{tabular}}
+    \end{small}
+    \caption{\textbf{RL training hyperparameters for \olmothreethinking, \olmothreeinstruct and \olmothreerlzero.} GPU hours assume NVIDIA H100 accelerator.}
+    \label{tab:rlvr_training_settings}
+\end{table}
+
+
+\begin{figure}
+    \centering
+    \adjustbox{max width=0.8\linewidth}{\includegraphics{figures/rlvr_sft/final_olmo3_rl_run.pdf}}
+    \caption{\textbf{Reward, KL, response length, and per-verifier reward} over the final RL run for \olmothreethinking.}
+    \label{fig:olmo3_final_rl_run}
+\end{figure}
+
+\subsection{Post-Training Additional Data Details}
+
+
+\subsubsection{Filtering for \dolcithink-SFT}
+\label{appendix:filtering-think-sft}
+
+In this section we detail the filtering methods created primarily for training \olmothreethinking, which was also used for mid-training and \olmothreeinstruct data.
+Each phase of filtering would remove 0-1\% of data across most available or generated reasoning traces.
+Some data, such as Nvidia's Nemotron Post-training datasets~\citep{NemotronPostTrainingDatasetV1} had very few samples removed relative to their peers.
+
+\begin{enumerate}
+
+\item {\bf Source filtering}
+We perform some filtering to remove non-compliant licenses or data that will not be useful.
+E.g. for GeneralThoughts traces used in mid-training, we filtered to only commercially friendly licensed prompts.
+For OpenThoughts2, we removed ShareGPT prompts due to questionable provenance (as done in Tulu 3).
+For LlamaNemotron Post-Training we filter to only reasoning samples from DeepSeek and Qwen that have not been touched by Llama models.
+
+\item {\bf Format filtering}
+We remove truncated answers (i.e. if they have <think> and no </think>) and empty outputs (empty responses).
+Implementation is available at \href{https://github.com/allenai/open-instruct/blob/7ba4cd0/scripts/data/filtering_and_updates/filter_cots.py}{\path{github.com/allenai/open-instruct//scripts/data/filtering_and_updates/filter_cots.py}}
+
+\item {\bf Domain specific accuracy filtering} We check accuracy for many domains, such as precise instruction following, code, or math.
+Additionally, for chat domains we use included metadata in some datasets such as Wildchat to remove responses or prompts tagged as unsafe.
+Implementation is available at \href{https://github.com/allenai/open-instruct/blob/7ba4cd0/scripts/data/filtering_and_updates/filter_wildchat.py}{\path{github.com/allenai/open-instruct/scripts/data/filtering_and_updates/filter_wildchat.py}}
+
+\item {\bf General content filters}
+Here we remove mention of date cutoffs to try and avoid hallucinations of model characteristics and any mention in the user prompt or completion that indicates the date is to or from any model.
+Maintaining identity of models trained on heavily distilled data takes a meaningful amount of data work and system prompt design.
+Implementation is available at  \href{https://github.com/allenai/open-instruct/blob/7ba4cd0/scripts/data/filtering_and_updates/filter_datasets_sequential.sh}{\path{github.com/allenai/open-instruct/scripts/data/filtering_and_updates/filter_datasets_sequential.sh}}
+
+\item {\bf Repetition filtering}
+Many open-weights reasoning models have tendencies to perform extreme repetitions, even in thinking traces that result in a correct answer.
+In particular, we find that ~.1\% of responses from QwQ have mass repetition.
+We filter this roughly by searching for heavily repeated (~10x+) sentences, paragraphs, or (~50x+) phrases.
+Implementation is available at \href{https://github.com/allenai/open-instruct/blob/7ba4cd0/scripts/data/filtering_and_updates/filter_ngram_repetitions.py}{\path{github.com/allenai/open-instruct/scripts/data/filtering_and_updates/filter_ngram_repetitions.py}}
+
+\item {\bf Chinese language filtering}
+In order to encourage \olmothreethinking to stay in its intended language of English, we remove any post-training responses with 5\% or higher prevalence of Chinese characters by searching over the range of Unicode character range of common Chinese characters.
+Implementation is available at \href{https://github.com/allenai/open-instruct/blob/7ba4cd0/scripts/data/filtering_and_updates/filter_chinese.py}{\path{github.com/allenai/open-instruct/scripts/data/filtering_and_updates/filter_chinese.py}}
+
+
+\end{enumerate}
+\subsubsection{Tool-use data} \label{sec:appendix_tool_use_data}
+\paragraph{Additional details about the Science QA dataset} Citation graph-based queries are produced by prompting GPT-5 in a few-shot setup to create query templates, e.g., \texttt{What are the top-three most cited papers by \{AUTHOR\} on \{TOPIC\}?} which are subsequently instantiated with real paper entities. Content-based questions are generated by a GPT-5-based agent equipped with the ASC server, which retrieves relevant papers and formulates grounded questions that can be answered using retrieved text. For both types of queries, to obtain corresponding tool-use trajectories we employ a GPT-4.1-mini agent with access to the same ASC server. All tool call outputs are derived from actual environment responses rather than synthetic completions.
+
+\paragraph{Additional details about the Web Search QA dataset} Given the varied quality of real-world queries, GPT-5 is employed to rate each query drawn from existing open-access benchmarks on a five-point scale assessing (i) whether it calls for comprehensive long-form responses, (ii) factual verifiability, and (iii) the degree of search required. Only queries scoring 4 or 5 on these criteria are retained. We then use an agent equipped with web search and browsing via the Serper API, and scientific snippet retrieval via ASC to generate tool-use trajectories for these queries. This agent is instructed with tool specifications and step-by-step search instructions, resulting in detailed trajectories containing both tool calls and environment outputs. We then filter out trajectories that yield incorrect answers (where ground truth is available), and only keep trajectories that adhere to the expected output format. Additionally, since the environment outputs for the webpage-fetching tool of the Serper API are quite long (typically entire webpages), we used GPT-5 to summarize the content of the web pages and only retained the summaries in the training data.
+
+\paragraph{Additional details about simulated interaction trajectories} We run various post-hoc checks on synthesized datasets to verify whether the generated trajectories adhere to the prompts, and filter the dataset to create SimFC. We filter out trajectories where the function calls include functions not part of the presented APIs. Our data-synthesis prompts explicitly target multi-turn, multi-step, parallel function calls (i.e., multiple calls per assistant turn) and refusals, and we filter out the trajectories that do not conform to such requirements specified in the prompts.
+
+\begin{figure}[h]
+\begin{prompt}{\sans{Prompt for Generating Multi-Turn Function-calling Interactions}}\footnotesize
+
+You are provided an API with the details of the functions shown in a JSON format. Use this API to write a simulated interaction between a user, an assistant that can call the functions in the API, and the environment. The interaction should refer to three roles: \texttt{"user"}, \texttt{"assistant"}, and \texttt{"environment"}. Their messages should be represented as Python dicts with \texttt{"role"} and \texttt{"content"} fields. \\
+
+If the assistant is making function calls, they should be shown under a \texttt{"function\_calls"} field instead of the \texttt{"content"} field. The interaction should start with a user request, contain multiple steps of the assistant making function calls while interacting with the user for additional inputs, and should conclude with the assistant performing the user's requested action. Please generate a simulated interaction with at least 5 function calls. Ensure that at the end of each turn, the assistant should address the request of the user by creating an assistant message with a text in the \texttt{"content"} field. \\
+
+Here is an example:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+API:
+[
+  {"name": "get_borrowed_books", "description": "Get borrowed books by user ID",
+    "parameters": {"user_id": {"type": "int"}}},
+  {"name": "get_user_info", "description": "Get user information",
+    "parameters": {"prefix": {"type": "str", "required": false},
+        "email": {"type": "str", "required": false}}},
+  {"name": "get_late_fines", "description": ...}
+]
+
+INTERACTION:
+[
+  {"role": "user", "content": "How many users with the name Yoda exist?"},
+  {"role": "assistant", "function_calls": "get_user_info(prefix=`Yoda')"},
+  {"role": "environment", "content": "{\"results\": [{\"id\": 23}]}"},
+  {"role": "assistant", "content": "There is one user with that name."},
+  {"role": "user", "content": "How many books have they borrowed?"},
+
+  ... additional turns ...
+
+  {"role": "assistant", "content": "Luke Skywalker has borrowed one book."}
+]
+\end{lstlisting}
+
+Here is the real task:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+API: {}
+INTERACTION:
+\end{lstlisting}
+
+\end{prompt}
+\vspace{-1em}
+\caption{\textbf{Illustrative prompt for generating multi-turn function-calling interactions} with simulated environment feedback (prompt has been truncated for readability).}
+\label{fc-multi-turn-prompt}
+\end{figure}
+
+\begin{figure}[h!]
+\begin{prompt}{\sans{Prompt for Generating Function Calling Refusals}}\footnotesize
+
+You are given an API function described in JSON format. Your task is to write a simulated conversation between a user and an assistant.
+First identify the domain of the API, and then create a user request that is similar in domain but still unaddressable by the API. \\
+
+In this conversation:
+
+1. The user makes a request that is slightly related to the capabilities of the API, but still unaddressable by the API.
+
+2. The domain of the user request should be very similar to the API's capabilities. If it's about math, then the request should also be about math.
+
+3. The assistant refuses the request and explains clearly why it cannot be fulfilled, referencing the actual API functions.
+
+4. The assistant should not hallucinate functionality or attempt to fulfill the request.
+
+5. The explanation must be concise, accurate, and polite.
+
+6. The dialogue should be \texttt{brief but complete}, showing a realistic interaction.
+
+7. Format the output as a realistic, short conversation between the user and assistant.
+
+8. There is no need to put environment outputs.
+
+9. Use an imperative tone and include concrete values (e.g., ``Compute the perimeter of a rectangle with length 10 and width 5''). \\
+
+Format the output as a dialogue, alternating between the user and the assistant. \\
+
+{\bf Example 1}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+API:
+[
+  {"name": "get_user_info", "description": "Get user information",
+    "parameters": {"prefix": {"type": "str", "required": false},
+        "email": {"type": "str", "required": false}}},
+  {"name": "get_borrowed_books", "description": "Get borrowed books by user ID"}
+]
+
+INTERACTION:
+[
+  {"role": "user", "content": "Sell the book `The Little Prince'"},
+  {"role": "assistant", "content": "I'm sorry, but I can't sell books. Based on the APIs, I can help with retrieving user info or checking borrowed books."}
+]
+\end{lstlisting}
+
+{\bf Example 2} \\
+
+    ... additional examples ... \\\\
+
+Here is the real task:
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,breaklines=true]
+API: {}
+INTERACTION:
+\end{lstlisting}
+
+\end{prompt}
+\vspace{-1em}
+\caption{\textbf{Illustrative prompt for generating function-calling refusals}, i.e., when the task is not feasible given the available functions (prompt has been truncated for readability).}
+\label{fc-refusals-prompt}
+\end{figure}
+
+\begin{table}[!h]
+  \centering
+  \setlength\tabcolsep{4pt}
+  {\footnotesize
+  \begin{tabular}{l r r r r r r r r}
+  \toprule
+  {\bf Dataset} & {\bf Original} & {\bf Format} & {\bf Domain} & {\bf General} &
+   {\bf Content} & {\bf Repetition} & {\bf Chinese} & {\bf Final} \\
+   & {\bf Size} & {\bf Filtering} & {\bf Filtering} & {\bf Filtering} &
+  {\bf Filtering} & {\bf Filtering} & {\bf Filtering} & {\bf Size} \\
+  \midrule
+  \rowcolor{ai2offwhite} WildChat (Tülu 3) & 57,407 & 1.61\% & 14.57\% & 0.75\% & 3.10\% & -- & 1.09\% &
+  45,917 \\
+  WildChat (New) & 74,997 & 1.53\% & 48.09\% & 0.80\% & 3.13\% & 0.02\% & 1.16\% & 36,417 \\
+  \rowcolor{ai2offwhite} OpenAssistant1 & 7,094 & 0.08\% & -- & 0.22\% & -- & -- & 3.86\% & 6,800 \\
+  OpenThoughts3-Regen & 1,200,000 & 3.22\% & -- & 0.00\% & -- & < 0.01\% & 0.04\% & 1,160,972
+  \\
+  \rowcolor{ai2offwhite} Persona Precise IF & 224,448 & 0.19\% & -- & 0.03\% & 0.29\% & < 0.01\% &
+  0.08\% & 223,123 \\
+  Val Precise IF (QwQ) & 286,003 & -- & -- & -- & 0.62\% & < 0.01\% & 1.17\% & 135,851 \\
+  \rowcolor{ai2offwhite} Synthetic-2-SFT-Verified & 104,913 & 0.01\% & -- & 0.06\% & -- & < 0.01\% & 0.32\% &
+  104,569 \\
+  Saurabh Code Mix & 884,767 & -- & -- & -- & -- & < 0.01\% & < 0.01\% & 884,570 \\
+  \rowcolor{ai2offwhite} CoCoNot & 10,460 & 0.57\% & -- & 1.57\% & -- & -- & 0.10\% & 10,227 \\
+  WildGuard & 38,794 & 0.37\% & -- & 1.17\% & 0.54\% & < 0.01\% & 0.12\% & 38,315 \\
+  \rowcolor{ai2offwhite} WildJailbreak & 41,420 & 0.13\% & -- & 0.21\% & 0.61\% & -- & < 0.01\% &
+  41,100 \\
+  Aya & 98,863 & 0.15\% & -- & 1.70\% & -- & < 0.01\% & 5.62\% & 98,598 \\
+  \rowcolor{ai2offwhite} TableGPT & 4,982 & 0.02\% & -- & 0.00\% & -- & -- & 0.06\% & 4,981 \\
+  \bottomrule
+  \end{tabular}}
+  \vspace{3pt}
+  \caption{\textbf{Filtering statistics} showing percentage of prompts removed at each major
+  filtering stage for reasoning datasets. ``--'' indicates filtering was not applicable or no
+  samples were removed.}
+  \label{tab:filtering_stats}
+  \end{table}
+
+
+\subsubsection{Coding Data Synthesis Pipeline}
+\label{appx:code-data}
+
+To construct reinforcement learning (RL) data for code, we required pairs of \emph{(problem, test cases)}. We curate a diverse set of prompts for coding problems, including AceCoder~\citep{zeng2025acecoder}, Klear-Reasoner Code~\citep{su2025klear}, Nemotron Post-training Code \citep{nvidia2025nemotron_post_training_dataset}, SYNTHETIC-2 code \citep{primeintellect2025synthetic2}, Open-Code Reasoner \citep{ahmad2025opencodereasoning}. We use the klear-reasoner and SYNTHETIC-2 test cases directly.  For the other datasets, we run prompts through the following synthetic data pipeline:
+\begin{itemize}[leftmargin=2.5em]
+     \item {\bf Problem rewriting.} Given a coding problem, we first prompted GPT-4.1 to rewrite the description so that it either (a) included a function signature, or (b) explicitly specified that the solution should read from and write to standard input/output (stdio)
+     \item {\bf Solution generation.} GPT-4.1 was then prompted to provide a corresponding solution. Depending on the problem type, this was either a Python function matching the given signature, or a program reading from and writing to stdio. When the original problem source included a reference solution, we included it in the prompt
+     \item {\bf Test case generation.} GPT-4.1 was further prompted to generate test cases in the appropriate format (function-based or stdio-based)
+ \end{itemize}
+
+\subsubsection{\dolciinstructdpo Details}
+\paragraph{DPO prompt mixing} See \autoref{tab:dpo_mixing_exps} for prompt mixing experiment results.
+
+
+
+
+\paragraph{Model pool for LLM-judged pairs} To create the GPT-judged subset of \dolciinstructdpo, we generate completions on our prompt pool with the following models: gpt-oss-20B, gpt-oss-120B~\citep{agarwal2025gpt}, GPT-4.1-2025-04-14~\citep{gpt4}, Mistral-Small-24B-Instruct-2501, \olmotoo-1B-Instruct, \olmotoo-7B-Instruct, \olmotoo-13B-Instruct, \olmotoo-32B-Instruct~\citep{olmo20242olmo2furious}, Phi4-Mini-Instruct~\citep{Abdin2024Phi4TR}, Gemma3-4B-it, Gemma3-12B-it, Gemma3-27B-it~\citep{team2025gemma3}, Qwen3-Coder-30B-3A (no reasoning), Qwen3-0.6B (no reasoning), Qwen3-1.7B (no reasoning), Qwen3-4B (no reasoning), Qwen3-8B (no reasoning), Qwen3-14B (no reasoning), Qwen3-32B (no reasoning), Qwen3-30B-3A (no reasoning)~\citep{qwen3},  QwQ-32b~\citep{qwen_qwq_32b_2025}, Yi-9B, and Yi-34B~\citep{young2024yi}.
+
+For each prompt, we sample four model completions and judge them via a GPT-4.1 judge with the UltraFeedback judge prompts\footnote{We ran initial experiments employing a GPT-5 judge, but results indicatedthat the GPT-4.1 judge is better.}~\citep{lambert2024tulu3,cui2023ultrafeedback}. To enforce a meaningful delta between chosen and rejected responses, we enforce our judge pipeline to sample responses from exactly two of the following smaller and/or previous generation models which show lower overall performance: \olmotoo-1B-Instruct, \olmotoo-7B-Instruct, Yi-9B, Yi-34B, Phi4-Mini-Instruct,
+Qwen3-0.6B (no reasoning), Qwen3-1.7B (no reasoning). Without this intervention (i.e. sample four models from the pool to judge at random), we would have an approximately 33\% chance of sampling at least 2 weak models out of our 4 samples from our model pool for judgment, providing limited contrast in preference pairs. We binarize into preference pairs by selecting the \textit{worst} response out of the four to be rejected, and the best as chosen.
+
+
+\include{tables/posttrain/dpo_mixing}
+
+\subsection{Post-Training Additional Evaluation Details}
+\label{appx:eval-details}
+\subsubsection{General Evaluation Settings}
+\label{appx:eval-fun}
+
+
+For post-training, we focus exclusively on generative evaluations, in which we generate completions until a max length is reached or eos token is generated (as opposed to multiple-choice-based evaluations used in pretraining), better matching real-world downstream usage.
+
+Following DeepSeek R1 report~\citep{guo2025deepseek} and Nvidia Nemotron~\citep{adler2024nemotron} we use a sampling temperature of 0.6 and top-p of 0.95.\footnote{We find that both thinking models degenerate quickly when evaluated with low temperatures (as used in \olmotoo), while instruction models can be evaluated at this higher temperature.} We strip thinking traces from the answer text when generated.
+We account for the variance this induces in smaller benchmarks (e.g. AIME, which is made up of 30 questions) by taking multiple samples and reporting the overall average performance.
+For QA tasks (e.g. BBH, MMLU), we create a unified set of `Olmo 3' regexes for answer extraction, covering a wide variety of potential answer templates.
+We additionally update AlpacaEval 2 Length Controlled (LC)~\citep{dubois2024length} to use GPT-4.1 as a judge instead of the original GPT-4-Turbo~\citep{gpt4} both to increase the reliability of the evaluation and to save $\sim$90\% of inference costs.
+Importantly, our evaluation settings are {\bf unified across thinker and instruct models}, simplifying our evaluation development process.
+
+\paragraph{Is AlpacaEval useful?}
+Certainly! {\bf{AlpacaEval}}, and similar evaluations, such as {\bf{ChatBotArena}}~\citep{zheng2023judging}, {\bf{MT-Bench}}~\citep{zheng2023judging}, {\bf{Arena-Hard}}~\citep{li2024crowdsourced}, etc. are established as {\bf{crucial benchmarks}} for the {\bf{AI industry}}.
+Let's delve into the {\bf{pros and cons}} of AlpacaEval:
+
+\begin{itemize}[leftmargin=2.5em, labelsep=0.5em]
+    \item[\scale] {\bf{It's not a broken evaluation, it's a trade-off}}. It's {\bf{well established}} that most people enjoy reading language model completions that have a {\bf{bit of flair}} to them. In fact, the {\bf{style of bold, lists, etc.}} can be {\bf{very helpful when skimming information}}. It just can often go over the top---such as when {\bf{too many emoji's}} are included!~\cow~\cowface~\trex
+    \begin{itemize}[leftmargin=3.3em, labelsep=0em,nosep]
+        \item[{\bf{Pro:}}]~Ease-of-reading and flair
+        \item[{\bf{Con:}}]~Over-optimized style
+    \end{itemize}
+    \item[\trophy] {\bf{We're incentivized to maximize the benchmark---even if we don't like it}}. As a {\bf{smaller lab}}, we need to work hard to {\bf{put our models on the map!}} We don't \textit{love} the style of completions from models scoring high on these benchmarks, but we {\bf{derive so much benefit}} from the {\bf{attention it attracts}}.
+    \begin{itemize}[leftmargin=3.3em, labelsep=0em,nosep]
+        \item[{\bf{Pro:}}]~Simple comparison to known standards
+        \item[{\bf{Con:}}]~Imperfect performance signal 
+    \end{itemize}
+    \item[\shrug] {\bf{There aren't many better options!}} There are just {\bf{so few evaluations}} that test a model's ability to {\bf{chat with the users reliably}}---and we need to serve the {\bf{most common use case}} if we want {\bf{adoption}}. {\bf{More diversity of benchmarks}}, such as alternatives like multi-turn and instruction following, are slowly helping out understanding.
+    \begin{itemize}[leftmargin=3.3em, labelsep=0em,nosep]
+        \item[{\bf{Pro:}}]~Common adoption
+        \item[{\bf{Con:}}]~Low diversity in chat evaluations
+    \end{itemize}
+\end{itemize}
+
+\sparkles\ {\bf{Bonus:}} There's something poetic about having LLMs judge LLMs. \devilsmile
+
+In summary, {\bf{we need evaluations like this}} to make sure the model is {\bf{behaving as expected}}.
+When it comes to {\bf{balancing style and benchmarks}}, at the end of the day, {\bf{no-one's perfect---not even us}}.
+
+
+
+
+
+
+
+
+\input{tables/posttrain/7b-think-safety-baselines}
+\input{tables/posttrain/7b-instruct-safety-baselines}
+
+\subsubsection{Safety Evaluations Overview}
+\label{sec:appendix_safety_evals}
+
+The safety evaluations that were tested upon during training runs and whose average was reported earlier were the same set from \olmotoo \citep{olmo20242olmo2furious} and \tulu \citep{lambert2024tulu3}.
+In addition to the development safety evaluations, we also evaluate our models on four new safety evaluations, chosen due to their prevalence in recent LLM safety evaluations \citep{kaiyom2024helmsafety,google-gemini2.5,anthropic-claude4-systemcard, cai2025aegisllm, openai-gpt5-systemcard,lambert2024tulu3}.
+
+\paragraph{Development safety evaluations} %
+We include HarmBench~\citep{mazeika2024harmbench}, DoAnythingNow~\citep[DAN;][]{shen2024anything}, XSTest \citep{rottger2023xstest}, WildGuard-Test \citep{han2024wildguard}, WildJailbreak-Test \citep{jiang2024wildteaming}, and TrustLLM-JailbreakTrigger \citep{huang2024trustllm}.
+
+\paragraph{Unseen safety evaluations}%
+We further evaluated on four held-out safety benchmarks: Toxigen~\citep{toxigen}, StrongReject~\citep{strongreject}, Weapons of Mass Destruction Proxy~\citep[WMDP;][]{wmdp}, and Bias Benchmark for QA~\citep[BBQ;][]{parrish-etal-2022-bbq}.
+
+\paragraph{Averaging and reported metrics} Safety and accuracy scores are aggregated according to benchmark protocol, with all reported metrics normalized such that higher values are better (1 indicates perfect safety performance).
+Specifically, we report the average of: \textit{refusal accuracy}, i.e., inverted ASR (Attack Success Rate), for DoAnythingNow, Harmbench, Wildguard, TrustLLM-JailbreakTrigger, Toxigen, and StrongReject; \textit{accuracy} for XSTest and BBQ; the average of inverted ASR for Wildjailbreak (harmful) and ASR for Wildjailbreak (benign); and inverted accuracy (i.e., error rate) for WMDP.
+For the safety benchmarks, models were evaluated with a top-p of 0.95 and sampling temperature of 0.7.
+
+
+
+
+We explain all of the evaluations in more detail below:
+
+\begin{itemize}
+    \item {\bf HarmBench \citep{mazeika2024harmbench}} evaluates models' refusal to comply with a diverse suite of harmful prompts, distributed across both functional and semantic categories.
+The benchmark contains 320 harmful prompts, covering functional behaviors including "standard" harms from sources like AdvBench and TDC 2023 Red Teaming, prompts testing for copyright violations, and contextual prompts (i.e., prompts combining an instruction with a context such as a document).\footnote{In our implementation, the context string is merged into the input prompt for contextual examples.}
+The semantic category includes prompts representing seven types of real-world harms: cybercrime, unauthorized intrusion, chemical/biological/drug-related, copyright infringement, misinformation, harassment, illegal activities, and general harm.
+Model outputs are evaluated for safety of output using the WildGuard classifier's safety label \citep{han2024wildguard}.
+\item {\bf DoAnythingNow \citep[DAN;][]{shen2024anything}} tests models' robustness to the well-known DAN jailbreak framework by pairing DAN-style jailbreak templates with harmful behaviors adapted from HarmBench.
+For this evaluation, we subsample 300 representative prompts from the full benchmark.
+Prompt content spans diverse instruction-jailbreak combinations aiming to bypass safety guardrails.
+We compute refusal accuracy\footnote{Refusal accuracy corresponds to 1-ASR (attack success rate).} using the WildGuard classifier's refusal label \citep{han2024wildguard} to assess whether model outputs refuse or comply with the harmful instructions.
+\item {\bf XSTest \citep{rottger2023xstest}} measures models' \textit{over-refusal} tendencies, i.e., their ability to distinguish harmful requests from superficially similar but benign prompts.
+The benchmark includes 200 unsafe prompts and 250 safe prompts that mimic the form or vocabulary of unsafe requests.
+Prompt categories include homonyms, figurative language, safe targets, safe contexts, definitions, real/nonsense group discrimination, historical events, public and fictional privacy scenarios, among others.
+As with the two previous benchmarks, we evaluate models' outputs via refusal accuracy with WildGuard's refusal label \citep{han2024wildguard}.
+\item {\bf WildGuard-Test \citep{han2024wildguard}} provides a comprehensive evaluation of prompt harm, response harm, and response refusal across a set of 1,725 items.
+Prompts are collected from adversarial synthetic data and real in-the-wild user interactions with LLMs.
+We evaluate on the subset of 749 adversarial prompts.
+The evaluation reports the safety of outputs %
+using the WildGuard classifier's safety label,
+capturing both the model's ability to refuse harmful queries and to respond appropriately to benign prompts.
+
+\input{tables/posttrain/32b-think-safety-baselines}
+\input{tables/posttrain/32b-instruct-safety-baselines}
+
+
+\item {\bf WildJailbreak-Test \citep{jiang2024wildteaming}} assesses model safeguards in the face of advanced, adversarial jailbreak attacks across both harmful and benign contexts.
+The dataset comprises 2,000 adversarially crafted harmful prompts and 250 adversarial benign queries intended to measure over-refusals.
+We evaluate models' refusal accuracy using WildGuard's refusal label: refusals are desirable on harmful queries (indicating stronger refusals), and non-refusals are desired on benign queries (indicating fewer unnecessary refusals).
+\item {\bf TrustLLM-JailbreakTrigger \citep{huang2024trustllm}} tests susceptibility to 13 distinct jailbreak attack methods with a suite of 400 prompts.
+Prompts are equally split between two types: "Questions about Bad Behaviors" and "Instructions to generate Toxic Content".
+This benchmark evaluates whether models' safety mechanisms withstand a variety of jailbreak strategies and measures the toxicity of outputs produced under attack.
+The main metric is the refusal accuracy, reported using WildGuard's refusal label.
+\item {\bf Toxigen \citep{toxigen}} tests whether models' comply with instructions to generate toxic or stereotypical sentences for given demographic groups.
+Each prompt includes a list of 10 examples of toxic sentences, to which an unsafe model would add new toxic sentences.
+We subsampled a random set of 1400 input prompts divided equally between demographic subcategories from ToxiGen: Asian, Black, Chinese, Jewish, Latino, LGBTQ, Mental Disability, Muslim, Native American, Physical Disability, Trans, Women.
+We report the toxicity score of the model's output, measured by the ToxiGen RoBERTa-based trained classifier.\footnote{\href{https://huggingface.co/tomh/toxigen_roberta}{\path{huggingface.co/tomh/toxigen_roberta}}}
+\item {\bf StrongReject \citep{strongreject}} assesses models' susceptibility to advanced jailbreak prompts intended to elicit forbidden content.
+Each input prompt is a real-world adversarial instruction, constructed to evade common safety guardrails using one of 37 jailbreak techniques, plus a baseline with no jailbreak.
+We subsampled approximately 20\% of the full benchmark, resulting in 2,294 unique prompts, maintaining the diversity of jailbreak techniques and forbidden instruction topics.
+The model's output is scored on a 1-5 safety scale according to the risk or compliance with the forbidden prompt, using a classifier that is uses a version of the StrongReject classifier\footnote{\href{https://huggingface.co/qylu4156/strongreject-15k-v1}{\path{huggingface.co/qylu4156/strongreject-15k-v1}}} that is a LoRa adapter merged with the base Gemma-2B \citep{gemma} model by the benchmark creators.
+The final evaluation metric is a weighted sum over the probability distribution across possible scores computed via log-probabilities of top-scoring response tokens, which is then reversed such that higher scores indicate higher safety.
+\item {\bf Weapons of Mass Destruction Proxy (WMDP) \citep{wmdp}} evaluates whether models can provide answers to dual-use knowledge questions in the domains of biology, chemistry, and cybersecurity.
+Each prompt is a factual multiple choice question related to weapons of mass destruction, with four answer options and one correct answer.
+We sample 20\% of the full benchmark, yielding 734 total questions distributed across the original biological (1273), chemical (408), and cybersecurity (1987) test sets.
+Prompts include the instruction we use when evaluating MMLU \citep{wang2024mmlu}:
+\begin{quote}
+    The following are multiple choice questions. Summarize your reasoning concisely, then conclude with 'Therefore, the answer is: X' where X is one of A, B, C, or D.\textbackslash n \textbackslash n
+\end{quote}
+Models' outputs are evaluated via exact match (based on regex parsing) where only outputs with a correctly formatted, unambiguous final answer string are considered correct.
+
+
+
+\item {\bf Bias Benchmark for QA (BBQ) \citep{parrish-etal-2022-bbq}} measures bias and stereotype adherence by presenting models with multiple choice questions targeting social dimensions such as age, gender, race, religion, and intersectional identities.
+The benchmark includes questions split by 11 subcategories, each clustered along axes of ambiguous vs. unambiguous and stereotypical vs. anti-stereotypical framing, and sometimes presence or absence of names.
+For our evaluation, we drew a subset of $\sim$500 questions per subcategory (excluding intersectional combinations), distributed evenly across prompt types (ambiguous/unambiguous, stereotypical/anti-stereotypical, and, with or without names), resulting in 4482 total instances.
+Each prompt is presented in the same structured format as WMDP.\footnote{Note that this is different from the more restrictive HELM-Safety prompting format \cite{kaiyom2024helmsafety} which only scores based on the first generated token.}
+Model responses are evaluated for \textit{accuracy} (proportion of correct answers) and for \textit{bias}, using a regex-based string parser (similar to BBQ).
+Accuracy simply measures whether models picked the right answer.
+Bias is quantified according to the protocol in \citet{parrish-etal-2022-bbq}: ambiguous and disambiguated bias scores are computed as the frequency with which non-unknown outputs reinforce stereotypes within each prompt type (e.g., the model incorrectly picks the stereotypical answer).
+\end{itemize}
+

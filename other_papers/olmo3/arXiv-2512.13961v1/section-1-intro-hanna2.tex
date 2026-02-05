@@ -1,0 +1,69 @@
+
+
+\section{Introduction}
+\label{sec:intro}
+
+
+
+
+
+We introduce {\bf{\olmothree}}, a family of state-of-the-art, fully-open language and thinking models at the 7B and 32B parameter scales with a diverse set of capabilities, including long-context reasoning, function calling, coding, instruction following, general chat, and knowledge recall. The \olmothree release provides complete access to its entire {\bf model flow}---the full lifecycle of a language model, including every stage, checkpoint, datapoint, and dependency required to create it. This enables infinite customization through intervention at any stage of the model development process---not just the final weights.
+
+To truly advance open-source AI research and development, we argue that releasing a state-of-the-art language model should make its entire model flow---not just its endpoint---transparent and accessible. With the \olmothree\ release, we provide complete access to the pathways we charted throughout the model flow, from initial conception to the creation of state-of-the-art, fully-open language models.
+
+Specifically, we train {\bf{\olmothreebase}} as a foundation on which to build models with thinking and tool-use capabilities. From \olmothreebase{} we develop our flagship model, {\bf{\olmothreethinking}}, trained to perform step-by-step reasoning by generating intermediate thinking traces before producing a final answer. {\olmothreethinking~32B} is the strongest fully-open thinking model, narrowing the gap to the best open-weight models of similar scale, such as the Qwen 3 32B thinking~\citep{qwen3} on our suite of reasoning benchmarks, while being trained on six times fewer tokens. 
+Because of our fully-open approach, the \olmothree{} release also enables reasoning chains to be traced back to their original training data, unlocking research opportunities  not possible with any other thinking model.
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{figures/model_flow_plot.pdf}
+    \caption{
+        \textbf{The model flow encompasses training data, code and intermediate checkpoints for all stages of development}. 
+        While both fully-open and open-weights models release their final checkpoints \textcolor[HTML]{105257}{\bf{(dark teal)}}, 
+        fully-open releases like Marin, Apertus, and \newOlmo provide data along their model flow, enabling the careful study of intermediate development stages \textcolor[HTML]{a1947d}{\bf{(beige)}}.
+        \olmothreethinking 32B is shown here along with other open models of comparable size and architecture. 
+        \olmothreethinking is competitive with Qwen 3 32B, which does not have a released base model.
+        Its underlying \olmothreebase 32B surpasses all other fully-open base models. 
+    }
+    \label{fig:model-flow-hero}
+\end{figure}
+
+In addition, we train {\bf{\olmothreeinstruct} 7B} and {\bf 32B} models tuned to produce shorter, more direct responses. By avoiding intermediate ``thinking'' outputs, \olmothreeinstruct effectively reduces response latency and is optimized for general chat and function calling. 
+\olmothreeinstruct 7B and 32B surpass other notable open-weight models of comparable size---Qwen 2.5~\citep{qwen2.5}, Gemma 3~\citep{team2025gemma3}, IBM Granite 3.3~\citep{souleBergmann2025granite33}, and Llama 3~\citep{dubey2024llama}---and additionally reduces the remaining performance gap to Qwen 3~\citep{qwen3}. %
+Finally, we introduce {\bf{\olmothreerlzero 7B}}, a variant of \olmothree trained using RL directly from \olmothreebase.
+\olmothreerlzero enables researchers to study how base model data affects RL performance.
+
+
+The Olmo 3 family is the strongest collection of fully-open base models, outperforming Stanford Marin~\citep{Hall2025marin}, Apertus~\citep{swissai2025apertus}, and LLM360 K2-V2~\citep{k2team2025k2v2360openreasoningenhancedllm}.
+To achieve these results, we construct new datasets for every stage of the model flow. 
+This includes {\bf{\dolmathree}}, our pretraining data mix encompassing carefully-sampled natural data from crawled sources, our midtraining mix of high-quality data designed to jump-start reasoning, and a large collection of science-focused PDF documents that unlock long-context support in \olmothree. We also introduce {\bf{\dolci}}, a post-training data suite that advances step-by-step reasoning during supervised finetuning, provides high-quality contrastive data for preference tuning, and offers challenging general and reasoning prompts for reinforcement learning.
+
+Finally, we develop a set of new algorithmic and infrastructural advances across data processing, evaluation, pretraining, and reinforcement learning. This includes {\bf{\olmothreeeval}}, a benchmark suite tailored to compute-efficient base-model development, and {\bf{\olmothreerl}}, a reinforcement-learning framework incorporating efficiency optimizations tailored to our thinking models.
+Taken together, these training recipes are shaped by a development framework that blends distributed experimentation with centralized evaluation, enabling coordinated, capability-driven improvements throughout the model pipeline.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

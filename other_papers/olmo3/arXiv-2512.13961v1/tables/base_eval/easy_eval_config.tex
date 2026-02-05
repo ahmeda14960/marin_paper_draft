@@ -1,0 +1,48 @@
+\begin{table*}[t]
+  \centering
+
+\begin{scriptsize}
+\begin{tabular}{lllHlHlHHHHHHl} %
+\toprule
+& \bf{Task} & \bf{Capability} & \bf{\# Inst} & \bf{ICL} & \bf{Format} & \bf{Metric} & \bf{Temp} & \bf{top-p} & \bf{Extract} & \bf{Max Toks.} & \bf{p@k (n)} & \bf{N} & \bf{\# Sub.} \\
+\midrule
+
+\rowcolor{ai2midpink}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2midpink}\multicolumn{14}{c}{\textbf{Base Easy Suite}} \\
+\rowcolor{ai2midpink}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2lightpink} & Minerva MATH\starOlmo{} (\citeyear{lewkowycz2022solving}) & Math Gen & - & 4$^\alpha$ & BPB & BPB & - & - & - & - & - & - & 7 \\
+\rowcolor{lightgrey} & HumanEval\starOlmo{} (\citeyear{chen2021codex}) & Code Gen & - & 3 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} & MBPP\starOlmo{} (\citeyear{austin2021program}) & Code Gen & - & 3 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} \multirow{-3}{*}{\rotatebox[origin=c]{90}{\textit{Code}}} & MT MBPP\starOlmo{} (\citeyear{cassano2022multipl}) & Code Gen & - & 3 & BPB & BPB & - & - & - & - & - & - & 17 \\
+\rowcolor{ai2offwhite} & ARC (\citeyear{clark2018think}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & 2 \\
+\rowcolor{ai2offwhite} & MMLU (\citeyear{hendryckstest2021}) & General QA & - & 5 & BPB & BPB & - & - & - & - & - & - & 57 \\
+\rowcolor{ai2offwhite} & CSQA (\citeyear{talmor-etal-2019-commonsenseqa}) & Commonsense QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & HellaSwag (\citeyear{zellers-etal-2019-hellaswag}) & Language Modeling & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & WinoGrande (\citeyear{Sakaguchi_Le_Bras_Bhagavatula_Choi_2020}) & Language Modeling & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & SocialIQA (\citeyear{sap-etal-2019-social}) & Social QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & PiQA (\citeyear{Bisk_Zellers_Le_bras_Gao_Choi_2020}) & Physical QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & CoQA (\citeyear{reddy-etal-2019-coqa}) & Conversation QA & - & 0$^\dagger$ & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & DROP (\citeyear{dua-etal-2019-drop}) & Passage QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & Jeopardy (\citeyear{mosaic-jeopardy}) & Trivia QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & NaturalQs (\citeyear{kwiatkowski-etal-2019-natural}) & General QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & SQuAD (\citeyear{rajpurkar-etal-2016-squad}) & General QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & SciQ\starOlmo{} (\citeyear{welbl-etal-2017-crowdsourcing}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & QASPER\starOlmo{} (\citeyear{dasigi2021dataset}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & Basic Skills\starOlmo{} (\S\ref{sec:new-evaluation-benchmarks}) & Basic QA & - & 5 & BPB & BPB & - & - & - & - & - & - & 6 \\
+\rowcolor{ai2offwhite} & DBQA\starOlmo{} (\citeyear{laurent2024lab}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & ProtocolQA\starOlmo{} (\citeyear{laurent2024lab}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & Lambada\starOlmo{} (\citeyear{paperno2016lambada}) & Language Modeling & - & 0 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & MedMCQA\starOlmo{} (\citeyear{pmlr-v174-pal22a}) & Medical QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & MedQA\starOlmo{} (\citeyear{jin2021disease}) & Medical QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} \multirow{-21}{*}{\rotatebox[origin=c]{90}{\textit{QA}}} & SciRIFF\starOlmo{} (\citeyear{wadden2024sciriff}) & Science QA & - & 5 & BPB & BPB & - & - & - & - & - & - & - \\
+
+\bottomrule
+\end{tabular}
+\end{scriptsize}
+  \caption{
+  \textbf{Details of the \olmothree base easy evaluation suite}. 
+  Tasks were formatted as bits-per-byte (BPB) over the gold continuation, or rank choice (RC, following the setup in \citet{olmes}).
+  \starOlmo{} = new additions to the base \olmotoo suite \citep{olmo20242olmo2furious}; $^\dagger$ = few-shot examples are built-in the task; $^\alpha$ = human-written few-shot examples.
+  }
+  \label{tab:easy-task-details}
+\end{table*}

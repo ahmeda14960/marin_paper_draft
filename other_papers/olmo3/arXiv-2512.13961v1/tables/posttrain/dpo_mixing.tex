@@ -1,0 +1,28 @@
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}l >{\columncolor{ai2pink!18}}c ccccccccc@{}}
+\toprule
+& \multicolumn{10}{c}{\textbf{Subset of \olmothreeinstruct Benchmarks}} \\
+\cmidrule(lr){2-11}
+\textbf{Name} & \cellcolor{ai2pink!18}\textbf{Avg.} & \textbf{MMLU} & \textbf{BBH} & \textbf{GPQA} & \textbf{AGI} & \textbf{MATH} & \textbf{CHE} & \textbf{LCB} & \textbf{IFEval} & \textbf{AE2} \\
+\midrule
+Development SFT  & 50.1 & 66.3 & 44.2 & 29.9 & 58.6 & 56.2 & 70.0 & 13.8 & {\bf{82.1}} & 29.8 \\
+Base mix (uniform* sample) & 54.3 & {\bf{68.1}} & 48.1 & 32.1 & 62.7 & 67.3 & {\bf{68.5}} & 17.0 & 79.3 & {\bf{45.4}} \\
+\midrule
+Ablate code & 53.6 & 64.7 & {\bf{51.6}} & 33.0 & {\bf{65.2}} & {\bf{67.9}} & 65.9 & 17.7 & 75.8 & 40.6 \\
+Ablate math & {\bf{54.4}} & 67.8 & 49.2 & 33.0 & 64.8 & 67.2 & 67.0 & 20.4 & 77.3 & 42.9 \\
+Ablate science & 52.8 & 66.4 & 49.9 & 31.7 & 64.2 & 67.0 & 60.0 & 19.8 & 76.3 & 39.6 \\
+Ablate chat & 53.1 & 67.1 & 51.3 & 30.6 & 64.8 & 67.6 & 59.3 & {\bf{21.2}} & 76.3 & 39.3 \\
+Ablate inst. following & 50.3 & 66.1 & 51.0 & 29.5 & 62.5 & 66.3 & 48.3 & 18.7 & 75.2 & 34.8 \\
+Ablate safety & 51.0 & 66.3 & 48.6 & {\bf{34.2}} & 63.5 & 67.3 & 51.0 & 18.1 & 74.7 & 35.4 \\
+Ablate misc/SFT unused & 48.3 & 66.6 & 49.9 & 29.7 & 64.2 & 65.3 & 38.6 & 14.9 & 74.1 & 31.2 \\
+\midrule
+Upsample code & 51.1 & 67.7 & 48.6 & 31.7 & 63.8 & 65.9 & 51.7 & 18.0 & 76.0 & 36.3 \\
+Upsample math & 53.3 & 67.5 & 48.6 & 29.5 & 62.3 & 66.4 & 66.7 & 17.5 & 78.4 & 42.6 \\
+Upsample chat & 53.0 & 67.0 & 46.8 & 30.6 & 61.6 & 65.7 & 68.3 & 15.6 & 76.9 & 44.7 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Development results for DPO prompt domain mixing}. Overall, we find that (1) all prompt domains are useful for performant tuning, but (2) the exact optimal ratios for each domain are challenging to ascertain systematically since prompt domain does not necessarily correspond to the domains in which performance improves. (*)Wildchat is limited to 35\% of the base mix. All other prompts are uniformly sampled.}
+\label{tab:dpo_mixing_exps}
+\end{table}

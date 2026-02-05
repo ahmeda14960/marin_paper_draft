@@ -1,0 +1,43 @@
+\begin{table*}[t]
+  \centering
+
+\begin{scriptsize}
+\begin{tabular}{HlHHllllllHll} %
+\toprule
+& \textbf{Task} & \textbf{Capability} & \textbf{\# Inst} & \textbf{Format} & \textbf{Metric} & \textbf{Temp} & \textbf{Top-p} & \textbf{Ans. Extract} & \textbf{Max Toks} & \textbf{P@k (N)} & \textbf{N} & \textbf{\# Sub} \\
+\midrule
+
+\rowcolor{midgrey}\multicolumn{13}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{midgrey}\multicolumn{13}{c}{\textbf{Chat Suite}} \\
+\rowcolor{midgrey}\multicolumn{13}{c}{\rule{0pt}{1pt}} \\[-9pt]
+
+\rowcolor{lightgrey} & IF Eval (\citeyear{zhou2023instructionfollowingevaluationlargelanguage}) & Instruction Following & - & CoT & Custom & 0.6 & 0.95 & Custom & 32768 & - & 1 & - \\ 
+\rowcolor{lightgrey} & Minerva MATH (\citeyear{lewkowycz2022solving}) & Math Gen & - & CoT EM & EM Flex & 0.6 & 0.95 & Minerva & 32768 & - & 1 & 7 \\
+\rowcolor{lightgrey} & MATH 500 (\citeyear{lewkowycz2022solving,lightman2023lets}) & Math Gen & - & CoT EM & EM Flex & 0.6 & 0.95 & Minerva & 32768 & - & 1 & - \\
+\rowcolor{lightgrey} & AIME 2024* & Math Gen & - & CoT EM & EM Flex & 0.6 & 0.95 & Minerva & 32768 & - & 32 & - \\
+\rowcolor{lightgrey} & AIME 2025* & Math Gen & - & CoT EM & EM Flex & 0.6 & 0.95 & Minerva & 32768 & - & 32 & - \\
+\rowcolor{lightgrey} & Omega Math (\citeyear{Sun2025OMEGACL}) & Math Gen & - & CoT EM & EM Flex & 0.6 & 0.95 & Custom Regexes & 32768 & - & 1 & 55 \\
+\rowcolor{lightgrey} & HumanEval+ (\citeyear{evalplus}) & Code Gen & - & CoT Code & pass@1 & 0.6 & 0.95 & Split on \texttt{```} & 32768 & - & 10 & - \\
+\rowcolor{lightgrey} & MBPP+* (\citeyear{evalplus}) & Code Gen & - & CoT Code & pass@1 & 0.6 & 0.95 & Split on \texttt{```} & 32768 & - & 10 & - \\
+\rowcolor{lightgrey} & LiveCodeBench v3* (\citeyear{jain2024livecodebench}) & Code Gen & - & CoT Code & pass@1 & 0.6 & 0.95 & Split on \texttt{```} & 32768 & - & 10 & - \\
+\rowcolor{lightgrey} & ZebraLogic* (\citeyear{lin2025zebralogic}) & Puzzle Solving & - & CoT JSON & Custom & 0.6 & 0.95 & Custom JSON & 32768 & - & 1 & - \\ 
+\rowcolor{lightgrey} & BigBench-Hard (\citeyear{suzgun2022challenging}) & Puzzle Solving & - & CoT EM & EM Flex & 0.6 & 0.95 & \olmothree Regex & 32768 & - & 1 & 23 \\
+\rowcolor{lightgrey} & GPQA* (\citeyear{rein2024gpqa}) & General QA & - & CoT MC & Acc & 0.6 & 0.95 & \olmothree Regex & 32768 & - & 1 & - \\
+\rowcolor{lightgrey} & AGI Eval* (\citeyear{zhong2023agieval}) & General QA & - & CoT MC & Acc & 0.6 & 0.95 & \olmothree Regex & 32768 & - & 1 & 9 \\
+\rowcolor{lightgrey} & MMLU (\citeyear{hendryckstest2021}) & General QA & - & CoT MC & Acc & 0.6 & 0.95 & \olmothree Regex & 32768 & - & 1 & 57 \\
+\rowcolor{lightgrey} & PopQA (\citeyear{mallen2023llm_memorization}) & Trivia QA & - & CoT MC & Acc & 0.6 & 0.95 & EM Recall & 32768 & - & 1 & - \\
+\rowcolor{lightgrey} & SimpleQA* (\citeyear{wei2024measuring}) & - & - & - & - & - & - & - & - & - & 1 & - \\
+\rowcolor{lightgrey} & Alpaca Eval v2 (\citeyear{alpaca_eval,dubois2024length}) & - & - & CoT & Winrate & 0.6 & 0.95 & - & 32768 & - & 1 & - \\
+\rowcolor{lightgrey} & BFCL* (\citeyear{patil2025bfcl}) & - & - & - & - & - & - & - & - & - & 1 & - \\
+\rowcolor{lightgrey} & LitQA2* (\citeyear{skarlinski2024language}) & - & - & - & - & - & - & - & - & - & 1 & - \\
+
+\bottomrule
+\end{tabular}
+\end{scriptsize}
+  \caption{
+  \textbf{Details of the \olmothree chat evaluation suite}. 
+  We mark tasks with * to indicate new additions compared to the \olmotoo suite~\citep{olmo20242olmo2furious}. All evaluation generations have thinking traces (text between \texttt{<think>...</think>}) stripped before passing to the answer scorer. We use zero-shot setting for all metrics. 
+}
+  \label{tab:task-details-chat}
+\end{table*}
+

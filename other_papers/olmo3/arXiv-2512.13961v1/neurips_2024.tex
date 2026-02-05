@@ -1,0 +1,608 @@
+\documentclass[table]{ai2style/ai2}
+
+\usepackage{microtype}
+\usepackage{url}
+\usepackage{booktabs, tabularx} %
+\usepackage{graphicx}
+\usepackage{lineno}
+\usepackage{enumitem}
+\usepackage{listings} %
+\usepackage{svg}
+
+\definecolor{ darkblue}{rgb}{0, 0, 0.5}
+\hypersetup{colorlinks=true, citecolor=darkblue, linkcolor=darkblue, urlcolor=darkblue}
+
+
+\usepackage{float}
+\usepackage{amssymb}
+\usepackage{multirow}
+\usepackage{bigdelim}
+\usepackage{todonotes}
+\usepackage{longtable}
+\usepackage{tabularray}
+\usepackage{wrapfig}
+\usepackage[most]{tcolorbox}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{svg}
+\usepackage[absolute]{textpos} %
+
+\usepackage{fdsymbol}   %
+
+
+
+
+\usepackage[utf8]{inputenc} %
+\usepackage[T1]{fontenc}    %
+\usepackage{url}            %
+\usepackage{booktabs}       %
+\usepackage{amsfonts}       %
+\usepackage{nicefrac}       %
+\usepackage{microtype}      %
+\usepackage[table,xcdraw]{xcolor}         %
+\usepackage{amsmath}
+\usepackage[most]{tcolorbox}
+\usepackage{csquotes}
+
+\usepackage{siunitx}
+\usepackage{graphicx}
+\usepackage{arydshln}
+\usepackage{wrapfig}
+\usepackage{enumitem}
+\usepackage{soul} %
+
+\usepackage{multirow}
+\usepackage{xspace}
+\usepackage{adjustbox}
+\usepackage{pifont}
+\usepackage{caption}
+\usepackage{makecell}
+\usepackage{subcaption}
+\usepackage{bold-extra}
+\usepackage{url}
+
+\usepackage{pgf-pie}
+
+\usepackage{pifont}%
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\usepackage{listings}
+
+\definecolor{prompt}{RGB}{255,221,87}   %
+\definecolor{gen}{RGB}{57,122,204}      %
+\definecolor{eos}{RGB}{226,64,64}       %
+\definecolor{idleshade}{gray}{0.90}     %
+
+\newcommand{\CellW}{0.9}
+\newcommand{\CellH}{0.9}
+
+\newcommand{\cellxy}[5]{%
+  \pgfmathsetmacro{\cx}{#1+(#5-1)*\CellW}%
+  \pgfmathsetmacro{\cy}{#2+(#3-#4)*\CellH}%
+}
+
+\newcommand{\fillcell}[6]{%
+  \cellxy{#1}{#2}{#3}{#4}{#5}%
+  \fill[#6,draw=black,line width=0.25pt] (\cx,\cy) rectangle ++(\CellW,\CellH);
+}
+
+\newcommand{\celltext}[6]{%
+  \cellxy{#1}{#2}{#3}{#4}{#5}%
+  \node[font=\scriptsize\sffamily] at ({\cx+0.5*\CellW},{\cy+0.5*\CellH}) {#6};
+}
+
+\newcommand{\gridlines}[4]{%
+  \draw[black,line width=0.25pt] (#1,#2) rectangle ++(#4*\CellW,#3*\CellH);
+  \foreach \r in {1,...,#3} {%
+    \draw[black,line width=0.25pt] (#1,#2+\r*\CellH) -- ++(#4*\CellW,0);
+  }
+  \foreach \c in {1,...,#4} {%
+    \draw[black,line width=0.25pt] (#1+\c*\CellW,#2) -- ++(0,#3*\CellH);
+  }
+}
+
+
+\setlist[itemize]{leftmargin=*,itemsep=0.3em,parsep=0em,topsep=0em}
+\setlist[enumerate]{label={\bf{\arabic*.}},leftmargin=*,itemsep=0.3em,parsep=0em,topsep=0em}
+
+\DeclareUnicodeCharacter{2212}{\ensuremath{-}}
+
+\addtolength{\extrarowheight}{\belowrulesep}
+\aboverulesep=0pt
+\belowrulesep=0pt
+
+\definecolor{maroon}{HTML}{F26035}
+\definecolor{yellow}{HTML}{FDBC42}
+\definecolor{lavender}{HTML}{734f96}
+\definecolor{darkergrey}{HTML}{444444}
+\definecolor{midgrey}{HTML}{e6eded}
+\definecolor{ai2pink}{HTML}{f0529c}%
+\definecolor{ai2midpink}{HTML}{fad3e5}
+\definecolor{ai2lightpink}{HTML}{fbecf3}
+\definecolor{ai2midwhite}{HTML}{f2e5d9}
+\definecolor{ai2offwhite}{HTML}{fbf4ee}
+\definecolor{ai2green}{HTML}{0fcb8c}
+\definecolor{ai2lightgreen}{HTML}{e7f9f3}
+\definecolor{ai2darkgreen}{HTML}{105257}
+\definecolor{ai2purple}{HTML}{B932EB}
+\definecolor{ai2lightpurple}{HTML}{f7e8fc}
+\definecolor{neutralEight}{HTML}{343434}
+\definecolor{neutralFive}{HTML}{838383}
+\definecolor{neutralThree}{HTML}{bebebe}
+\definecolor{neutralOne}{HTML}{dedede}
+\definecolor{lightgrey}{HTML}{fafcfc}
+\definecolor{plum}{rgb}{0.56,0.27,0.52}
+\definecolor{mulberry}{HTML}{A93C93}
+\definecolor{periwinkle}{HTML}{665fd1}
+
+
+\usepackage{tikz}
+\newcommand{\cblock}[3]{
+  \hspace{-1.5mm}
+  \begin{tikzpicture}
+    [
+    node/.style={square, minimum size=10mm, thick, line width=0pt},
+    ]
+    \node[fill={rgb,255:red,#1;green,#2;blue,#3}] () [] {};
+  \end{tikzpicture}%
+}
+
+\usetikzlibrary{arrows.meta,positioning,calc,backgrounds,shadows.blur}
+\definecolor{LearnerMain}{RGB}{30,102,200}
+\definecolor{LearnerLite}{RGB}{120,175,255}
+\definecolor{ActorMain}{RGB}{200,57,43}
+\definecolor{ActorLite}{RGB}{244,170,160}
+\definecolor{QueueMain}{RGB}{34,121,60}
+
+\tikzset{
+  every node/.style={font=\sffamily},
+  panel/.style={
+    rounded corners=2mm,
+    minimum width=58mm, minimum height=36mm,
+    inner sep=6mm, align=center, text=white,
+    blur shadow={shadow blur steps=4, shadow opacity=.45}
+  },
+  title/.style={font=\bfseries\Large, text=white},
+  flow/.style={-{Latex[length=3mm,width=2.3mm]}, line width=.9pt},
+  lbl/.style={font=\normalsize, fill=white, fill opacity=.85, text opacity=1, inner sep=1pt},
+  flowlbl/.style={ %
+    midway, sloped,            %
+    inner sep=1.5pt,
+    font=\sffamily\Large,
+    fill=white, fill opacity=.98, text opacity=1,
+  }
+}
+
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\definecolor{maroon}{HTML}{F26035}
+\definecolor{yellow}{HTML}{FDBC42}
+\definecolor{darkred}{RGB}{156, 39, 33}
+\definecolor{darkblue}{RGB}{31, 90, 153}
+\definecolor{forestgreen}{rgb}{0.13, 0.55, 0.13}
+\definecolor{brickred}{rgb}{0.8, 0.25, 0.33}
+\definecolor{olmoDarkBlue}{HTML}{012e59}
+\definecolor{olmoBlue}{HTML}{265ed4}
+\definecolor{olmoLightBlue}{HTML}{012e59}
+\definecolor{olmoTeal}{HTML}{00d5ff}
+\definecolor{olmoYellow}{HTML}{ffbb00}
+\definecolor{olmoOrange}{HTML}{ff9100}
+
+
+
+
+
+\usepackage{setspace}
+
+\usepackage{nicematrix}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{P}[1]{>{\centering\let\newline\\\arraybackslash\columncolor{ai2lightpink}}m{#1}}
+\newcolumntype{Q}[1]{>{\centering\let\newline\\\arraybackslash}m{#1}}
+
+\newcolumntype{H}{>{\setbox0=\hbox\bgroup}c<{\egroup}@{}} %
+\addtolength{\extrarowheight}{\belowrulesep}
+\aboverulesep=0pt
+\belowrulesep=0pt
+
+\newcommand{\aitwo}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/ai2_logo.png}}\xspace}
+\newcommand{\aitoo}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/ai2.pdf}}\xspace}
+\newcommand{\allenAiAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{1}}}}
+
+\newcommand{\uwAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{2}}}}
+\newcommand{\cmuAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{3}}}}
+\newcommand{\stanfordAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{4}}}}
+\newcommand{\milaAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{5}}}}
+\newcommand{\montrealAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{6}}}}
+\newcommand{\princetonAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{7}}}}
+\newcommand{\mitAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{8}}}}
+\newcommand{\umdAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{9}}}}
+
+\newcommand{\commaAff}{\raisebox{.28em}{\hspace{.02em}\scalebox{0.7}{\textbf{,}\hspace{0.1em}}}}
+\newcommand{\coreContrib}{\raisebox{.28em}{\hspace{.05em}\includegraphics[height=.45em]{logos/core.pdf}}\hspace{0.1em}}
+\newcommand{\starOlmo}{\raisebox{.28em}{\hspace{.05em}\includegraphics[height=.5em]{logos/star.pdf}}}
+\newcommand{\huggingface}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/hf.pdf}}\xspace}
+\newcommand{\hfdataset}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/db.pdf}}\xspace}
+\newcommand{\emailLogo}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/email.pdf}}\xspace}
+\newcommand{\github}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/github.pdf}}\xspace}
+\newcommand{\wandb}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{logos/wandb-logo.pdf}}\xspace}
+
+
+\newcommand{\scale}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/scales_apple.png}}\xspace}
+\newcommand{\shrug}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/shrug_apple.png}}\xspace}
+\newcommand{\trophy}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/trophy_apple.png}}\xspace}
+\newcommand{\cow}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/cow2_apple.png}}\xspace}
+\newcommand{\cowface}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/cow_apple.png}}\xspace}
+\newcommand{\trex}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/t-rex_apple.png}}\xspace}
+\newcommand{\sparkles}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/sparkles_apple.png}}\xspace}
+\newcommand{\devilsmile}{\raisebox{-1.5pt}{\includegraphics[height=1.05em]{figures/smiling_imp_apple.png}}\xspace}
+
+
+
+\newcommand{\oldOlmo}{OLMo\xspace}
+\newcommand{\newOlmo}{Olmo\xspace}
+
+\newcommand{\tulu}{T\"ulu~3\xspace}
+\newcommand{\olmozero}{\textsc{\oldOlmo~1}\xspace}
+\newcommand{\olmoapril}{\textsc{\oldOlmo-0424}\xspace}
+\newcommand{\olmotoo}{\textsc{\oldOlmo~2}\xspace}
+\newcommand{\olmotooinstruct}{\textsc{\oldOlmo~2 Instruct}\xspace}
+\newcommand{\olmothree}{\textsc{\newOlmo~3}\xspace}
+\newcommand{\olmothreebase}{\textsc{\newOlmo~3 Base}\xspace}
+\newcommand{\olmothreeinstruct}{\textsc{\newOlmo~3 Instruct}\xspace}
+\newcommand{\olmothreeinstructdop}{\textsc{\newOlmo~3 Instruct DPO}\xspace}
+\newcommand{\olmothreerl}{\textsc{\newOlmo{}RL}\xspace}
+\newcommand{\olmothreerlzero}{\textsc{\newOlmo~3 RL-Zero}\xspace}
+\newcommand{\olmothreerlzeromath}{\olmothreerlzero \textsc{Math}\xspace}
+\newcommand{\olmothreerlzerocode}{\olmothreerlzero \textsc{Code}\xspace}
+\newcommand{\olmothreerlzeroif}{\olmothreerlzero \textsc{IF}\xspace}
+\newcommand{\olmothreerlzerogeneral}{\olmothreerlzero \textsc{Mix}\xspace}
+\newcommand{\olmothreeonethink}{\textsc{\newOlmo~3.1~Think}\xspace}
+\newcommand{\olmothreeoneinstruct}{\textsc{\newOlmo~3.1 Instruct}\xspace}
+\newcommand{\olmothreeonerlzero}{\textsc{\newOlmo~3.1~RL-Zero}\xspace}
+\newcommand{\olmothreeonerlzeromath}{\olmothreeonerlzero \textsc{Math}\xspace}
+\newcommand{\olmothreeonerlzerocode}{\olmothreeonerlzero \textsc{Code}\xspace}
+
+
+\newcommand{\olmocore}{{\oldOlmo-core}\xspace}
+\newcommand{\openinstruct}{{Open~Instruct}\xspace}
+
+
+\newcommand{\roundOne}{{Round~1}\xspace}
+\newcommand{\roundThree}{{Round~3}\xspace}
+\newcommand{\roundFive}{{Round~5}\xspace}
+
+
+\newcommand{\metric}[1]{\hspace{0.7em}#1}
+
+
+\newcommand{\olmothreethinking}{\textsc{Olmo~3 Think}\xspace}
+\newcommand{\olmothreethinkingsft}{\textsc{Olmo~3 Think SFT}\xspace}
+\newcommand{\dolma}{\textsc{Dolma}\xspace}
+\newcommand{\dolmaoneseven}{\textsc{Dolma~1.7}\xspace}
+\newcommand{\dolmatoo}{\textsc{Dolma~3}\xspace}
+\newcommand{\dolmathree}{\dolmatoo}
+\newcommand{\dolci}{\textsc{Dolci}\xspace}
+\newcommand{\dolcithink}{\textsc{Dolci Think}\xspace}
+\newcommand{\dolcithinksft}{\textsc{Dolci Think SFT}\xspace}
+\newcommand{\dolcithinkdpo}{\textsc{Dolci Think DPO}\xspace}
+\newcommand{\dolcithinkrl}{\textsc{Dolci Think RL}\xspace}
+\newcommand{\dolciinstruct}{\textsc{Dolci Instruct}\xspace}
+\newcommand{\dolciinstructsft}{\textsc{Dolci Instruct SFT}\xspace}
+\newcommand{\dolciinstructdpo}{\textsc{Dolci Instruct DPO}\xspace}
+\newcommand{\dolciinstructrl}{\textsc{Dolci Instruct RL}\xspace}
+\newcommand{\dolcirlzero}{\textsc{Dolci RL-Zero}\xspace}
+\newcommand{\molmo}{\textsc{Molmo}\xspace}
+\newcommand{\olmomix}{\textsc{\oldOlmo~2}\xspace}
+\newcommand{\dolmatoomix}{\textsc{Dolma 3 Mix}\xspace}
+\newcommand{\dolminos}{\textsc{\oldOlmo~2 Dolmino Mix}\xspace}
+\newcommand{\dolminostoo}{\textsc{Dolma~3 Dolmino Mix}\xspace}
+\newcommand{\longminomix}{\textsc{Dolma~3 Longmino Mix}\xspace}
+\newcommand{\longminoPool}{\textsc{Dolma~3 Longmino Pool}\xspace}
+\newcommand{\missing}{\color{red}{xxx}\xspace}
+\newcommand{\family}{\href{https://www.youtube.com/watch?v=IQuc7wfO16Q}{family\xspace}} %
+\newcommand{\olmocr}{\textsc{olmOCR}\xspace}
+\newcommand{\olmOCR}{\olmocr}
+\newcommand{\olmothreeeval}{\textsc{OlmoBaseEval}\xspace}
+\newcommand{\olmix}{\textsc{Olmix}\xspace}
+\newcommand{\olmorl}{\olmothreerl}
+\newcommand{\olmocrPDF}{{\olmocr science PDFs}\xspace}
+
+\newcommand{\kyle}[1]{{\color{red} [Kyle]: #1}}
+\newcommand{\hanna}[1]{{\color{purple} [Hanna]: #1}}
+\newcommand{\nascomment}[1]{{\color{blue} [Noah: #1]}}
+\newcommand{\nathan}[1]{{\color{blue} [Nathan]: #1}}
+\newcommand{\soldni}[1]{{\color{olmoBlue} [Luca]: #1}}
+\newcommand{\tylerr}[1]{{\color{yellow} [TylerR]: #1}}
+\newcommand{\dirk}[1]{{\color{olive} [Dirk]: #1}}
+\newcommand{\pradeep}[1]{{\color{violet} [Pradeep]: #1}}
+\newcommand{\fb}[1]{{\color{brown} [Faeze]: #1}}
+\newcommand{\vp}[1]{{\color{forestgreen} [ValP]: #1}}
+\newcommand{\ake}[1]{{\color{magenta} [Allyson: #1]}}
+\newcommand{\matt}[1]{{\color{periwinkle} [Matt]: #1}}
+\newcommand{\nol}[1]{{\color{purple} [nol]: #1}}
+\newcommand{\jm}[1]{{\color{cyan} [jacob]: #1}}
+\newcommand{\saurabh}[1]{{\color{plum} [saurabh]: #1}}
+\newcommand{\davidh}[1]{{\color{olmoOrange} [davidh]: #1}}
+\newcommand{\ianm}[1]{{\color{olmoTeal} [IanM]: #1}}
+\newcommand{\tx}[1]{{\color{orange} [TengX]: #1}}
+\newcommand{\sg}[1]{{\color{brickred} [Scott]: #1}}
+\newcommand{\shashank}[1]{{\color{plum} [Shashank]: #1}}
+\newcommand{\vic}[1]{{\color{magenta} [Victoria]: #1}}
+\newcommand{\maarten}[1]{{\color{red!60!black} [Maarten]: #1}}
+\newcommand{\finbarr}[1]{{\color{pink} [Finbarr]: #1}}
+\newcommand{\saumya}[1]{{\color{green!60!black} [Saumya]: #1}}
+\newcommand{\amanda}[1]{{\color{mulberry} [Amanda]: #1}}
+\newcommand{\alisa}[1]{{\color{purple} [Alisa]: #1}}
+\newcommand{\hamish}[1]{{\color{olive} [Hamish]: #1}}
+\newcommand{\pw}[1]{{\color{forestgreen} [PW]: #1}}
+\newcommand{\alex}[1]{{\color{purple!70!black} [Alex]: #1}}
+\newcommand{\mayee}[1]{{\color{purple!70!black} [Mayee]: #1}}
+\newcommand{\petew}[1]{{\color{forestgreen} [PeteW]: #1}}
+
+\newcommand{\CITE}[1]{%
+  \textcolor{red}{\textbf{[CITE: #1]}}%
+}
+\newcommand{\MISSING}[1]{%
+  \textcolor{red}{\textbf{[MISSING: #1]}}%
+}
+
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{lightgrey}
+}
+
+
+
+
+\title{Olmo 3}%
+
+\authorOne[\starOlmo]{Olmo~Team}
+
+\authorTwo[\allenAiAff]{Allyson Ettinger\coreContrib}
+\authorTwo[\allenAiAff\commaAff\cmuAff]{Amanda Bertsch\coreContrib}
+\authorTwo[\allenAiAff]{Bailey Kuehl\coreContrib}
+\authorTwo[\allenAiAff]{David Graham\coreContrib}
+\authorTwo[\allenAiAff]{David Heineman\coreContrib}
+\authorTwo[\allenAiAff]{Dirk Groeneveld\coreContrib}
+\authorTwo[\allenAiAff]{Faeze Brahman\coreContrib}
+\authorTwo[\allenAiAff]{Finbarr Timbers\coreContrib}
+\authorTwo[\allenAiAff\commaAff\uwAff]{Hamish Ivison\coreContrib}
+\authorTwo[\allenAiAff\commaAff\uwAff]{Jacob Morrison\coreContrib}
+\authorTwo[\allenAiAff]{Jake Poznanski\coreContrib}
+\authorTwo[\allenAiAff\commaAff\uwAff]{Kyle Lo\coreContrib}
+\authorTwo[\allenAiAff]{Luca Soldaini\coreContrib}
+\authorTwo[\allenAiAff]{Matt Jordan\coreContrib}
+\authorTwo[\allenAiAff\commaAff\stanfordAff]{Mayee Chen\coreContrib}
+\authorTwo[\allenAiAff\commaAff\milaAff\commaAff\montrealAff]{Michael Noukhovitch\coreContrib}
+\authorTwo[\allenAiAff]{Nathan Lambert\coreContrib}
+\authorTwo[\allenAiAff]{Pete Walsh\coreContrib}
+\authorTwo[\allenAiAff]{Pradeep Dasigi\coreContrib}
+\authorTwo[\allenAiAff]{Robert Berry\coreContrib}
+\authorTwo[\allenAiAff]{Saumya Malik\coreContrib}
+\authorTwo[\allenAiAff]{Saurabh Shah\coreContrib}
+\authorTwo[\allenAiAff\commaAff\uwAff]{Scott Geng\coreContrib}
+\authorTwo[\allenAiAff]{Shane Arora\coreContrib}
+\authorTwo[\allenAiAff]{Shashank Gupta\coreContrib}
+\authorTwo[\allenAiAff]{Taira Anderson\coreContrib}
+\authorTwo[\allenAiAff]{Teng Xiao\coreContrib}
+\authorTwo[\allenAiAff]{Tyler Murray\coreContrib}
+\authorTwo[\allenAiAff]{Tyler Romero\coreContrib}
+\authorTwo[\allenAiAff\commaAff\uwAff]{Victoria Graf\coreContrib}
+
+\authorThree[\allenAiAff\commaAff\cmuAff]{Akari Asai}
+\authorThree[\allenAiAff]{Akshita Bhagia}
+\authorThree[\princetonAff]{Alexander Wettig}
+\authorThree[\uwAff]{Alisa Liu}
+\authorThree[\allenAiAff]{Aman Rangapur}
+\authorThree[\allenAiAff]{Chloe Anastasiades}
+\authorThree[\allenAiAff]{Costa Huang}
+\authorThree[\allenAiAff]{Dustin Schwenk}
+\authorThree[\allenAiAff]{Harsh Trivedi}
+\authorThree[\allenAiAff\commaAff\uwAff]{Ian Magnusson}
+\authorThree[\allenAiAff]{Jaron Lochner}
+\authorThree[\allenAiAff]{Jiacheng Liu}
+\authorThree[\allenAiAff]{Lester James V. Miranda}
+\authorThree[\allenAiAff\commaAff\cmuAff]{Maarten Sap}
+\authorThree[\allenAiAff]{Malia Morgan}
+\authorThree[\allenAiAff]{Michael Schmitz}
+\authorThree[\allenAiAff]{Michal Guerquin}
+\authorThree[\allenAiAff]{Michael Wilson}
+\authorThree[\allenAiAff]{Regan Huff}
+\authorThree[\allenAiAff]{Ronan Le Bras}
+\authorThree[\uwAff]{Rui Xin}
+\authorThree[\uwAff]{Rulin Shao}
+\authorThree[\allenAiAff]{Sam Skjonsberg}
+\authorThree[\mitAff]{Shannon Zejiang Shen}
+\authorThree[\uwAff]{Shuyue Stella Li}
+\authorThree[\allenAiAff]{Tucker Wilde}
+\authorThree[\allenAiAff]{Valentina Pyatkin}
+\authorThree[\allenAiAff]{Will Merrill}
+\authorThree[\umdAff]{Yapei Chang}
+\authorThree[\allenAiAff]{Yuling Gu}
+\authorThree[\allenAiAff\commaAff\uwAff]{Zhiyuan Zeng}
+
+\authorFour[\allenAiAff]{Ashish Sabharwal}
+\authorFour[\uwAff]{Luke Zettlemoyer}
+\authorFour[\allenAiAff\commaAff\uwAff]{Pang Wei Koh}
+
+\authorFive[\allenAiAff\commaAff\uwAff]{Ali Farhadi}
+\authorFive[\allenAiAff\commaAff\uwAff]{Noah A.~Smith\coreContrib}
+\authorFive[\allenAiAff\commaAff\uwAff]{Hannaneh Hajishirzi\coreContrib}
+
+
+\affiliation[\allenAiAff]{Allen~Institute~for~AI}
+\affiliation[\uwAff]{University~of~Washington}
+\affiliation[\cmuAff]{Carnegie~Mellon~University}
+\affiliation[\stanfordAff]{Stanford~University}
+\affiliation[\milaAff]{Mila}
+\affiliation[\montrealAff]{Universit\'{e}~de~Montr\'{e}al}
+\affiliation[\princetonAff]{Princeton~University}
+\affiliation[\mitAff]{Massachusetts~Institute~of~Technology}
+\affiliation[\umdAff]{University~of~Maryland}
+
+\contribution[]{\vspace{-6pt}\starOlmo\olmothree was a team effort; authors sorted alphabetically. \coreContrib{marks core contributors}. See author contributions \hyperref[sec:contrib]{here}.}
+
+
+
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+\newtcolorbox{prompt}[1]{colback=gray!5,colframe=ai2pink!80,fonttitle=\bfseries, title={#1}}
+
+
+
+\abstract{
+We introduce {\bf{\olmothree}}, a family of state-of-the-art, fully-open language models at the 7B and 32B parameter scales.  \olmothree model construction targets long-context reasoning, function calling, coding, instruction following, general chat, and knowledge recall.  This release includes the entire {\bf{model flow}}, i.e., the full lifecycle of the family of  models, including every stage, checkpoint, data point, and dependency used to build it.  Our flagship model, {\bf{\olmothreeonethink 32B}}, is the strongest fully-open thinking model released to-date.
+}
+
+\metadata[\quad\huggingface Olmo 3 Base:]{
+\href{https://huggingface.co/allenai/Olmo-3-1025-7B}{\texttt{Olmo-3-1025-7B}}\quad \href{https://huggingface.co/allenai/Olmo-3-1125-32B}{\texttt{Olmo-3-1125-32B}}}
+
+\metadata[\quad\huggingface Olmo 3 Think:]{
+\href{https://huggingface.co/allenai/Olmo-3-7B-Think}{\texttt{Olmo-3-7B-Think}}\quad
+\texttt{Olmo-\{\href{https://huggingface.co/allenai/Olmo-3-32B-Think}{3}|\href{https://huggingface.co/allenai/Olmo-3.1-32B-Think}{3.1}\}-32B-Think}
+}
+
+
+\metadata[\quad\huggingface Olmo 3 Instruct:]{
+\href{https://huggingface.co/allenai/olmo-3-7b-instruct}{\texttt{Olmo-3-7B-Instruct}}
+\quad
+\href{https://huggingface.co/allenai/olmo-3.1-32B-Instruct}{\texttt{Olmo-3.1-32B-Instruct}}
+}
+
+\metadata[\quad\huggingface Olmo 3 RL Zero:]{
+\texttt{Olmo-3-7B-RL-Zero-\{\href{https://huggingface.co/allenai/Olmo-3-7B-RL-Zero-Math}{Math}|\href{https://huggingface.co/allenai/Olmo-3-7B-RL-Zero-Code}{Code}|\href{https://huggingface.co/allenai/Olmo-3-7B-RL-Zero-IF}{IF}|\href{https://huggingface.co/allenai/Olmo-3-7B-RL-Zero-General}{General}|\href{https://huggingface.co/allenai/Olmo-3-7B-RL-Zero-Mix}{\texttt{Mix}}\}}
+\quad
+\texttt{Olmo-3.1-7B-RL-Zero-\{\href{https://huggingface.co/allenai/Olmo-3.1-7B-RL-Zero-Math}{Math}|\href{https://huggingface.co/allenai/Olmo-3.1-7B-RL-Zero-Code}{Code}\}
+}
+}
+
+
+\metadata[\vspace{.5em}\quad\hfdataset Base Data:]{
+    {\texttt{Pretrain:}}
+    \href{https://huggingface.co/datasets/allenai/dolma3_mix-6T-1025}{\texttt{Dolma 3 Mix}}
+    \quad
+    {\texttt{Midtrain:}}
+    \href{https://huggingface.co/datasets/allenai/dolma3_dolmino_mix-100B-1125}{\texttt{Dolma 3 Dolmino Mix}}
+    \quad
+    {\texttt{Long-ctx:}}
+    \href{https://huggingface.co/datasets/allenai/dolma3_longmino_mix-100B-1125}{\texttt{Dolma 3 Longmino Mix}}
+}
+
+
+\metadata[\vspace{.25em}\quad\hfdataset Think Data:]{
+    \texttt{Dolci-Think-\{\href{https://huggingface.co/datasets/allenai/Dolci-Think-SFT-7B}{SFT}|\href{https://huggingface.co/datasets/allenai/Dolci-Think-DPO-7B}{DPO}|\href{https://huggingface.co/datasets/allenai/Dolci-Think-RL-7B}{RL}\}-7B}
+    \quad
+    \texttt{Dolci-Think-\{\href{https://huggingface.co/datasets/allenai/Dolci-Think-SFT-32B}{SFT}|\href{https://huggingface.co/datasets/allenai/Dolci-Think-DPO-32B}{DPO}|\href{https://huggingface.co/datasets/allenai/Dolci-Think-RL-32B}{RL}\}-32B}
+}
+
+\metadata[\vspace{.25em}\quad\hfdataset Instruct Data:]{
+    \texttt{Dolci-Instruct-\{\href{https://huggingface.co/datasets/allenai/Dolci-Instruct-SFT-7B}{SFT}|\href{https://huggingface.co/datasets/allenai/Dolci-Instruct-DPO-7B}{DPO}|\href{https://huggingface.co/datasets/allenai/Dolci-Instruct-RL-7B}{RL}\}}
+}
+
+
+\metadata[\vspace{.25em}\quad\hfdataset RL-Zero Data:]{
+    \texttt{Dolci-RL-Zero-\{\href{https://huggingface.co/datasets/allenai/Dolci-RL-Zero-Math-7B}{Math}|\href{https://huggingface.co/datasets/allenai/Dolci-RL-Zero-Code-7B}{Code}|\href{https://huggingface.co/datasets/allenai/Dolci-RL-Zero-IF-7B}{IF}|\href{https://huggingface.co/datasets/allenai/Dolci-RL-Zero-IF-7B}{General}\}-7B}
+    \quad
+    \href{https://huggingface.co/datasets/allenai/Dolci-RL-Zero-Mix-7B}{\texttt{Dolci-RL-Zero-Mix-7B}}
+}
+
+\metadata[\vspace{.5em}\quad\github Training Code:]{
+    \href{https://github.com/allenai/olmo-core}{\texttt{\olmocore}}~\sans{(pretrain)} \quad
+    \href{https://github.com/allenai/open-instruct}{\texttt{\openinstruct}}~\sans{(posttrain)}
+}
+\metadata[\quad\github Data Code:]{
+    \href{https://github.com/allenai/datamap-rs}{\texttt{datamap-rs}}~\sans{(data processing)} \quad \href{https://github.com/allenai/duplodocus}
+    {\texttt{duplodocus}}~\sans{(deduplication)}\quad
+    \href{https://github.com/allenai/dolma3}{\texttt{dolma3}}~\sans{(data recipes)}
+}
+\metadata[\quad\github Eval Code:]{
+    \href{https://github.com/allenai/olmes}{\texttt{OLMES}}~\sans{(eval suite)}\quad
+    \href{https://github.com/allenai/decon}{\texttt{decon}}~\sans{(eval decontamination)}
+}
+\metadata[\vspace{.5em}\quad\wandb Training Logs:]{
+\texttt{Olmo-3-7B-\{\href{https://api.wandb.ai/links/ai2-llm/y8mbjvll}{Base}|\href{https://wandb.ai/ai2-llm/Olmo-3-7B-Think/reports/Olmo-3-7B-Think-SFT-DPO-RL--VmlldzoxNTE3ODQzMA}{Think}|\href{https://wandb.ai/ai2-llm/Olmo-3-7B-Instruct/reports/Olmo-3-7B-Instruct-SFT-DPO-RL--VmlldzoxNTE3ODk3Mg}{Instruct}|\href{https://wandb.ai/ai2-llm/Olmo-3-7B-RL-Zero/reports/Olmo-3-7B-RL-Zero--VmlldzoxNTM0OTI1Nw}{RL-Zero}\}}
+\quad
+\texttt{Olmo-3-32B-\{\href{https://wandb.ai/ai2-llm/Olmo-3-1125-32B/reports/Olmo-3-32B-November-2025--VmlldzoxNTA4NzAxMw}{Base}|\href{https://wandb.ai/ai2-llm/Olmo-3-32B-Think/reports/Olmo-3-32B-Think-SFT-DPO-RL--VmlldzoxNTE3OTA5Mg}{Think}|\href{https://wandb.ai/ai2-llm/Olmo-3-32B-Instruct/reports/Olmo-3-32B-Instruct-SFT-DPO-RL--VmlldzoxNTM0OTIzNw}{Instruct}\}
+}
+}
+
+\metadata[\vspace{.25em}\quad\aitoo Demo:]{\href{https://playground.allenai.org/?model=Olmo-3.1-32B-Think}{\sans{32B Think}} \quad 
+\href{https://playground.allenai.org/?model=Olmo-3.1-32B-Instruct}{\sans{32B Instruct}} \quad 
+\href{http://playground.allenai.org/?model=Olmo-3-7B-Think}{\sans{7B Think}} \quad 
+\href{http://playground.allenai.org/?model=Olmo-3-7B-Instruct}{\sans{7B Instruct}}}
+
+\metadata[\vspace{.25em}\quad\emailLogo Contact:]{\color{ai2accent}{\href{mailto:olmo@allenai.org}{\texttt{olmo@allenai.org}}}}
+
+
+
+
+\begin{document}
+
+
+\maketitle
+
+
+\newpage
+\setcounter{tocdepth}{2}
+\tableofcontents
+\newpage
+
+
+
+
+
+
+
+
+\input{section-1-intro-hanna2}
+
+\input{section-2-ake}
+
+\input{section-3-base-kyle}
+
+\newpage
+\input{section-4-think}
+
+\input{section-5-instruct-pradeep}
+
+
+\newpage
+\input{section-6-rlzero}
+
+
+
+
+
+
+\begin{textblock*}{100mm}(\dimexpr 25mm,\dimexpr\paperheight - 26mm)
+    \nointerlineskip
+    \includegraphics[width=4.4124em]{logos/rawr.pdf}
+\end{textblock*}
+
+\begin{textblock*}{100mm}(\dimexpr\paperwidth-100mm+6cm,\dimexpr\paperheight - 26mm)
+    \nointerlineskip
+    \includegraphics[width=4.4124em]{logos/moo-moo.pdf}
+\end{textblock*}
+
+
+\clearpage
+\bibliographystyle{abbrvnat}
+\bibliography{references,safety-refs}
+
+
+
+\clearpage
+
+\appendix
+\input{section8-appendix-base}
+
+\input{section8-appendix-posttrain}
+
+\end{document}

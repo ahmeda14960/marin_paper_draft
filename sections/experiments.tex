@@ -1,0 +1,570 @@
+\section{Experiments and Retrospectives}
+\label{sec:experiments}
+
+This section presents the Marin 8B and 32B retrospectives as a set of empirical case studies.
+We include key plots from the official retrospectives (downloaded into `figures/`) and summarize what each intervention changed~\citep{marin8bretro,marin32bretro}.
+
+\subsection{Evaluation Setup}
+\label{subsec:eval}
+
+\paragraph{Harness.}
+Both retrospectives report results using EleutherAI's LM Evaluation Harness with task-default settings, which can differ from numbers reported in other frameworks due to prompt/template and strictness differences~\citep{marin8bretro,marin32bretro}.
+
+\paragraph{Benchmarks.}
+We report standard academic and reasoning suites.
+For base models, we emphasize MMLU~\citep{hendryckstest2021}, GSM8K~\citep{cobbe2021gsm8k}, MATH~\citep{hendrycksmath2021}, HumanEval~\citep{chen2021codex}, BBH~\citep{suzgun2022challenging}, GPQA~\citep{rein2024gpqa}, and MMLU-Pro~\citep{wang2024mmlu}.
+We also track corpus-fit metrics such as Paloma~\citep{magnusson2024palomabenchmarkevaluatinglanguage}.
+
+\paragraph{Contamination caveat.}
+Both the 8B and 32B retrospectives emphasize that many popular benchmarks are contaminated in modern pretraining corpora.
+Marin additionally encountered a concrete contamination incident (GSM8K) due to cached data during a 32B cooldown, motivating stricter dataset-content checks going forward~\citep{marin32bretro}.
+
+\subsection{Marin 8B Retrospective}
+\label{subsec:marin8b}
+
+The Marin 8B run is a single long training trajectory partitioned into phases after the fact.
+The run used a Llama-style architecture in Levanter, sequence length 4096, JAX Splash Attention on TPUs, and mixed float32/bfloat16 precision~\citep{marin8bretro}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.95\linewidth]{marin-timeline.png}
+  \caption{Phase partitioning for the Marin 8B run (reproduced from the retrospective)~\citep{marin8bretro}.}
+  \label{fig:marin8b_timeline}
+\end{figure}
+
+\subsubsection{Phase 1: Kestrel (DCLM + WSD-S)}
+\label{subsubsec:kestrel}
+
+\paragraph{Scope.}
+Kestrel covers the first \textasciitilde2.7T tokens of the 8B run (0$\rightarrow$2.7T), trained on a reserved 2x v5e-256 TPU setup under a DCLM-centric mixture and a cyclic WSD-S schedule~\citep{marin8bretro}.
+
+\paragraph{Data.}
+Kestrel trains from scratch on the DCLM ``best mixture'' of DCLM Baseline, StarCoder Data, and ProofPile 2~\citep{dclm,marin8bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r}
+\toprule
+Dataset & Share \\
+\midrule
+DCLM Baseline & 92.6\% \\
+StarCoder Data & 6.1\% \\
+ProofPile 2 & 1.3\% \\
+\bottomrule
+\end{tabular}
+\caption{Marin 8B Phase 1 (Kestrel) data mix (normalized shares)~\citep{marin8bretro}.}
+\label{tab:marin8b_kestrel_mix}
+\end{table}
+
+\paragraph{Schedule.}
+Kestrel uses a cyclic warmup-stable-decay schedule (WSD-S) to enable periodic cooldown probes without pre-registering a single final decay~\citep{wen2024wsds,marin8bretro}.
+The retrospective reports that increasing the spacing of decay cycles (fewer, longer decays) improved several evaluation losses while revealing surprising domain-dependent behavior due to preprocessing mismatches (e.g., trailing whitespace conventions across Paloma subsets).
+Concretely, the run began with decays every 10k steps for 1k steps, then switched around step \textasciitilde200k to decays every 20k steps for 2k steps (keeping the overall decay fraction similar)~\citep{marin8bretro}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{tootsie-8b-retro-wsd-interval.png}
+    \caption{Decay-cycle spacing change.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{tootsie-8b-wsd-s-loss-transition.png}
+    \caption{Eval/training loss drops during decay.}
+  \end{subfigure}
+  \\
+  \begin{subfigure}{0.98\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{tootsie-8b-wsd-s-losses-post-transition.png}
+    \caption{Diverse eval-loss trajectories post-transition.}
+  \end{subfigure}
+  \caption{WSD-S diagnostics from Marin 8B Phase 1 (reproduced)~\citep{marin8bretro}.}
+  \label{fig:marin8b_wsds}
+\end{figure}
+
+\subsubsection{Phase 2: Ocelot (Batch/LR scaling + EMA)}
+\label{subsubsec:ocelot}
+
+At \textasciitilde2.7T tokens the run moved from 2x v5e-256 to a v4-2048 slice.
+To better utilize the hardware, batch size was increased to 12Mi tokens/step and the learning rate was scaled by $\sqrt{3}$ to 1.7e-3 following batch-scaling heuristics~\citep{marin8bretro}.
+During this phase Marin switched from WSD-S to WSD and introduced EMA monitoring of evaluation loss (EMA $\beta=0.995$), holding the learning rate high through \textasciitilde3.78T tokens~\citep{marin8bretro}.
+A notable operational fix was correcting rotary embedding settings (Llama 2 to Llama 3 style), which the authors believe caused a brief loss spike.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{tootsie-8b-ema-gap.png}
+  \caption{The ``EMA gap'' during Ocelot: the difference between hot-model and EMA-model evaluation loss remains surprisingly stable at high learning rates (reproduced)~\citep{marin8bretro}.}
+  \label{fig:marin8b_ema_gap}
+\end{figure}
+
+The retrospective reports a representative EMA gap of \textasciitilde0.015 bits-per-byte on Paloma \texttt{c4\_en} at hot learning rates, with the gap changing primarily when the learning rate regime changes rather than trending over time~\citep{marin8bretro}.
+
+\subsubsection{Interlude: Microannealing}
+\label{subsubsec:microanneal}
+
+Marin ran ``microannealing'' experiments: short cooldown-like runs that replace a fraction of the pretraining mix with a candidate ``high-quality'' source to estimate downstream impact cheaply.
+Consistent with prior observations on midtraining~\citep{olmo20242olmo2furious}, naive HQ oversampling improved HQ-domain losses but degraded benchmark accuracy.
+The retrospective argues that HQ sources often lack task-like structures useful for few-shot accuracy, and that mixing in FLAN mitigates this effect; the best microannealing results came from 70\% PT / 15\% FLAN / 15\% HQ~\citep{wei2021flan,marin8bretro}.
+
+\subsubsection{Phase 3: Jellyfish (First cooldown)}
+\label{subsubsec:jellyfish}
+
+At \textasciitilde3.78T tokens, DCLM tokens were running low, motivating a cooldown with a higher-quality mixture and a linear decay from 1.7e-3 to 1.7e-4 over 1e12 tokens (79,500 steps at 12Mi tokens/step)~\citep{marin8bretro}.
+In the retrospective phase partitioning, Jellyfish spans \textasciitilde3.78T$\rightarrow$4.78T tokens~\citep{marin8bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r}
+\toprule
+Dataset & Share \\
+\midrule
+Dolmino DCLM HQ & 67.8\% \\
+Dolma peS2o & 10.8\% \\
+FineMath 3+ & 6.3\% \\
+Dolma ArXiv & 5.2\% \\
+Dolma StackExchange & 3.2\% \\
+StarCoder & 2.2\% \\
+Dolma Algebraic Stack & 2.1\% \\
+Dolma Open Web Math & 0.9\% \\
+Dolma Megawika & 0.8\% \\
+Dolma Wikipedia & 0.7\% \\
+\bottomrule
+\end{tabular}
+\caption{Marin 8B Phase 3 (Jellyfish) data mix (normalized shares)~\citep{marin8bretro}.}
+\label{tab:marin8b_jellyfish_mix}
+\end{table}
+
+The Jellyfish checkpoint achieved MMLU 5-shot 65.3 and GSM8K 8-shot 50.9, competitive with contemporary 7--8B open baselines, but still lagging on instruction-following metrics~\citep{marin8bretro}.
+The retrospective notes that Paloma \texttt{c4\_en} perplexity increased substantially under this mix, likely due to formatting differences between DCLM HQ and \texttt{c4\_en}.
+
+\subsubsection{Phase 4: Phoenix (Reheat + Nemotron-CC transition)}
+\label{subsubsec:phoenix}
+
+After the first cooldown, at \textasciitilde4.78T tokens, the run ``reheated'' and transitioned from the DCLM-based mix to Nemotron-CC plus StarCoder.
+The transition used a 2,000-step interpolation period (\textasciitilde25.2B tokens) with mixture weights proportional to token count; the learning rate was rewarmed linearly from 1.7e-4 to 1.7e-3 over the same window and then held fixed~\citep{marin8bretro}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{8b-phoenix-transition.png}
+  \caption{Phoenix transition loss curve: a brief spike followed by recovery to slightly better loss than pre-cooldown (reproduced)~\citep{marin8bretro}.}
+  \label{fig:marin8b_phoenix_transition}
+\end{figure}
+
+\subsubsection{Deeper cooldowns: Raccoon and Spoonbill (z-loss)}
+\label{subsubsec:deep_cooldowns}
+
+To improve ``SFT-ability,'' Marin ran deeper cooldown experiments while Phoenix continued.
+Raccoon cooled the Jellyfish checkpoint further to 1.7e-5 over \textasciitilde100B tokens and observed an unexpected slow increase in training loss.
+Spoonbill reproduced the phenomenon and isolated an \texttt{lm\_head} norm explosion; adding z-loss with weight 1e-4 stabilized training and removed the loss creep~\citep{marin8bretro}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{8b-raccoon-loss-increase.png}
+    \caption{Raccoon loss creep.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{marin-8b-spoonbill-loss.png}
+    \caption{Spoonbill loss creep.}
+  \end{subfigure}
+  \\
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{8b-spoonbill-norms.png}
+    \caption{\texttt{lm\_head} norm explosion.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{8b-spoonbill-zloss.png}
+    \caption{z-loss fix.}
+  \end{subfigure}
+  \caption{Deep cooldown stability: loss creep and the z-loss intervention (reproduced)~\citep{marin8bretro}.}
+  \label{fig:marin8b_zloss}
+\end{figure}
+
+\subsubsection{Phase 5: Starling (Second cooldown + new datasets)}
+\label{subsubsec:starling}
+
+At \textasciitilde11.1T tokens, Marin began a second cooldown, incorporating lessons from Raccoon/Spoonbill: deeper decay to 1.7e-5, z-loss 1e-4, and a batch increase to 16Mi tokens/step.
+This cooldown ran for 1.34T tokens (80k steps)~\citep{marin8bretro}.
+The mix was approximately 70\% Nemotron-CC and 30\% high-quality sources, including new Markdownified datasets and a science-QA dataset.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r r}
+\toprule
+Dataset & Proportion & Oversampling \\
+\midrule
+Nemotron CC Medium & 22.1\% & 1x \\
+Nemotron CC HQ Synth & 17.8\% & 1x \\
+Nemotron CC Medium Low & 10.1\% & 1x \\
+Nemotron CC HQ Actual & 6.0\% & 1x \\
+Nemotron CC Medium High & 5.4\% & 1x \\
+Nemotron CC Low Actual & 4.6\% & 1x \\
+Nemotron CC Low Synth & 4.1\% & 1x \\
+Marin ArXiv Markdown & 5.2\% & 5x \\
+Dolmino peS2o & 5.2\% & 5x \\
+StarCoder Data & 4.5\% & 1x \\
+ProofPile 2 & 4.5\% & 1x \\
+FineMath 3+ & 3.0\% & 5x \\
+Dolmino FLAN & 3.0\% & 10x \\
+Dolmino StackExchange & 1.5\% & 5x \\
+Marin StackExchange Markdown & 1.5\% & 5x \\
+Dolmino Math & 0.8\% & 10x \\
+Marin Wikipedia Markdown & 0.3\% & 5x \\
+Dolmino Wiki & 0.3\% & 5x \\
+Marin Datashop Science QA & 0.1\% & 5x \\
+\bottomrule
+\end{tabular}
+\caption{Marin 8B Phase 5 (Starling) cooldown mix, as reported in the retrospective~\citep{marin8bretro}.}
+\label{tab:marin8b_starling_mix}
+\end{table}
+
+The retrospective reports that \texttt{c4\_en} perplexity decreased substantially during Starling, in contrast to the earlier cooldown where it increased, consistent with large preprocessing/formatting shifts between DCLM HQ and Nemotron-CC.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{marin-8b-starling-c4en.png}
+    \caption{\texttt{c4\_en} perplexity.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{tootsie-8b-starling-loss-slowdown.png}
+    \caption{Loss slowdown at fixed low LR.}
+  \end{subfigure}
+  \caption{Starling cooldown diagnostics (reproduced)~\citep{marin8bretro}.}
+  \label{fig:marin8b_starling}
+\end{figure}
+
+\subsubsection{Base-model benchmark results (8B)}
+\label{subsubsec:marin8b_base_results}
+
+Table~\ref{tab:marin8b_base_results} summarizes key benchmark results from the 8B retrospective for the Deeper Starling checkpoint.
+The retrospective emphasizes that many tasks are contaminated in modern pretraining corpora and that these comparisons should be treated cautiously~\citep{marin8bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r r r r r r}
+\toprule
+Model & Avg & MMLU (5) & BBH & GPQA & MMLU-Pro & GSM8K \\
+\midrule
+Marin 8B Base (Deeper Starling) & 66.6 & 67.6 & 50.6 & 30.3 & 36.5 & 61.3 \\
+Llama 3.1 Base (8B) & 65.3 & 66.4 & 46.4 & 32.3 & 33.3 & 56.8 \\
+OLMo 2 Base (7B) & 64.9 & 63.9 & 44.4 & 26.8 & 30.6 & 67.6 \\
+\bottomrule
+\end{tabular}
+\caption{Selected base-model results reported in the Marin 8B retrospective (LM Eval Harness defaults)~\citep{marin8bretro}. ``MMLU (5)'' denotes 5-shot.}
+\label{tab:marin8b_base_results}
+\end{table}
+
+\subsection{Marin 8B Supervised Fine-Tuning (SFT)}
+\label{subsec:marin8b_sft}
+
+To probe post-trainability, the retrospective reports a small SFT run starting from the final Deeper Starling checkpoint.
+The SFT mix combines multiple open instruction/reasoning datasets (AceCode-89K, Bespoke-Stratos-17k, dolphin-r1, natural\_reasoning, OpenThoughts, smoltalk, tulu-3-sft-mixture, verifiable-math-problems) and trains for 5Gi tokens with batch size 512Ki and learning rate 1.7e-4~\citep{marin8bretro}.
+
+The reported results (Table~\ref{tab:marin8b_sft_results}) show substantial gains on instruction-following and reasoning suites, but a degradation on some ``base'' tasks, echoing a phenomenon reported in OLMo 2.
+The retrospective proposes mitigation via mixing in pretraining data and FLAN during later stages~\citep{olmo20242olmo2furious,marin8bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r r r r r r}
+\toprule
+Model & Avg & IFEval & BBH & GPQA & MMLU-Pro & HumanEval \\
+\midrule
+Llama 3.1 Tulu & 50.0 & 87.5 & 43.9 & 28.7 & 29.4 & 60.4 \\
+Marin 8B SFT & 43.8 & 78.3 & 46.0 & 29.5 & 31.2 & 47.0 \\
+OLMo 2 Instruct & 38.7 & 69.5 & 42.6 & 24.2 & 17.6 & 17.1 \\
+\bottomrule
+\end{tabular}
+\caption{Selected SFT/instruct results reported in the Marin 8B retrospective (Open LLM Leaderboard hard set + additional tasks)~\citep{marin8bretro}.}
+\label{tab:marin8b_sft_results}
+\end{table}
+
+\subsection{Marin 32B Retrospective}
+\label{subsec:marin32b}
+
+The Marin 32B run scales the 8B recipe to a 32B configuration and surfaces two main challenges: (i) training instability (loss spikes) during baseline Llama-style attention, and (ii) data-system pathologies during cooldown (benchmark contamination and shuffling).
+The final released artifact includes \textasciitilde6.437T tokens of training (Phase 1 + Phase 3 + Phase 4; Phase 2 diagnostic restarts excluded)~\citep{marin32bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r}
+\toprule
+Dataset & Share \\
+\midrule
+nemotron\_cc/medium & 30.69\% \\
+nemotron\_cc/hq\_synth & 24.70\% \\
+nemotron\_cc/medium\_low & 13.98\% \\
+nemotron\_cc/hq\_actual & 8.30\% \\
+nemotron\_cc/medium\_high & 7.49\% \\
+nemotron\_cc/low\_actual & 6.37\% \\
+nemotron\_cc/low\_synth & 5.70\% \\
+starcoderdata & 2.27\% \\
+proofpile\_2 & 0.50\% \\
+\bottomrule
+\end{tabular}
+\caption{Marin 32B pretraining mixture (normalized share), reused across Phases 1--3~\citep{marin32bretro}.}
+\label{tab:marin32b_pretraining_mix}
+\end{table}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{r r r}
+\toprule
+Start step & Global batch & Tokens/batch \\
+\midrule
+0 & 8192 & 32Mi \\
+18{,}500 & 7680 & 30Mi \\
+21{,}010 & 8192 & 32Mi \\
+\bottomrule
+\end{tabular}
+\caption{Marin 32B Phase 1 batch schedule (4096 sequence length)~\citep{marin32bretro}.}
+\label{tab:marin32b_batch_schedule}
+\end{table}
+
+\subsubsection{Phase 1: Baseline scale-up and loss spikes}
+\label{subsubsec:marin32b_phase1}
+
+Phase 1 trains a Llama-3-style 32B model for \textasciitilde2.679T tokens (80k steps at sequence length 4096) using the Nemotron-CC-centric mixture in Table~\ref{tab:marin32b_pretraining_mix} and the batch schedule in Table~\ref{tab:marin32b_batch_schedule}~\citep{marin32bretro}.
+The baseline optimizer is AdamW with peak learning rate 7e-4 (WSD-style linear warmup/hold/decay; warmup 1\% of steps, decay 40\%), weight decay 0.05, EMA $\beta=0.995$, and z-loss 1e-4~\citep{marin32bretro}.
+Loss spikes were frequent.
+
+The retrospective reports three progressively stronger mitigations:
+(1) tightening max grad-norm clipping from 1.0 to 0.2 at \textasciitilde56.4k steps (typical norms were \textasciitilde0.2, and larger norms often preceded spikes),
+(2) adding ``clip update norm'' at step 72{,}233 using a rolling window of 128 updates and a 2$\sigma$ threshold (briefly disabled around \textasciitilde74k--80k),
+and (3) enabling ``skip bad steps'' to skip parameter updates whose update norm exceeds the same 2$\sigma$ criterion~\citep{marin32bretro}.
+
+Issue~\#1368 adds fine-grained observations: Adam update-norm spikes typically precede loss spikes (but not every update spike triggers a loss spike); gradient norms often spike after update spikes; update spikes are larger in lower layers; and during update spikes the Adam first-moment estimate grows by roughly 2x while the second moment remains mostly unchanged, suggesting momentum buildup from unusually aligned gradients rather than a single outlier batch~\citep{marinissue1368}.
+Issue~\#1390 documents an unrecovered spike after update clipping was inadvertently turned off, underscoring the brittleness of heuristic stabilizers at this scale~\citep{marinissue1390}.
+Overall, these interventions reduced spike severity but did not remove the pathology, motivating the architectural QK-norm switch in Phase~3~\citep{marin32bretro}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-spiky-loss.png}
+    \caption{Training loss spikes.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-update-spike-precede-loss-spike.png}
+    \caption{Update spikes precede loss spikes.}
+  \end{subfigure}
+  \\
+  \begin{subfigure}{0.98\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-loss-comparisons.png}
+    \caption{Eval-loss comparisons.}
+  \end{subfigure}
+  \caption{Marin 32B Phase 1 instability diagnostics (reproduced)~\citep{marin32bretro}.}
+  \label{fig:marin32b_spikes}
+\end{figure}
+
+\subsubsection{Phase 2: Recovery attempts (discarded)}
+\label{subsubsec:marin32b_phase2}
+
+The team attempted short diagnostic restarts (``necromancy'') and an optimizer swap (Muon).
+Muon temporarily reduced loss but eventually diverged, reinforcing the hypothesis that instability was rooted in the attention stack rather than optimizer state~\citep{marin32bretro}.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-bad-spike.png}
+    \caption{Restart spike.}
+  \end{subfigure}
+  \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-muon-vs-adam.png}
+    \caption{Muon vs Adam.}
+  \end{subfigure}
+  \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-muon-can-into-space.png}
+    \caption{Muon divergence.}
+  \end{subfigure}
+  \caption{Phase 2 recovery attempts (reproduced)~\citep{marin32bretro}.}
+  \label{fig:marin32b_recovery_attempts}
+\end{figure}
+
+\subsubsection{Phase 3: QK-norm switch}
+\label{subsubsec:marin32b_qknorm}
+
+At step 80k, Marin switched to a Qwen3-style 32B configuration that adds QK-norm in attention and warm-started from the Llama 32B checkpoint.
+The switch imposed a one-time loss penalty but recovered within \textasciitilde10B tokens; importantly, loss spikes disappeared entirely~\citep{Dehghani2023ScalingVT,marin32bretro}.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.8\linewidth]{qk-recovery.png}
+  \caption{QK-norm warm-start recovery: loss returns to the pre-switch trajectory after a short recovery window (reproduced)~\citep{marin32bretro}.}
+  \label{fig:marin32b_qk_recovery}
+\end{figure}
+
+\subsubsection{Phase 4: Cooldowns (Bison vs Mantis) and shuffling}
+\label{subsubsec:marin32b_cooldowns}
+
+With stability restored, Marin ran cooldowns following the 8B playbook.
+The first cooldown (Bison) surfaced two issues: a GSM8K contamination incident and a shuffling-induced ``phase shift'' in training loss.
+The second cooldown (Mantis) fixed both by switching to a Feistel permutation (Section~\ref{subsec:shuffle}) and by cleaning the math component of the cooldown mix~\citep{marin32bretro}.
+
+\paragraph{Attempt 1: Bison cooldown.}
+Starting from the step-160k QK-norm checkpoint, Marin ran a 32k-step linear cooldown (160k $\rightarrow$ 192k; \textasciitilde1.074T tokens) with a \textasciitilde70/30 Nemotron/HQ mixture patterned after the 8B Starling cooldown (Table~\ref{tab:marin32b_bison_mix})~\citep{marin32bretro}.
+The optimizer schedule used no warmup and a linear decay over the 160k$\rightarrow$192k window, with AdamC enabled during decay and a small z-loss throughout~\citep{marin32bretro}.
+Within the HQ budget, FLAN was upsampled 10x and an ``all\_math'' Dolmino bundle 2x, mirroring the 8B recipe~\citep{marin32bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r}
+\toprule
+Dataset & Share \\
+\midrule
+nemotron\_cc/medium & 21.49\% \\
+nemotron\_cc/hq\_synth & 17.29\% \\
+nemotron\_cc/medium\_low & 9.79\% \\
+nemotron\_cc/hq\_actual & 5.81\% \\
+nemotron\_cc/medium\_high & 5.24\% \\
+nemotron\_cc/low\_actual & 4.46\% \\
+nemotron\_cc/low\_synth & 3.99\% \\
+arxiv\_markdownified & 7.41\% \\
+dolmino/pes2o & 7.41\% \\
+finemath-3-plus & 4.33\% \\
+dolmino/flan & 4.33\% \\
+stackexchange\_custom & 2.18\% \\
+dolmino/stackexchange & 2.18\% \\
+starcoderdata & 1.59\% \\
+all\_math & 1.08\% \\
+proofpile\_2 & 0.35\% \\
+wikipedia\_markdown & 0.47\% \\
+dolmino/wiki & 0.47\% \\
+medu\_science\_qa & 0.15\% \\
+\bottomrule
+\end{tabular}
+\caption{Marin 32B Bison cooldown mixture (normalized share), reproduced from the retrospective~\citep{marin32bretro}.}
+\label{tab:marin32b_bison_mix}
+\end{table}
+
+\paragraph{Contamination: GSM8K.}
+The retrospective traces the GSM8K anomaly to cached data: a Dolmino math bundle included GSM8K test items in a \texttt{test.json}, and although preprocessing was later updated to drop \texttt{test.json}, the old cached dataset persisted on the cluster and contaminated the Bison cooldown~\citep{marin32bretro}.
+Because the contaminated GSM8K used OLMes formatting (not the LM Eval Harness default), contamination produced \emph{worse} scores under the default prompt: the model assigned high surprisal to structured tags (e.g., \texttt{16-8=<<16-7=9>>9}) that were absent in the contaminated formatting, yielding extreme prompt fragility~\citep{marin32bretro}.
+
+\paragraph{Shuffling: phase shift under linear permutation.}
+Near step \textasciitilde190k, the training loss jumped to a new plateau and never recovered, while evaluation losses remained flat (Figure~\ref{fig:marin32b_shuffle})~\citep{marin32bretro}.
+The retrospective interprets this as a data-ordering ``phase shift'' rather than instability: the underlying mixture weights did not change, but the affine/LCG permutation (Equation~\ref{eq:lcg_perm}) can yield correlated stretches if the dataset blocks are structured and the stride is unlucky.
+The team notes that they originally chose the linear permutation because it is cheap and stateless (random access without permutation tables), and because per-component mixture sampling in Levanter keeps dataset proportions stable; in this case, those safeguards were insufficient~\citep{marin32bretro}.
+
+\paragraph{Attempt 2: Mantis cooldown.}
+Mantis restarted from step 160k with two targeted changes: (i) switching the sampling permutation to Feistel (Section~\ref{subsec:shuffle}), and (ii) replacing the Dolmino math bundle with MegaMath splits and later adding Common Pile EDU-filtered Python around step \textasciitilde174k (renormalizing the HQ budget accordingly)~\citep{marin32bretro,megamath,commonpile}.
+With the optimizer schedule unchanged, both failure modes disappeared; empirically, the phase shift was removed and Paloma losses improved across corpora (Figure~\ref{fig:marin32b_shuffle})~\citep{marin32bretro}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r}
+\toprule
+Dataset & Share \\
+\midrule
+nemotron\_cc/medium & 21.49\% \\
+nemotron\_cc/hq\_synth & 17.29\% \\
+nemotron\_cc/medium\_low & 9.79\% \\
+nemotron\_cc/hq\_actual & 5.81\% \\
+nemotron\_cc/medium\_high & 5.24\% \\
+nemotron\_cc/low\_actual & 4.46\% \\
+nemotron\_cc/low\_synth & 3.99\% \\
+megamath/web & 5.57\% \\
+arxiv\_markdownified & 4.54\% \\
+megamath/text\_code\_block & 4.24\% \\
+dolmino/pes2o & 4.54\% \\
+megamath/web\_pro & 1.27\% \\
+megamath/translated\_code & 0.61\% \\
+megamath/qa & 0.59\% \\
+finemath-3-plus & 2.66\% \\
+dolmino/flan & 2.66\% \\
+stackexchange\_custom & 1.34\% \\
+dolmino/stackexchange & 1.34\% \\
+starcoderdata & 1.59\% \\
+proofpile\_2 & 0.35\% \\
+wikipedia\_markdown & 0.29\% \\
+dolmino/wiki & 0.29\% \\
+medu\_science\_qa & 0.09\% \\
+\bottomrule
+\end{tabular}
+\caption{Marin 32B Mantis cooldown mixture (normalized share), reproduced from the retrospective~\citep{marin32bretro}.}
+\label{tab:marin32b_mantis_mix}
+\end{table}
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-shuffle-spike.png}
+    \caption{Cooldown phase shift (LCG).}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-feistel-vs-lcg.png}
+    \caption{Feistel removes shift.}
+  \end{subfigure}
+  \\
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-paloma-c4-en-permutation.png}
+    \caption{Paloma \texttt{c4\_en}.}
+  \end{subfigure}
+  \begin{subfigure}{0.49\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{32b-paloma-average-permutation.png}
+    \caption{Paloma average.}
+  \end{subfigure}
+  \caption{Shuffling pathology and fix during Marin 32B cooldowns (reproduced)~\citep{marin32bretro}.}
+  \label{fig:marin32b_shuffle}
+\end{figure}
+
+\subsubsection{Base-model benchmark results (32B)}
+\label{subsubsec:marin32b_results}
+
+Table~\ref{tab:marin32b_results} reproduces a subset of the 32B retrospective results.
+Mantis improves substantially over Bison on math and code benchmarks and surpasses OLMo 2 32B base on average accuracy (with the caveats discussed above)~\citep{marin32bretro,olmo20242olmo2furious}.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l r r r r r r r r}
+\toprule
+Model & Avg & MMLU & BBH & GPQA & MMLU-Pro & HumanEval & GSM8K & MATH \\
+\midrule
+Marin 32B (Bison) & 63.0 & 72.9 & 55.2 & 32.1 & 41.9 & 29.3 & 54.7 & 10.4 \\
+Marin 32B (Mantis) & 65.2 & 74.7 & 59.6 & 34.0 & 45.1 & 42.7 & 69.1 & 15.3 \\
+OLMo 2 32B Base & 63.2 & 71.9 & 56.1 & 32.2 & 42.0 & 23.8 & 76.4 & 12.7 \\
+Qwen 2.5 32B Base & 68.1 & 80.8 & 67.4 & 39.0 & 57.9 & 48.8 & 89.3 & 36.3 \\
+\bottomrule
+\end{tabular}
+\caption{Selected 32B base-model results from the Marin 32B retrospective (LM Eval Harness defaults)~\citep{marin32bretro}.}
+\label{tab:marin32b_results}
+\end{table}
+
+\subsection{Open Development and Experiment History}
+\label{subsec:open_dev}
+
+A distinctive aspect of Marin is its public, issue-driven experimentation.
+The documentation includes an auto-generated summary of GitHub issues grouped by theme (quality classifiers, preprocessing, pretraining setups, SFT and domain-specific training) and a timeline of closed/open issues.
+Because that page is explicitly labeled as LLM-generated and ``should not be trusted without verification,'' we treat it as a pointer to the underlying issues rather than a primary source~\citep{marinsummary}.
+
+Nevertheless, several themes recur across issues and in the 8B/32B retrospectives:
+(1) data extraction and formatting (HTML-to-text, Markdownification),
+(2) quality filtering signals (classifier-based and compression-based),
+(3) training-schedule tuning (WSD/WSD-S details), and
+(4) post-training tradeoffs (improving instruction scores without erasing base capabilities).

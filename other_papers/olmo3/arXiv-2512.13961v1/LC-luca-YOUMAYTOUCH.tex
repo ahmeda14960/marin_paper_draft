@@ -1,0 +1,211 @@
+
+
+\subsection{Stage 3: Long-context Extension}
+\label{sec:long-context}
+
+
+A crucial ability for modern language models is the capacity to operate over long sequences.
+This capability is necessary to process the long inputs required by many real-world tasks.
+Moreover, generating long sequences of intermediate tokens is a common technique to achieve test-time scaling~\citep{muennighoff2025s1simpletesttimescaling}.
+In this section, we provide an overview of the methodology we used to scale \olmothree's context window from 8,192 to 65,536 tokens. %
+We also describe \longminomix{}, a high-quality dataset of both naturally-occurring and synthetically-augmented long texts.
+\longminomix{} consists of over {\bf 600 billion tokens}; statistics in Table~\ref{table:data-stage-3}.
+
+\input{tables/base_data/long-context_data}
+
+\paragraph{Long-context extension strategy}
+Because training with long sequence lengths is computationally costly, most language models are pretrained with shorter sequences and extended only in a later stage of model development.
+During the extension phase, models are trained on longer documents and the hyperparameters of positional embeddings are typically adjusted to ease positional generalization.
+
+\paragraph{High variance in open-model recipes}
+The recipes for performing this long-context extension vary dramatically between models.
+The context extension phase for many language models ranges from hundreds of billions (SmolLM3: 100B,~\citealt{bakouch2025smollm3}; GLM 4.5: 100B,~\citealt{glm45}; DeepSeek V3: 123B,~\citealt{deepseekv3}; Apertus: 225B,~\citealt{swissai2025apertus}) to almost one trillion tokens (Kimi K2: 400B,~\citealt{kimiK2}; Llama 3.1: 800B,~\citealt{dubey2024llama}; DeepSeek V3.1: 840B,~\citealt{deepseekV31}).
+However, there are outliers: AFM~\citep{goddard2025extendingAFM} and Nemotron Nano 2~\citep{nvidia2025nvidianemotronnano2} both use fewer than 20 billion tokens to extend to 64K and 128K, respectively.
+Standalone extension recipes have also been proposed, many emphasizing token efficiency. For instance, ProLong~\citep{prolong} uses 20B tokens drawn from books and code, whereas LongAttn~\citep{wu2025longattn} constructs a 5B-token corpus using self-attention scores from existing language models to select documents exhibiting long-range dependencies.
+Another key point of divergence across model families is when in the development pipeline the extension is performed: Llama 3.1 models apply long-context extension prior to midtraining, Qwen 2.5 and 3 perform it afterwards, and GLM 4.5 applies extension only after supervised finetuning.
+
+
+\paragraph{\olmothree long-context recipe}
+To extend \olmothree's context, we use long documents from the \olmocrPDF pool (Section~\S\ref{lc:data}) with additional filtering and synthetic data augmentation applied (Section~\S\ref{lc:synth}).
+We call this collection \longminoPool{}.
+We mix 34\% long-context data with 66\% high-quality short-context data sampled from \dolminostoo{}, and train using this mix for an additional 50B tokens for \olmothree 7B and 100B tokens for \olmothree 32B, as described in Section~\S\ref{lc:mix}.
+During long-context extension, we apply YaRN~\citep{peng2023yarnefficientcontextwindow} to full attention layers, and do not adjust positional embeddings on sliding-window attention layers;
+we use document packing and inter-document masking (Section~\S\ref{lc:mix}).
+We summarize the key aspects of our recipe in Figure~\ref{fig:lc-progress}.
+While developing this recipe, we carefully analyze and isolate architectural design decisions that have profound impact on long-context performance; our investigation is presented in \citet{bertsch2026cracks}. 
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth, trim=0.05in 0.1in 0.05in 0.1in, clip]{figures/lc-good-stuff/s0_attention_scaling.pdf}
+        \caption{}
+        \label{lc:component:attention_scaling}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth, trim=0.05in 0.1in 0.05in 0.1in, clip]{figures/lc-good-stuff/s1_better_data.pdf}
+        \caption{}
+        \label{lc:component:better_data}
+    \end{subfigure}
+    \par\bigskip
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth, trim=0.05in 0.1in 0.05in 0.1in, clip]{figures/lc-good-stuff/s2_synthetic_data_augmentation.pdf}
+        \caption{}
+        \label{lc:component:synth}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth, trim=0.05in 0.1in 0.05in 0.1in, clip]{figures/lc-good-stuff/s3_document_packing.pdf}
+        \caption{}
+        \label{lc:component:packing}
+    \end{subfigure}
+    \par\bigskip
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\linewidth, trim=0.05in 0.1in 0.05in 0.1in, clip]{figures/lc-good-stuff/s4_extension_token_budget.pdf}
+        \caption{}
+        \label{lc:component:longer}
+    \end{subfigure}
+    \vspace{-0.3em}
+    \caption{        
+        \textbf{Five key components of the \olmothree long-context extension recipe} measured on the RULER benchmark.
+        applying YaRN to full attention layers only gives the best results (Figure~\ref{lc:component:attention_scaling});
+        \olmocrPDF are more effective than other recipes (Figure~\ref{lc:component:better_data});
+        synthetic data augmentation improves performance over natural documents alone (Figure~\ref{lc:component:synth});
+        Document packing boosts performance for longer context lengths (Figure~\ref{lc:component:packing});
+        longer extensions improve RULER scores, especially for longer sequences (Figure~\ref{lc:component:longer}).
+        }
+    \label{fig:lc-progress}
+\end{figure}
+
+
+
+
+
+\paragraph{Overall results}  We evaluate our context-extended models on two popular long-context benchmarks.
+RULER \citep{hsieh2024rulerwhatsrealcontext} is a benchmark of synthetic long-context tasks including challenging variations of the Needle-in-a-Haystack task~\citep{nelson2024needlehaystackmemorybased} and simple aggregation tasks that require counting over inputs; we use RULER as the primary metric to guide our long-context recipe development.
+HELMET~\citep{yen2025helmet} is a suite of long-context benchmarks across a diverse set of task types, including retrieval, in-context learning, and summarization tasks, which we evaluate on to represent more general long-context capabilities.  We keep HELMET as an unseen evaluation suite and test our final checkpoints on it.\footnote{There is some overlap between RULER and HELMET, so this is not a perfect held-out suite; however, the overlapping subsets are generally the easier ones where models trivially achieve near-perfect performance. See Appendix~\ref{appx:eval-details} for details.} %
+We report results in Table~\ref{tab:ruler_baselines}.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lcccccp{0.2em}cccc}
+\toprule
+ & \multicolumn{5}{c}{\textbf{RULER}\quad\textcolor{neutralFive}{\small\texttt{(dev suite)}}} && \multicolumn{4}{c}{\textbf{HELMET}\quad\textcolor{neutralFive}{\small\texttt{(held-out eval)}}} \\
+\cmidrule(lr){2-6} \cmidrule(lr){8-11}
+\textbf{Model} & \textbf{4K} & \textbf{8K} & \textbf{16K} & \textbf{32K} & \textbf{65K} && \textbf{8K} & \textbf{16K} & \textbf{32K} & \textbf{65K} \\
+\midrule
+\rowcolor{midgrey} \multicolumn{11}{c}{\textbf{7B scale}} \\
+\rowcolor{lightgrey} Llama 3.1 8B & 95.56 & 92.76 & 93.13 & 91.43 & 86.88 && 45.00 & 43.48 & 42.44 & 40.18 \\
+\rowcolor{lightgrey} Qwen 2.5 7B & 94.63 & 90.87 & 88.68 & 87.26 & 67.30 && 49.26 & 46.25 & 42.99 & 30.47 \\
+\rowcolor{lightgrey} IBM Granite 3.3 8B & 91.98 & 85.69 & 82.70 & 78.13 & 67.62 && 43.19 & 41.63 & 39.31 & 35.74 \\
+\rowcolor{lightgrey} Qwen 3 8B & 95.58 & 94.10 & 93.78 & 90.29 & - && 51.62 & 49.90 & 47.71 & - \\
+\rowcolor{lightgrey} Xiaomi MiMo 7B & 94.33 & 93.45 & 92.53 & 89.28 & - && 50.57 & 49.68 & 46.01 & - \\
+\rowcolor{lightgrey} Nemotron Nano 9B & 95.31 & 93.09 & 91.58 & 89.01 & 85.13 && 41.78 & 42.90 & 41.82 & 41.48 \\
+\rowcolor{lightgrey} Apertus 8B & 90.47 & 82.48 & 74.43 & 69.05 & 59.89 && 46.09 & 43.71 & 41.26 & 35.12 \\
+\rowcolor{ai2lightpink} Olmo 3 7B & 94.89 & 91.21 & 84.14 & 78.79 & 67.96 && 45.66 & 43.62 & 41.15 & 36.80 \\
+\midrule
+\rowcolor{midgrey} \multicolumn{11}{c}{\textbf{32B scale}} \\
+\rowcolor{lightgrey} Qwen 2.5 32B & 96.03 & 94.52 & 95.07 & 92.67 & 80.73 && 57.61 & 56.06 & 54.01 & 41.73 \\
+\rowcolor{lightgrey} Gemma 3 27B & 84.48 & 84.20 & 85.36 & 87.06 & 84.59 && 49.37 & 49.92 & 50.31 & 48.60 \\
+\rowcolor{lightgrey} Mistral Small 3.1 24B & 96.05 & 95.06 & 93.77 & 92.42 & 88.80 && 49.41 & 49.71 & 47.46 & 43.34 \\
+\rowcolor{lightgrey} Apertus 70B & 91.52 & 84.26 & 80.54 & 76.82 & 60.33 && 44.72 & 44.60 & 41.07 & 35.67 \\
+\rowcolor{ai2lightpink} Olmo 3 32B & 96.10 & 94.57 & 90.42 & 86.22 & 79.70 && 52.11 & 49.36 & 48.60 & 43.15 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Performance of \olmothree compared to other open base models of comparable size}. During \olmothree development, we use RULER~\citep{hsieh2024rulerwhatsrealcontext} as our development suite; we hold HELMET~\citep{yen2025helmet} out as an unseen evaluation suite.
+The table contains base variants of each model; models are sorted by their respective release dates.
+Qwen 3 8B Base~\citep{qwen3} and Xiaomi MiMo 7B~\citep{mimo} only support a context length of up to $32{,}768$ tokens.
+We exclude any base model that does not support at least $32{,}768$ tokens.
+}
+\label{tab:ruler_baselines}
+\end{table}
+
+\subsubsection{Sourcing Long Context Data}
+\label{lc:data}
+
+
+
+\paragraph{\olmocrPDF} The backbone of our long-context data pool is scientific PDFs scraped from the web and processed by \olmocr.\footnote{See Section~\ref{sec:preparing-pdf-data} for more details on the preprocessing of this data.}
+Figure~\ref{fig:lc-distribution} describes the distribution by topic in each length bucked shown in Table~\ref{table:data-stage-3}.
+
+\paragraph{Data filtering}
+We filter this data using \texttt{gzip} compressibility as a metric. \texttt{gzip} has been used for text classification \citep{jiang2022moreparameterfreetextclassification} and as a feature in fine-grained scaling laws \citep{pandey2024gzippredictsdatadependentscaling}. We use \texttt{gzip} for data filtering by excluding the extremes: removing the 20\% of text that is most compressible and the 20\% of text that is least compressible. %
+
+We also consider applying filters based on LongPpl \citep{fang2025wrongperplexitylongcontextlanguage}, which identifies tokens that rely moston  long-range dependencies by measuring, for each token, the change in perplexity under an existing long-context model when additional preceding context is provided. We compute LongPpl over 10B tokens of \longminomix{} using Gemma 3 4B~\citep{team2025gemma3} as the reference model, and comparing contextualization using 4K or 128K context windows. We use the same threshold as \citet{fang2025wrongperplexitylongcontextlanguage} for determining whether a token is a ``key'' token that requires long context dependencies.
+
+We compute two statistics over each document: the fraction of tokens marked as key tokens, and the spread of key tokens across the document (which we compute as the standard deviation of key token locations, which are measured relative to the document length). In a sweep of experiments, we consider excluding the bottom 20\% of documents with the least key tokens or lowest spread, and excluding both the top and bottom 20\% as outliers; none of these possibilities outperform the \texttt{gzip} filter, so we do not use this for the final run.
+
+
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=\linewidth]{figures/token_distribution.pdf}
+  \caption{\textbf{Distribution of token counts over WebOrganizer}~\citep{weborganizer} topics in \olmocrPDF, partitioned by length. }
+  \label{fig:lc-distribution}
+\end{figure}
+
+
+
+\subsubsection{Experiments with Synthetic Augmentation}
+\label{lc:synth}
+
+A common use case for extended-context language models is information extraction and synthesis over long inputs~\citep{longbench1,longbench2}.
+However, most long documents do not provide supervision for such tasks.
+Directly inspired by CLIPPER~\citep{pham2025clipper}, we modify a portion of our science PDF pool by injecting synthetically generated aggregation tasks at randomly sampled intervals.
+Our approach also shares similarities with Qwen 2.5 1M~\citep{qwen1M}.
+
+\paragraph{Generation~pipeline} The main challenge in generating synthetic data for long-context understanding is the bootstrap problem: how can we create effective data without having access to models that can process long context?
+Our pipeline uses document statistics to identify the most important terms and then extracts snippets containing those terms.
+Those snippets are subsequently provided to a language model to create aggregation tasks.
+In detail:
+\begin{enumerate}
+    \item For a given document of length $n$ tokens, we partition the document into $m$ sections of length 8K to 32K tokens. We attempt to place these partitions near natural breaks in the document flow, such as right before new sections;
+    \item For each partition, we normalize and tokenize the text, extract one- and two-word noun phrases, and use \textit{tf-idf} to identify the most salient noun phrases;
+    \item For each noun phrase, we select $k=8$ snippets of text from the partition, ranked by \textit{tf-idf};
+    \item We pass the noun phrases, (optional) snippets, and one or more prompts describing the aggregation task to a language model.
+\end{enumerate}
+
+For \olmothree, we use documents where $32,768 \leq n < 65,536$ tokens, resulting in 2 to 8 partitions per document.  While we experimented with several closed and open language models, we ultimately use \textsc{\olmotooinstruct~32B} for all generations.
+
+
+\paragraph{Synthetic~aggregation~tasks} We consider two aggregation tasks; we refer the reader to the code implementation\footnote{\href{https://github.com/allenai/dolma3/blob/f7def5838c8c2d25e358b2b35b2b752168107ed4/datasets/dolma3_longmino_mix/synthetic_cwe_rex/longmino_synthetic_cwe_rex.py}{\path{github.com/allenai/dolma3/datasets/dolma3_longmino_mix/synthetic_cwe_rex/longmino_synthetic_cwe_rex.py}}} for the exact prompts used.
+
+
+\begin{itemize}
+	\item {\bf{CWE}} (Common Word Extraction) We prompt \olmotooinstruct with 5 commonly occurring single-word noun phrases in the partition, and ask the model to generate diverse QA pairs that require the answer to be the exact number of times each unigram occurs in the partition;
+	\item {\bf{REX}} (Rewriting EXpressions) For each noun phrase and corresponding snippets, we prompt \olmotooinstruct to generate an aggregation task matching one of the following 12 vignettes discussing the noun phrase: a short summary, a dialogue between a professor and student, a simple paragraph for high school students, a set of flashcards, a school quiz, a game show, a dinner party, a debate, a list of true or false claims, a movie scene, an encyclopedic description, or an explainer in the style of conversations on the \texttt{r/explainlikeimfive} subreddit.
+\end{itemize}
+
+
+
+\subsubsection{Choosing Data Mix and Token Budget}
+\label{lc:mix}
+
+\paragraph{Interleaving long- and short-context data}
+Rather than training on only long-context data, we mix high-quality short-context data from midtraining (stage two) to ensure that performance on short-context tasks is not meaningfully degraded.
+Early experiments on a 10B-token extension show that a 66\% / 34\% mix of long-context to short-context data drops performance on a subset of \olmothreeeval by 2.5 points; in comparison, a 34\% long-context, 66\% short-context mix only drops performance by 0.8 points.
+
+
+\paragraph{Longer extension helps} Figure~\ref{lc:component:longer} shows that allocating more tokens to the long-context extension stage improves performance on long-context tasks, particularly at longer sequence lengths.
+We extend the context of \olmothree 7B through a 50B stage 3 training;
+for \olmothree 32B, we extend for 100B tokens for better long-context capabilities.
+
+\subsubsection{Curating a Training Recipe for Extension}
+\label{lc:recipe}
+
+\paragraph{RoPE extension} \olmothree uses RoPE \citep{su2024roformer} to encode positional information within the transformer architecture. We experiment with several methods for extending RoPE beyond the original pretraining context length, including adjusted base frequency scaling \citep{xiong2023effectivelongcontextscalingfoundation, rozière2024codellamaopenfoundation}, position interpolation \citep{chen2023extendingcontextwindowlarge}, and YaRN \citep{peng2023yarnefficientcontextwindow}. Each approach is applied either to all RoPE instances or is restricted to RoPE used in full attention layers. We find that applying YaRN only to full attention layers yields the best overall performance.
+
+\paragraph{Document packing} During pretraining and midtraining, we follow the standard approach of concatenating documents and splitting them into fixed-length training sequences. However, when extending the context length, this strategy produces training instances that are, on average, shorter than the underlying document length distribution. To address this, we adopt best-fit document packing~\citep{ding2024fewertruncationsimprovelanguage}, which reduces the number of split documents while adding a negligible amount of padding. Compared to the naive concatenate-then-split approach, best-fit packing yields substantially improved performance on long-context benchmarks.
+
+\paragraph{Intra-document masking} During long-context extension, we apply intra-document masking to ensure that each training sequence attends only to tokens originating from the same underlying document \citep{zhao2024interdoc,dubey2024llama}. This prevents the model from being distracted by cross-document signals, which can otherwise introduce spurious attention patterns and degrade long-range performance.
+
+\paragraph{LC training infrastructure} To extend the model to a 65K-token context window, we employ 8-way context parallelism (CP) so that each device processes 8K tokens from each training instance. We adopt the all-gather-based CP attention strategy introduced by \cite{scalingllama3}, which makes it straightforward to support irregular attention masks, including sliding-window and intra-document masking. For parallelism configurations, infrastructure details, and throughput measurements, see Appendix Table~\ref{tab:training-config}.
+
+\paragraph{Model souping} Following performance improvements from merging midtraining runs for \olmothreebase 32B, we experiment with averaging long-context checkpoints. In this case, rather than running long-context extension multiple times with different seeds, we merge the last three checkpoints from the end of the extension run (at steps 10,000, 11,000, and 11,921) to produce our final long-context \olmothreebase 32B.

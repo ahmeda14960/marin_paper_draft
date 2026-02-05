@@ -1,0 +1,42 @@
+\begin{table}[t!]
+\centering
+\setlength\tabcolsep{5pt}
+{\small
+\begin{tabular}{ll R{1.5cm} R{1.5cm} l}
+\toprule
+{\bf Category} & {\bf Prompt Dataset} & {\bf \# Prompts used in SFT} & {\bf \# Prompts used in DPO} & {\bf Reference} \\
+\midrule
+\rowcolor{ai2offwhite} Chat \&  & WildChat & 302,406 & 30,248 & \citet{zhao2024wildchat} \\
+\rowcolor{ai2offwhite} Precise IF & \dolciinstruct Precise IF & 136,833 & 35,057 & -- \\ 
+\rowcolor{ai2offwhite} & \dolciinstruct Persona Precise IF & -- & 6667 & \cite{lambert2024tulu3} \\ 
+\rowcolor{ai2offwhite}  & OpenAssistant & 7,132 & 493 & \citet{kopf2024openassistant} \\
+Math & \tulu Persona MATH & 149,958 & 14,728 & \citet{lambert2024tulu3} \\
+ & \tulu Persona Algebra & 19,999 & 2,025 & \citet{lambert2024tulu3} \\
+ & \tulu Persona GSM & 49,980 & 5,011 & \citet{lambert2024tulu3} \\
+ & OpenMathInstruct 2 & 50,000 & 5,325 & \citet{toshniwal2024openmathinstruct} \\
+\rowcolor{ai2offwhite} Coding & \dolciinstruct Python Algorithms  & 186,345 & 24,096 & -- \\
+ \rowcolor{ai2offwhite}  & \tulu Persona Python & 34,999 & 4,598 & \citet{lambert2024tulu3} \\
+\rowcolor{ai2offwhite}  & Evol CodeAlpaca & 107,270 & 12,953 & \cite{luo2023wizardcoder} \\  
+Safety & CoCoNot & 10,957 & 2,203 & \citet{brahman2024art} \\
+ & WildGuardMix & 49,373 & 12,037 & \citet{han2024wildguard} \\
+ & WildJailbreak & 49,965 & 12,431 & \citet{jiang2024wildteaming} \\
+\rowcolor{ai2offwhite} Science & SciRiff & 4,557 & 8,874 & \citet{wadden2024sciriff} \\
+\rowcolor{ai2offwhite} & \dolciinstruct OpenThought3+ Science & 99,268  & 26,134 & \citet{guha2025openthoughts} \\
+Multilingual & Aya & 99,987 & 6,523 & \citet{singh2024aya} \\
+\rowcolor{ai2offwhite} Other & TableGPT & 5,000 & 1,218 & \citet{zha2023tablegpt} \\
+\rowcolor{ai2offwhite} & FLAN & 89,981 & 16,120 & \citet{wei2021flan} \\
+\rowcolor{ai2offwhite} & Logic Puzzles & 159,882 & -- & -- \\
+\rowcolor{ai2offwhite} & Verifiable Reasoning & 310,572 & -- & -- \\
+\rowcolor{ai2offwhite} & \dolciinstruct Hardcoded & 69 & -- & -- \\
+\rowcolor{ai2offwhite} & \dolciinstruct Tool Use & 227,579 & -- & --\\
+Multiturn & \dolciinstruct Self-Talk & -- & 5,000 & -- \\
+& \dolciinstruct Synthetic Context & -- & 5,000 & -- \\
+\rowcolor{ai2offwhite} Not used in SFT & DaringAnteater & -- & 878 & \cite{wang2024helpsteer2} \\
+\rowcolor{ai2offwhite} & UltraFeedback & -- & 22,303 & \cite{cui2023ultrafeedback} \\
+{\bf{Total}} & & 2,152,112 & 259,922 &  \\
+\bottomrule
+\end{tabular}}
+\vspace{3pt}
+\caption{\olmothreeinstruct prompt sources for both SFT and DPO.}
+\label{tab:instruct_prompt_mix}
+\end{table}

@@ -1,0 +1,262 @@
+\section{\olmothreeinstruct} \label{sec:posttrain-instruct}
+
+ Recent studies suggest that real-world language model use predominantly centers on general tasks such as advice-seeking and information recall~\citep{Chatterji2025-fs} that may not require extensive reasoning. 
+ Everyday chat settings often do not require the inference-time scaling of \olmothreethinking. Hence, we develop \olmothreeinstruct, a non-reasoning model designed with these real use cases in mind. \olmothreeinstruct  quickly and helpfully respond to common user queries.
+
+This different model type demands different data to support it. 
+We focus on improving the interactivity of the models by introducing multi-turn DPO data and promoting concise responses in our delta-learning preference-tuning pipeline. 
+Additionally, \olmothreeinstruct is trained for function-calling, for which we release new SFT datasets. 
+Together, our recipe yields \olmothreeinstruct models that effectively leverage tools and efficiently respond to user queries. 
+
+\subsection{Main Results for \olmothreeinstruct}
+\label{sec:posttrain_eval_instruct}
+
+
+\input{tables/posttrain/32b-instruct-vs-baselines}
+\input{tables/posttrain/7b-instruct-vs-baselines}
+
+
+Table~\ref{tab:7b-instruct-vs-baselines} and Table~\ref{tab:32b-instruct-baeslines} demonstrates the results of \olmothreeinstruct 7B and 32B, respectively, on our evaluation suite\footnote{We omit reporting of Essential AI’s Rnj-1 Instruct~\citep{vaswani2025rnj1} due to discrepancies between our observed and their reported numbers. Qualitatively, Rnj-1 behaves like a code specialized model (generates code even for IFEval and Safety chat tasks). Our evaluation framework is meant for general instruct models without code execution for chat tasks. This yields lower scores for Rnj-1 than they report (e.g., 16.1 versus 43.3 on AIME 25, 64.8 versus 75.7 on MBPP+, 79.3 versus 83.5 on HumanEval+) even when we use their recommended general system prompt for turning off code-producing behavior. Thus, we omit it from comparison as we do other specialized models (eg Qwen Coder).}.
+In addition to the evaluations used for \olmothreethinking (Section~\ref{sec:posttrain_eval}), we add benchmarks for function-calling.\footnote{For missing function-calling evaluations: \olmotooinstruct and Gemma 2 and 3 don't support this. Apertus and Granite aren't supported by BFCL and we had some difficulties getting the other tasks running. We will update the paper with scores as open git requests are resolved.}
+\olmothreeinstruct 7B outperforms Qwen 2.5-7B Instruct, \olmotooinstruct 7B, and Apertus 8B Instruct.
+Similarly, \olmothreeoneinstruct 32B outperforms most open models at similar scale, including Qwen 2.5 32B, Qwen 3 32B (No Thinking), Gemma 3 27B, and Apertus 70B. Notably, \olmothreeoneinstruct 32B achieves 39.7 on IFBench outperforming Qwen 3 and Qwen 3 VL at 32B scale. In addition,  \olmothreeoneinstruct 32B achieves 57.9 on AIME 2025, surpassing Qwen 3 32B (No Thinking) by 36.6 points, and closing the gap to Qwen 3 VL 32B-Instruct. 
+
+
+
+
+
+
+
+
+\subsection{Supervised Finetuning with \dolciinstructsft}
+We construct \dolciinstructsft by building upon our \olmotooinstruct mixture, making significant improvements to advance general chat, reasoning, and function-calling capabilities.
+
+\subsubsection{Function-calling Training Data} \label{sec:tool-use-sft}
+\input{tables/posttrain_data/tool_use_data}
+Our goals for curating tool-use training data for \olmothreeinstruct are to provide the model a strong foundation in basic function calling and to expose the model to trajectories demonstrating the effective use of real environments (i.e., MCP servers) to perform tasks. Accordingly, we collect two kinds of trajectories synthesized using LLMs, described below.
+
+\paragraph{Trajectories with real interactions} We collect trajectories demonstrating agents' use of MCP servers to answer queries. All trajectories have a single user turn and multiple agent–environment interactions. We focus on the following domains: 
+\begin{itemize}
+    \item \textbf{Science QA dataset} contains two broad classes of queries requiring retrieval and reasoning over scholarly content: 1) paper content-based queries, which focus on information present in the abstract or full text of papers and 2) citation graph-based queries, which are about metadata such as authors, venues, and citations. Trajectories associated with the queries are obtained using an agent based on GPT-4.1-mini equipped with the ASTA Scientific Corpus (ASC) MCP server\footnote{\href{https://allenai.org/asta/resources/mcp}{\path{allenai.org/asta/resources/mcp}}}, which provides structured access to metadata and paper content on Semantic Scholar\footnote{\href{https://www.semanticscholar.org/}{\path{www.semanticscholar.org}}}. Additional details about these datasets are provided in Appendix~\ref{sec:appendix_tool_use_data}.
+
+    \item \textbf{Web search QA dataset} is adapted from DR~Tulu~\citep{drtulu}. It consists of a multi-stage pipeline that combines benchmark-derived and real-world queries. Queries are drawn from open-access benchmarks: HotpotQA~\citep{Yang2018HotpotQAAD}, TaskCraft~\citep{Shi2025TaskCraftAG}, and WebWalkerQA (silver)~\citep{wu-etal-2025-webwalker}, as well as from consented, publicly released user prompts from SearchArena~\citep{Miroyan2025SearchAA} and OpenScholar~\citep{Asai2024OpenScholarSS}. We filter the set of queries using GPT-5 to keep only those that both require search and have long-form, verifiable responses. The trajectories for these queries are obtained from a GPT-5 agent equipped with the Serper API\footnote{\href{https://serper.dev/}{\path{serper.dev}}}, which provides access to a Google search tool and a tool for fetching webpages given their URLs. Additional details about query filtering and trajectory generation can be found in Appendix~\ref{sec:appendix_tool_use_data}.
+\end{itemize}
+
+\paragraph{Trajectories with simulated interactions} While training on trajectories with executable environments is expected to teach the model to effectively deal with real environment outputs and handle unexpected errors, it is difficult to curate such trajectories at scale, thus potentially limiting the model's generalization to unseen tools at inference time. To fill this gap, we also create a dataset of synthetic trajectories with LLM-simulated environments which are much easier to scale. We call this dataset \textbf{SimFC}. We start with a large pool of tool sets or APIs from existing datasets (e.g., xLAM~\citep{Liu2024APIGenAP}, ToolACE~\citep{Liu2024ToolACEWT}), and from publicly available MCP servers, and prompted LLMs (GPT-4o, GPT-4.1, and GPT-5) to generate entire trajectories including simulated user queries, environment responses, and assistant messages. We design prompts to ensure the dataset contains a variety of interaction patterns including multi-turn, multi-step, and refusals due to inadequate information or tools. Additional details about this dataset and illustrative prompts used for generation can be found in Appendix~\ref{sec:appendix_tool_use_data}, Figure~\ref{fc-multi-turn-prompt}, and Figure~\ref{fc-refusals-prompt}.
+
+\paragraph{Balancing function diversity with interaction complexity} As illustrated by the statistics in Table~\ref{tab:func_calling_datasets}, the two types of trajectories have key differences. SimFC has a large number of trajectories with diverse sets of functions. 
+We find that synthesizing trajectories with multiple user turns (multi-turn trajectories) is relatively easier than those with multiple assistant-environment interactions per user request (multi-step trajectories). 
+However, the latter class usually corresponds to more complex tasks.  
+On the other hand, the datasets with real interactions, while smaller in size, are naturally more complex in terms of multi-step interactions.
+
+\paragraph{Unified data format} Across all tool-use data, we adopt consistent tool definition and tool-calling formats. 
+We find that unifying format to be crucial for stable and high-quality tool-use behavior. 
+Particularly, we use the OpenAPI specification\footnote{\href{https://swagger.io/specification/}{\path{swagger.io/specification/}}} for all tool definitions and represent all function calls as pythonic code blocks. 
+We provide tool specifications in the system prompt, encapsulate tool calls with XML tags within the assistant role, and present environment outputs to the model within a special environment role. 
+We also extend the tokenizer's vocabulary with dedicated special tokens corresponding to these tags. 
+Unlike \olmothreethinking, preliminary suggest this approach to be more effective for tool-use training than encoding \texttt{<functions>}, \texttt{</functions>}, \texttt{<function\_calls>}, and \texttt{<function\_calls>} as regular  text.
+
+\paragraph{Evaluating function calling} %
+We evaluate the function calling capabilities of \olmothreeinstruct in terms of \textit{intrinsic function calling} and \textit{extrinsic task completion} accuracies using different benchmarks. We use the Berkeley Function Calling Leaderboard (BFCLv3)~\citep{patil2025bfcl} to evaluate intrinsic function calling accuracy. This benchmark focuses on models' ability to choose the relevant functions and the right values for their arguments to accomplish a given task in settings that require one or more interactions with simulated users and environments. We evaluate task completion accuracy of \olmothreeinstruct in comparison with similar models when they are deployed as agents with access to tools served via Model Context Protocol (MCP) servers. Particularly, we use the Asta Scientific Corpus (ASC) tool~\citep{bragg2025astabench} that serves eight functions for accessing scientific literature, and the Serper API which provides Google search tool and web browsing functionalities. To evaluate models' usage of the ASC tools, following~\citet{bragg2025astabench}, we use a subset of 75 questions from LitQA2~\citep{skarlinski2024language} for which the associated papers can be found in ASC's index. We evaluate the models' usage of search and browsing tools using a subset of SimpleQA\footnote{\href{https://huggingface.co/datasets/akariasai/sampled_simpleqa}{\path{huggingface.co/datasets/akariasai/sampled_simpleqa}}}~\citep{wei2024measuring}.
+
+
+We use the official Gorilla repository\footnote{\href{https://github.com/ShishirPatil/gorilla}{\path{github.com/ShishirPatil/gorilla}}} for BFCLv3 evaluations. For LitQA2 and SimpleQA, we implement a basic function-calling agent using OpenAI's Agent SDK. This agent uses the tools provided by the relevant MCP server\footnote{We the same setup introduced by \citet{drtulu} for DR~Tulu.}, and interacts with the environment by iteratively making function calls and processing the outputs of executing them to solve the given tasks.
+For LitQA2 and SimpleQA, we also measure model performance when deployed in a \textit{No-Tools} setting, in which we provide no tools to the agents and they are expected to solve the tasks entirely from the models' parametric knowledge. We use a zero-shot evaluation for all these benchmarks. We sample from models at temperature 0 and, for LitQA2 and SimpleQA, allow the agents at most 10 turns to finish each task. We run each evaluation three times and report the average accuracy. We release our code\footnote{\href{https://github.com/allenai/mcp-tool-eval}{\path{github.com/allenai/mcp-tool-eval}}} for running our MCP-based tool-use evaluations.
+
+
+
+\subsubsection{Curating \dolciinstructsft}
+\paragraph{Step 1. Sourcing Prompts and Completions}
+
+Our prompt collection includes all our new function-calling data~(Section~\S\ref{sec:tool-use-sft}), new prompts for instruction following (see Section~\S\ref{sec:think-sft}) and science, and more chat prompts from WildChat~\citep{zhao2024wildchat}. For examples that originally contained reasoning traces (such as the OpenThoughts3 science subset described in Section~\S\ref{sec:think-sft}), we remove the reasoning traces and special tokens. We also update completions from older models such as GPT-3.5 and GPT-4 with completions from GPT-4.1. We show a summary of our instruct SFT mix in Table~\ref{tab:instruct_prompt_mix}.
+
+
+
+\paragraph{Step 2: Filtering \& Mixing}
+
+We follow the same filtering and mixing procedure detailed in Section~\ref{sec:think-sft}. For \olmothreeinstruct, our base mix is 100K examples from an updated intermediate mix based on the \olmotoo SFT mix. We show results of our data-mixing experiments on \olmotoo in Table~\ref{tab:instruct-sft-ablate}.
+
+\input{tables/posttrain/dolci-instruct-sft-ablations}
+
+\paragraph{Starting from \olmothreethinking SFT} We train the SFT stage of \olmothreeinstruct starting from the \olmothreethinking SFT model as shown in Figure~\ref{fig:olmo3_pipeline} to give it a ``warm-start.'' We found that this significantly improves the performance of the Instruct model, as shown by the results in Table~\ref{tab:sft-reasoning-first}.
+
+\input{tables/posttrain/instruct-gain-from-reasoning-first}
+
+
+\subsection{Preference Tuning with \dolciinstructdpo}
+\input{tables/posttrain_data/instruct_prompts}
+
+
+We create \dolciinstructdpo by extending the strong base of our delta-learning heuristic preferences (Section \S\ref{sec:thinking_dpo_recipe}) with further curated preference signals to enhance our model's behavior in general use settings. 
+We enrich our heuristic data with contrastive pairs from an improved GPT-judge pipeline for general alignment.
+Additionally, user interaction with LMs commonly requires multi-turn conversational capabilities, so we introduce synthetic multi-turn conversations to our preference data. We also observe that preference-data pipelines often promote overly verbose responses; we introduce counteracting interventions to promote brevity in model responses by mitigating length bias in the preference data.
+
+\subsubsection{Preference Signals}
+\label{sec:dolci-instruct-dpo}
+\dolciinstructdpo is constructed from a composite of several preference signals to promote model capabilities and general usability:
+
+\paragraph{Delta-learning heuristic pairs} Similar to \dolcithinkdpo, we construct heuristic contrastive pairs by generating chosen responses with a large model (Qwen3 32B) and rejected responses with a small model (Qwen3 0.6B) following \cite{geng2025delta}. Note that we turn off thinking mode, as we do not need internal thinking traces.
+
+\paragraph{Delta-aware GPT-judged pairs} We additionally generate GPT-judged preference pairs to add a further source of preference signal. Our initial attempts to modernize the UltraFeedback pipeline from \olmotoo and \tulu by improving the quality of the LLM judge (GPT-4o $\rightarrow$ GPT-4.1) and updating our data-generator model pool do not yield gains and even hurt model performance relative to the \olmotoo preference dataset baseline. 
+We speculate that this failure is due to the fact that the majority of our data generators are high-quality, very capable models; 
+hence on average there was minimal meaningful contrast between the resulting chosen and rejected pairs. 
+To mitigate this, we explicitly introduce {\bf{delta-aware}} interventions designed to \textit{lower} the quality of the rejected response. We 1) ensure that responses from weaker models are always present in the response set judged for each prompt, and 2) select the \textit{worst} response as the rejected completion to maximize the resulting delta. 
+We find these ``delta-maximizing'' interventions to be critical for the quality of preference pair data; see our findings in Section~\S\ref{sec:instruct_findings} for details.
+
+
+\paragraph{Multi-turn preferences} To ensure \olmothree's usability in realistic multi-turn conversations, we further add a multi-turn preference dataset with prompts synthetically extended from the \tulu-DPO dataset. Preference pairs differed in only the last turn of the conversation to avoid ambiguity in quality ranking between turns of the same conversation. Synthetic conversations are generated with two methods: 1) {\bf{self-talk}} extending the original prompt into a multi-turn conversation with LLM-generated follow-up requests and 2) {\bf{synthetic-context}} created by generating related, independent questions or paraphrases of the initial prompt to use as previous user turns with associated completions. The combination of these generation methods ensures diversity in generated conversations. Final turns are generated with the delta-learning heuristic~\citep{geng2025delta}; chosen/rejected completion pairs are generated by either GPT-4o and GPT-3.5 or Qwen 3 32B and Qwen 3 0.6B (both no-thinking) respectively.
+
+\paragraph{Controlling length bias} Preference data often has a length bias: the chosen responses are significantly longer than the rejected responses. This comes from sourcing synthetic response pairs where historically more information has been treated as more helpful by both LLM judges and preference heuristics. Namely, LLM judges such as the GPT judge in our pipeline tend to prefer longer responses. Similarly, we empirically observe that preference pairs made with the delta-learning heuristic also exhibit length bias; larger models generate longer responses (\autoref{fig:ushape_dpo}). 
+Thus, models often learn this length bias in addition to the intended useful quality signal during preference tuning, after which its generation length per prompt increases significantly. 
+While this increased length is empirically useful for reasoning tasks, excessive verbosity can be undesirable for common real-use settings (see an example in \autoref{fig:conciseness}). We seek to strike a balance by filtering the chat and multi-turn subsets of our preference data to limit the length difference between the chosen and rejected responses to 100 tokens.
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=0.35625\linewidth}{\includegraphics{figures/dpo/olmo3-long-chat-output.pdf}}
+    \hspace{10pt}
+    \raisebox{.3\height}
+    {\adjustbox{max width=0.59375\linewidth}{\includegraphics{figures/dpo/concise_response.png}}}
+    \caption{\textbf{Length control promotes concise, usable responses.} On the left is a response from a development model preference-tuned without length control; on the right, a response to the same prompt from \olmothreeinstruct-DPO (with length control). Promoting brevity in model responses makes the response easier to read and understand.}
+    \label{fig:conciseness}
+\end{figure}
+
+
+
+
+
+
+
+\subsubsection{Prompt Mixing}
+\label{sec:dpo_mixing}
+Our prompt pool for GPT-judged and delta-learning heuristic pairs (see Table~\ref{tab:instruct_prompt_mix}) is derived from the \dolciinstructsft dataset supplemented with the DaringAnteater and UltraFeedback subsets from the \olmotoo~7B preference dataset. Because DPO performance does not monotonically increase with more data (see Figure~\ref{fig:ushape_dpo}), we optimize the prompt distribution as a ratio within a set data budget and treat dataset size as a hyperparameter when training.
+
+To determine our final preference-tuning prompt distribution, we begin with near-uniform random sampling\footnote{We decided early to truncate the number of Wildchat prompts to be at most 35\% of the prompt mix. If you read Wildchat prompts for a month, you would too.} of 100K examples as an empirically strong baseline prompt mix. We then perform ablations of prompt-domain subsets to determine the impact of preference pairs from each domain subset. Additionally, we perform experiments that pair 50K samples of our base mix with 50K samples from a given domain, allowing us to understand the effects of upsampling each prompt domain.
+
+Notably, prompt-domain distributions do not consistently align with the \textit{contrast} exhibited in the response pair and thus in improvements in the corresponding downstream evaluation domains. For example, upsampling code prompts led to the counter-intuitive effect of decreasing code benchmark performance (see Table \ref{tab:dpo_mixing_exps} in the Appendix). For determining our final mix, we create nine candidate mixes based on expert intuition gained from our ablations, comparing these hand-crafted mixes against the uniform sampling baseline. Our final mix is determined empirically; we find that our hand-crafted mixes outperformed random sampling.
+
+
+\subsubsection{Training}
+We follow the same training setup as \olmothreethinking and sweep the same hyperparameters, namely learning rate and dataset size. We further sweep different length-control interventions by creating datasets with differing token cutoffs for length filtering. We select the best-performing checkpoint of each length budget and then select the final \olmothreeinstruct-DPO checkpoint based on qualitative vibe tests and performance-vs-length analysis.
+
+
+\subsection{Reinforcement Learning with \dolciinstruct-RL}
+\label{sec:RLVR-instruct}
+
+
+For our RL training stage, we modify the pool of prompts from \dolcithinkrl (Section~\S\ref{subsec:rl-thinking-data}) by 1) utilizing less challenging datasets in the math and code domains, and 2) skipping the offline difficulty filtering, as our instruct model focuses more on general instruction following rather than complex reasoning.
+
+
+\subsubsection{Training}
+
+Following our \olmothreethinking recipe, we train \olmothreeinstruct on a mixture of general chat, math, and code data.\footnote{Preliminary experiments indicated that alternative RL setups—for example, first warming up on math-only data and then switching to a mixed dataset without math—resulted in suboptimal performance.} We likewise employ \olmothreerl for training, with a maximum response length of 8K tokens for 7B and 16K for 32B\footnote{We experiment with both 8K and 16K length training for 7B and 32B; while evaluation scores are minimally impacted by different lengths, we notice undesirable behaviors when qualitatively testing 7B-16K and 32B-8K configurations in an internal demo.}. Since our goal for \olmothreeinstruct is to avoid generating excessively long outputs and preserve general usability, we apply RL on top of two DPO candidates: one that achieved the best average performance, and another with slightly lower performance but better qualitative “vibe test.'' We then choose the final RL checkpoint based on final average performance, length analysis, and
+vibe test. Concretely, we begin by ranking checkpoints by average score; in the case of ties, we place more emphasis on datasets that do not scale with test-time compute (e.g., MATH and AIME performance increase with response length) to avoid biasing our selection towards models with overly long responses. Finally, we apply the vibe test to identify regressions or undesirable behaviors that may fall outside the scope of our evaluation suite.
+
+
+
+
+
+
+
+
+
+\subsection{Key Findings}
+\label{sec:instruct_findings}
+
+Below, we summarize our key findings across all 3 stages of \olmothreeinstruct training:
+
+
+\paragraph{Starting from the \olmothreethinking SFT is helpful} We find that training \olmothreeinstruct on top of the \olmothreethinking SFT both increases model performance on benchmarks, as shown in Table~\ref{tab:sft-reasoning-first}. 
+Importantly, average model response length is minimally affected by this strategy: \olmothreeinstruct SFT checkpoints produce succinct answers with no remnants of thinking traces.
+
+
+\paragraph{High contrast in preference pairs drives DPO improvements} We observe that a high contrast between completions is critical for achieving improvements during DPO training (Table~\ref{tab:dpo_different_signals}). Using LLM-judge pipelines requires carefully thinking about maximizing the delta between chosen and rejected responses. Our initial attempts to modernize the \olmotoo preference data pipeline by improving the models used to generate responses failed to yield any improvements beyond the \olmotoo data baseline (Table \ref{tab:dpo_different_signals}). This is likely because the models used for synthetic completions were universally too good: the chosen and rejected responses no longer had meaningful contrast. Extending prior findings that high contrast pairs are critical for performance~\citep{geng2025delta, d2025anchored}, we introduce interventions to explicitly lower the quality of the rejected response and therefore increase the magnitude of the quality delta in the preference pair. These resulting \textit{delta-aware} GPT pairs significantly outperform the \olmotoo preference data.
+
+\paragraph{Combining different preference signals improves overall performance} We combine delta-learning heuristic data with GPT-judged preference pairs to get the ``best of both worlds.'' Empirically, tuning with either delta-learning or GPT-judged pairs yields a different spread of gains; we find that these gains are complementary. Combining both sources of preference signal outperforms using either alone (Table~\ref{tab:dpo_different_signals}).
+
+\paragraph{The ideal amount of preference data depends on the downstream task}
+Preference-tuned model performance peaks with different amounts of training for different downstream task domains. We plot preference-tuning performance for example tasks across varying amounts of delta-learning heuristic pairs\footnote{Initial experiments with GPT-judged data showed similar trends.} in Figure~\ref{fig:ushape_dpo}. Further optimization beyond these optimal points hurts downstream performance, consistent with theoretical results showing that early stopping is important for preference tuning~\citep{azar2023generaltheoreticalparadigmunderstand, geng2025delta}. %
+Practically, this informs our training approach: we sweep learning rate and dataset size to control the amount of total optimization, and pick the best-performing setting via our development evaluation set.
+
+\begin{figure}[t]
+    \centering
+    \adjustbox{max width=.55\linewidth}{\includegraphics{figures/dpo/dpo_scaling.pdf}}
+    \adjustbox{max width=.42\linewidth}{\includegraphics{figures/dpo/dpo_length_bias.pdf}}
+    \caption{\textbf{Effect of dataset size and filtering for preference data}. Ideal preference dataset size depends on the downstream task (left). Both AlpacaEval and ZebraLogic performance increase up to around 75–100K samples, beyond which further data scaling hurts or does not help. In contrast, AIME2024 does not saturate before the point at which AlpacaEval and ZebraLogic begin to see drops in performance. Hence, to strike an ideal balance between all downstream tasks, we sweep dataset size as a hyperparameter during training. Unfiltered preference data exhibits a length bias (right). A significant portion of the data distribution has longer chosen than rejected completions. For example, the 80th percentile of token difference for the GPT-judged data is 538 tokens and for the delta-learning heuristic pairs is 564 tokens.}
+    \label{fig:ushape_dpo}
+\end{figure}
+
+\paragraph{Concise, usable model outputs from preference tuning can boost RL performance} Applying length control during DPO substantially reduces the model’s average generation length, allowing us to trade off some performance for improved conciseness and overall usability. While this reduction in length comes with lower scores on length-sensitive evaluations—particularly math benchmarks such as AIME and MATH—our internal qualitative assessments (``vibe tests'') almost uniformly preferred the shorter, more direct model. We make a conscious decision to prioritize usability.
+
+Crucially, despite the lower benchmark performance at the DPO stage, length control ultimately yields to a more performant model post RL.
+At 7B scale, we conjecture that this arises from the RL training context window: with a fixed context window (8K), a shorter model may be ``more intelligent per token,'' allowing it to leverage the available budget more effectively during optimization. 
+Thus, what initially appeared to be a tradeoff between usability and performance ultimately produced improvements in both. 
+Moreover, we found that RL training progresses more reliably when initialized from the length-controlled DPO policy. 
+Across most benchmarks, performance improves more steadily compared to RL runs starting from a higher-scoring but uncorrected DPO checkpoint, which tends to show earlier signs of instability or degradation. This further supports the role of concise preference-tuned models as advantageous starting points for RL.
+
+
+
+
+\paragraph{Need for tools} We assess how much of \olmothreeinstruct's performance on LitQA2 and SimpleQA can be attributed to tool use by measuring the delta of the model performance on the benchmarks between answering the questions only from parametric memory (``No tools'' setting) and doing so using tools. Table~\ref{tab:tools-vs-no-tools} shows these deltas in comparison to those from three Qwen models. All models benefit significantly from tool use on SimpleQA. However, Qwen models, unlike \olmothreeinstruct 7B, mostly seem to rely on parametric knowledge for LitQA2, with two of the models even losing performance when provided with tools.
+\input{tables/posttrain/tools-no-tools-results}
+
+\input{tables/posttrain/Instruct-DPO-results}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,15 @@
+\begin{table}[h]
+\centering
+\begin{tabular}{l C{64pt} C{64pt} C{64pt} C{64pt} C{64pt}}
+\toprule
+{\bf Dataset} & {\bf Env. interactions} & {\bf \# Trajectories} & {\bf \# Unique functions} & {\bf \% Multi-turn} & {\bf \% Multi-step} \\ \midrule
+\rowcolor{ai2offwhite}
+Science QA & Real (MCP) & 22.6K & 8 & - & 42.3\% \\
+Web Search QA & Real (MCP) & 6.6K & 3 & - & 76.1\% \\
+\rowcolor{ai2offwhite}
+SimFC & Simulated & 200K & 42.6K & 42.3\% & 23.8\%
+\\ \bottomrule
+\end{tabular}
+\caption{\textbf{Details of function calling datasets}. Multi-turn refers to multiple user turns per trajectory and multi-step refers to multiple environment interactions per user request.}
+\label{tab:func_calling_datasets}
+\end{table}

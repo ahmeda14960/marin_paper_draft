@@ -1,0 +1,688 @@
+\section{Appendix}
+
+
+\section*{Author Contributions}
+\label{sec:contrib}
+
+A successful team project like \olmothree{} would not be possible without the contributions of many teammates. 
+We indicate each authors' main contributing role(s) in \olmothree, while recognizing that project impact was driven by fluid contributions across formal team boundaries.
+Authors are listed in alphabetical order: 
+
+\begin{itemize}
+
+    \item For model architecture, infrastructure, and training methodology: Akshita Bhagia, Aman Rangapur, Amanda Bertsch, David Heineman, Dirk Groeneveld, Dustin Schwenk, Kyle Lo, Luca Soldaini, Mayee Chen, Pete Walsh, Shane Arora, Tyler Murray, Tyler Romero, Will Merrill
+
+    \item For post-training infrastructure and training methodology: Costa Huang, Faeze Brahman, Finbarr Timbers, Hamish Ivison, Jacob Morrison, Michael Noukhovitch, Nathan Lambert, Pradeep Dasigi, Saurabh Shah, Scott Geng, Shannon Zejiang Shen, Shashank Gupta, Teng Xiao, Tyler Romero, Valentina Pyatkin, Victoria Graf
+
+    \item For base model data acquisition: Chloe Anastasiades, David Graham, Dustin Schwenk, Jake Poznanski, Jaron Lochner, Kyle Lo, Luca Soldaini, Matt Jordan, Robert Berry, Tyler Murray
+
+    \item For data curation infrastructure and experimentation: Alexander Wettig, Allyson Ettinger, Amanda Bertsch, Bailey Kuehl, David Heineman, Ian Magnusson, Jake Poznanski, Jiacheng Liu, Kyle Lo, Luca Soldaini, Matt Jordan, Mayee Chen, Tyler Murray, Tyler Romero
+
+    \item For evaluation methodology and infrastructure: Akari Asai, Alexander Wettig, David Heineman, Dustin Schwenk, Hamish Ivison, Harsh Trivedi, Ian Magnusson, Kyle Lo, Luca Soldaini, Maarten Sap, Malia Morgan, Pradeep Dasigi, Regan Huff, Robert Berry, Ronan Le Bras, Rulin Shao, Saumya Malik, Saurabh Shah, Shannon Zejiang Shen, Shashank Gupta, Tyler Murray, Victoria Graf, Yuling Gu
+
+    \item For mid- and post-training data curation and experimentation: Akari Asai, Alisa Liu, Allyson Ettinger, David Graham, David Heineman, Faeze Brahman, Hamish Ivison, Harsh Trivedi, Jacob Morrison, Kyle Lo, Lester James V. Miranda, Luca Soldaini, Matt Jordan, Michael Noukhovitch, Nathan Lambert, Pradeep Dasigi, Rui Xin, Saurabh Shah, Scott Geng, Saumya Malik, Shashank Gupta, Shuyue Stella Li, Teng Xiao, Valentina Pyatkin, Victoria Graf, Yapei Chang, Zhiyuan Zeng
+
+    \item For compute infrastructure setup and support: Michael Schmitz, Michael Wilson, Michal Guerquin, Sam Skjonsberg, Tucker Wilde
+
+    \item For mentorship, advising, program management, and broader strategy: Ali Farhadi, Ashish Sabharwal, Hannaneh Hajishirzi, Luke Zettlemoyer, Noah A. Smith, Pang Wei Koh, Taira Anderson
+
+    \item For technical leadership and cross-workstream contributions: Hannaneh Hajishirzi, Kyle Lo, Luca Soldaini, Nathan Lambert, Pradeep Dasigi
+\end{itemize}
+
+
+Authorship for this work was determined by those making direct contributions to the \olmothree models, related artifacts, and their release. 
+Core contributors are recognized for their sustained, significant contributions critical to the success of the \olmothree project.
+
+\section*{Acknowledgments}
+
+This research used resources of the Oak Ridge Leadership Computing Facility, which is a DOE Office of Science User Facility supported under Contract DE-AC05-00OR22725. We acknowledge the National Artificial Intelligence Research Resource (NAIRR) Pilot and Microsoft Azure for contributing to the results in this work. We are grateful for feedback throughout our development process from the open source language model developer community, especially those from Common Pile/Comma, SmolLM3, Marin, Apertus and Gaperon.
+We thank the widespread feedback from researchers and developers engaging with \olmothree since our November 2025 release.
+
+\subsection{Base Model Additional Training Details}
+
+
+Table~\ref{tab:training-config} summarizes modeling configuration for \olmothree~7B and \olmothree~32B. 
+Table~\ref{tab:training_stages_7b_32b} provides overview of training hyperparameters during the three stages of base model development: pretraining, midtraining, and long-context extension. 
+Table~\ref{tab:training-config} describes parallelism configuration for the stages, and lists measured throughput in tokens per second (TPS) for each. 
+Finally, Figure~\ref{fig:7B_pretrain_loss} shows training cross entropy loss and gradient norm for \olmothreebase 7B and 32B during the pretraining stage. 
+
+\input{tables/base_training/combined_model_specs}
+\input{tables/base_training/training_config}
+\input{tables/base_training/training_stages_7b_32b}
+
+
+
+\begin{figure}[h!]
+    \centering
+    \adjustbox{max width=.49\linewidth}{\includegraphics{figures/pretrain/7B_pretrain_loss.png}}
+    \adjustbox{max width=.49\linewidth}{\includegraphics{figures/pretrain/7B_pretrain_gnorm.png}}
+    \adjustbox{max width=.49\linewidth}{\includegraphics{figures/pretrain/32B_pretrain_loss.png}}
+    \adjustbox{max width=.49\linewidth}{\includegraphics{figures/pretrain/32B_pretrain_gnorm.png}}
+    \caption{\textbf{Cross-entropy loss and total gradient norm during pretraining} for \olmothreebase 7B (top) and 32B (bottom). For readability, gradient norm plots were produced using an exponential moving average with a window size of 20 steps.}
+    \label{fig:7B_pretrain_loss}
+\end{figure}
+
+\FloatBarrier
+
+\subsection{Base Model Additional Data Details: Pretraining}
+\label{sec:appendixpretrain}
+
+\subsubsection{CommonCrawl}
+The majority of our pretraining corpus comes from CommonCrawl ~\citep{CommonCrawl}. We start with 104 dumps, starting with \texttt{CC-MAIN-2013-20} and ending with \texttt{CC-MAIN-2024-51}, roughly covering dates from mid-2013 until late 2024. We linearize the WET files provided by Commoncrawl using Resiliparse, yielding an initial pool composed of 252.6B documents.
+
+Next we apply a pipeline of heuristic filtering steps to further prune down the dataset to a size amenable for pretraining. Our steps essentially follow those of DCLM ~\citep{dclm}, with a few small differences. We start with URL-based filtering, identifying and removing documents that have URLs containing banned words or subwords from the blacklists used by FineWeb \citep{penedo2024fineweb} and RefinedWeb ~\citep{penedo2023refinedwebdatasetfalconllm}. This step removes roughly 1\% of the data pool. Then we apply the DCLM collection of heuristic filters, roughly targeting and removing: i) very short documents, ii) very long documents, iii) documents with not enough alphanumeric characters, and iv) documents with large amounts of internal repetition. Next, we modify and remove any lines or paragraphs in each document that have i) too many numeric characters or ii) any boilerplate phrases such as "items in cart" or "read more...", and then we fully remove any documents that have been obliterated by these line-specific removals. We then apply a FastText English language filter, mirroring DCLM and using a threshold of 0.65 to identify documents as containing English text. Finally, we apply a subset of the rules for identifying questionable sentences from MADLAD-400 ~\citep{kudugunta2023madlad400multilingualdocumentlevellarge}. Ablation tests show that only rules 2 and 5 from MADLAD improve dataset quality, targeting sentences that have a large number of capitalized words or contain a "cursed regex". If the number of sentences in the document is less than 5 or if at least 20\% of sentences are questionable, we remove the document from the corpus.
+
+Overall, the heuristic steps remove 76\% of the total pool, and the English filtering step removes an additional 2.5\% of the pool. This leaves a pool of 38.7B documents, attaining a survival rate of 15.1\%. While each of these described steps is incorporated into the DCLM processing pipeline, we note that these heuristic filters are commutative and that the English filtering is the slowest step, so efficiency gains can be attained by putting the language-filtering step at the end. We spent a total of 1030 i4i.32xlarge EC2 hours in this step, incurring a cost of approximately \$11,300. An exact breakdown of how much time was spent in each step is provided in Table \ref{tab:cc_pipeline_stats}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrr}
+\toprule
+{\bf Pipeline Step} & {\bf Docs Removed (B)} & {\bf \% of pool removed} & {\bf \% of total time} \\
+\midrule
+\rowcolor{ai2offwhite} URL Filters & 2.3 & 0.9 & 1.68 \\
+Length Filters & 103.4 & 40.42 & 8.03 \\
+\rowcolor{ai2offwhite} Symbol Filters & 56.5 & 22.1 & 4.13 \\
+Internal Repetition & 32.1 & 12.53 & 31.41 \\
+\rowcolor{ai2offwhite} Line Modifiers & 7.1 & 2.79 & 10.0 \\
+English Filter & 6.2 & 2.44 & 14.3 \\
+\rowcolor{ai2offwhite} MadLad Filters & 9.3 & 3.65 & 5.87 \\
+Quality Classifiers & 0.0 & 0.0 & 24.58 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Web data processing step cost and removal breakdown} during the heuristic processing steps. We started with 252.6B documents and ended with 38.7B documents for a total removal rate of 84.9\%. This procedure took, in aggregate, approximately 1,030 hours on i4i.32xlarge EC2 instances.}
+\label{tab:cc_pipeline_stats}
+\end{table}
+
+\subsubsection{Deduplication}
+
+As described in the main paper, we apply a three-stage deduplication pipeline to our dataset, with each stage targeting progressively more nuanced forms of redundancy: (i) global exact deduplication based on document content hashes to remove identical copies, (ii) 32-way sharded MinHash deduplication with exact Jaccard similarity verification to remove near-duplicate documents, and (iii) 56-way sharded fuzzy suffix array deduplication to eliminate repeated boilerplate text. We note that while applying exact deduplication before MinHash deduplication is technically redundant, exact deduplication is substantially more efficient computationally; hence this two-pass approach is much faster overall. For the exact and MinHash deduplication stages, we utilize the Duplodocus tool,\footnote{\href{https://github.com/allenai/duplodocus}{\path{github.com/allenai/duplodocus}}} and for the suffix array deduplication stage, we employ \texttt{bsade}.\footnote{\href{https://github.com/liujch1998/bsade/}{\path{github.com/liujch1998/bsade}}}
+
+\paragraph{Exact Deduplication}
+
+We perform exact deduplication in two sequential passes. During the heuristic filtration pipeline, we annotate each document with a 128-bit hash computed from the document text. We then apply an initial deduplication step to each of the 104 processed CommonCrawl dumps individually, arbitrarily retaining one copy of each document per dump. This within-dump deduplication removes 24\% of the surviving document pool.
+
+Following this, we aggregate all documents globally and perform a second exact deduplication pass across the entire corpus, again arbitrarily keeping one copy of each document. This global pass removes an additional 43\% of the surviving pool. In total, exact deduplication eliminates 66\% of the input documents, reducing the corpus to 12.7 billion documents for subsequent MinHash processing.
+
+\paragraph{MinHash~Fuzzy deduplication}
+
+We partition the 12.7 billion document corpus resulting from exact deduplication into 32 shards of approximately equal size and perform MinHash deduplication independently on each shard. Our MinHash procedure broadly follows the approach outlined in \citep{lee2022deduplicatingtrainingdatamakes}. We tokenize documents using the p50k tokenizer and construct sets of 5-gram token sequences. We then apply a MinHash locality-sensitive hashing scheme with 26 bands of size 11, configured to target a Jaccard similarity threshold of 0.80.
+
+For any pair of documents that share at least one matching bucket, we treat them as connected by an edge in graph-theoretic terms. We construct a graph from the union of all such edges and identify connected components within this graph. Each document in a connected component is then annotated with a unique identifier for that component.
+
+In a second verification phase, we explicitly compute pairwise Jaccard similarities within each MinHash-identified cluster to eliminate false positives. For this verification, we use 3-gram token sequences. Our approach varies based on cluster size: for connected components containing 500 or more documents, we apply a more stringent MinHash configuration using 200 bands of size 31; for components with fewer than 500 documents, we perform exhaustive pairwise Jaccard similarity checks and generate final duplicate clusters from these results.
+
+After annotating all documents according to their true Jaccard similarity with other documents in the corpus, we retain only the most recent version of each document based on crawl date, removing all earlier duplicates. This complete MinHash deduplication procedure eliminates 24\% of the input documents, leaving 9.8 billion documents in the pool.
+
+\paragraph{Suffix Array deduplication}
+
+In the final deduplication stage, we employ suffix arrays to identify and remove substrings that appear repeatedly throughout the dataset. We partition the 9.8 billion document corpus into 56 shards of roughly equal size and run suffix array deduplication independently on each shard.
+
+For each shard, we construct a suffix array and identify every byte sequence of length 500 or greater that appears at least twice in the shard. We then apply a novel ``fuzzy suffix array'' removal strategy that considers contiguous text spans within each document. Specifically, if a text span is bounded on both sides by 500-byte sequences that appear multiple times in the suffix array, and at least 80\% of the span is covered by such repeated sequences, we remove the entire span. This strategy targets cases where naive suffix array deduplication would leave short, unique fragments interspersed between removed substrings. For text that does not meet this bookended criterion, we remove all individual occurrences of repeated 500-byte sequences.
+
+After these three rounds of deduplication—exact, MinHash, and suffix array—we arrive at a final corpus of 9.7 billion documents.
+
+
+\subsubsection{Topic Classification}
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}lccc|lccc@{}}
+\toprule
+{\bf Category} & {\bf F1} & {\bf Prec.} & {\bf Rec.} & {\bf Category} & {\bf F1} & {\bf Prec.} & {\bf Rec.} \\
+\midrule
+\rowcolor{ai2offwhite} Finance and Business & 0.755 & 0.758 & 0.751 & Travel and Tourism & 0.781 & 0.780 & 0.782 \\
+Home and Hobbies & 0.748 & 0.704 & 0.797 & Crime and Law & 0.735 & 0.747 & 0.724 \\
+\rowcolor{ai2offwhite} Entertainment & 0.801 & 0.773 & 0.832 & Software & 0.666 & 0.696 & 0.639 \\
+Sports and Fitness & 0.870 & 0.850 & 0.890 & Literature & 0.759 & 0.801 & 0.721 \\
+\rowcolor{ai2offwhite} Politics & 0.788 & 0.786 & 0.790 & Games & 0.823 & 0.867 & 0.783 \\
+Health & 0.822 & 0.824 & 0.820 & Transportation & 0.777 & 0.786 & 0.768 \\
+\rowcolor{ai2offwhite} Education and Jobs & 0.706 & 0.789 & 0.638 & Religion & 0.808 & 0.833 & 0.785 \\
+Science, Math and Technology & 0.679 & 0.665 & 0.693 & Electronics and Hardware & 0.743 & 0.730 & 0.757 \\
+\rowcolor{ai2offwhite} Social Life & 0.628 & 0.609 & 0.649 & Software Development & 0.687 & 0.613 & 0.781 \\
+Fashion and Beauty & 0.845 & 0.845 & 0.845 & Industrial & 0.710 & 0.691 & 0.731 \\
+\rowcolor{ai2offwhite} Food and Dining & 0.878 & 0.860 & 0.896 & History and Geography & 0.630 & 0.698 & 0.574 \\
+Art and Design & 0.670 & 0.668 & 0.672 & Adult Content & 0.700 & 0.894 & 0.575 \\
+\midrule
+\rowcolor{ai2lightpink} \multicolumn{8}{c}{{\bf Overall (N=20,000): Precision = 0.762, Recall = 0.762}} \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Performance of FastText classifier distilled from WebOrganizer topic labels} on the held out sample of 20,000 documents used in the original WebOrganizer paper.}
+\label{tab:wo_classifier_performance}
+\end{table}
+
+
+After strict rounds of deduplication, we partition our data according to topic using the 24 topic categories introduced in WebOrganizer~\citep{weborganizer}. Rather than using the 140M parameter topic classifier used by WebOrganizer, we train a FastText classifier\footnote{\href{https://huggingface.co/allenai/dolma3-fasttext-weborganizer-topic-classifier}{\path{huggingface.co/allenai/dolma3-fasttext-weborganizer-topic-classifier}}} to support cost-effective topic classification at scale. To train this classifier, we use the Llama-labeled training data used to train the original WebOrganizer category as well as an extra 506,746 examples with topics labeled by a combination of gpt-4.1 and o4-mini. The performance of this classifier is outlined in Table \ref{tab:wo_classifier_performance}.
+
+
+
+
+\subsubsection{CommonCrawl Mixing}
+\label{sec:commoncrawl-mixing}
+We perform a hierarchical mixing procedure on our data. Our procedure \olmix~\citep{olmix} generates prescriptions for which percentage of the training mix should come from each topic or source, but offers no guidance on the quality composition within each topic. While prior works, such as DCLM~\citep{dclm} use a quality classifier to flatly filter data as high-quality or not, we take a more fine-grained approach and perform selective up and down-sampling within each WebOrganizer topic depending on the quality signal. This section formalizes the search procedure we use to generate these upsampling curves.
+
+\paragraph{Problem formulation} We discuss this procedure in more general terms: consider a category with $X$ tokens, partitioned into $Q$ strictly ordered quality buckets, where the $q^{th}$ bucket contains $X_q$ tokens. Further assume that \olmix prescribes that $Z$ tokens be taken from this category, and that at no point do we want to upsample any quality bucket more than $M$ times. This equates to a search problem, where we need to take $Z_q$ tokens from the $q^{th}$ bucket such that $\sum_q Z_q= Z$ and $\forall q,\; Z_q/X_q \leq M$.
+
+\paragraph{Parameterizing the solution space} To reduce the dimensionality of this search space, we make a modeling choice, where we search over a family of functions that control the upsampling ratio that meets the following criteria:
+\begin{itemize}
+    \item Every function in the family is convex and monotonic.
+    \item The functions are defined on the interval $[0,1]$, which can be normalized to the token counts later.
+    \item We are able to control the integral such that $\int_0^1f(x)dx = Z/X$.
+    \item We can control the maximum average value of any one bucket. Suppose the $q^{th}$ bucket of data is arranged on the $x$-axis from $[a,b]$, then the maximum upsampling constraint correlates to the inequality $\frac{1}{b-a} \int_a^b f(x)dx \leq M$.
+    \item We have the option to filter out the lowest quality buckets, i.e. $\int_0^a f(x)dx = 0.$
+\end{itemize}
+
+One such family of functions that meets these criteria is the family of truncated power-exponential functions:
+\[
+f_{p, \lambda}(x) =
+  \begin{cases}
+    0, & \text{for } x < a \\
+    C(x-a)^p\cdot e^{\lambda(x-a)}, & \text{for } x \geq a\\
+  \end{cases}
+  \]
+Specifically, this becomes a feasibility problem for each topic of the data, where we search over parameters $p, \lambda, C$ such that the constraints \begin{itemize}
+    \item (Token yield is satisfied) $\int_0^1 f_{p,\lambda}(x)dx = Z/X$.
+    \item (Maximum upsampling ratio is honored) $\frac{1}{b}\int_{1-b}^1 f_{p, \lambda}(x) dx \leq M.$
+    \item (Function is monotonic) $\lambda \geq 0.$
+\end{itemize}
+are satisfied. The maximum upsampling constraint has been simplified such that, assuming monotonicity, the most upsampled quality bucket would be the highest-quality one, with an assumed data proportion of $b$.
+
+\paragraph{Implementation details} For each WebOrganizer topic, we set the maximum upsampling ration to be $M=7$ and also throw away the bottom $40\%$ in terms of quality, $a=0.40$. Then we numerically solve for feasible $p, \lambda, C$. If the $q^{th}$ quality bucket spans from the $q^-$ percentile to the $q^+$ percentile of the data, then the upsampling ratio for this bucket of data should be $\frac{1}{q^+-q^-} \int_{q^-}^{q^+} f(x)dx$.
+
+\subsubsection{Validating Quality Upsampling and Mixing}
+
+
+We validate our quality upsampling curves and mixing methodology both individually and jointly using small-scale 1B parameter models trained on 100B tokens. Our validation consists of three experiments:
+
+\paragraph{Targeted mixing} We first verify that our mixing methodology can successfully optimize for specific prediction targets. Using our swarm optimization procedure, we create mixes optimized for three different objectives: the QA average, Math average, and Code average from \olmothreeeval. We compare these targeted mixes against both the natural data distribution and the final \olmothree mix. Table \ref{tab:token-constrained-mixing} demonstrates that our swarm optimization successfully adapts the data distribution to match specific capability targets. While the final \olmothreeeval mix exhibits slightly higher (worse) BPB scores than task-specific mixes due to necessary trade-offs across multiple objectives, it substantially outperforms the natural distribution.
+
+\paragraph{Quality-aware upsampling} Next, we demonstrate that quality-aware upsampling outperforms naive quality-based filtering. To simulate a data-constrained 4.51T token training run, we compare different data selection strategies in Table \ref{tab:quality-aware-upsampling}. For the filtering baselines, we select the top percentiles from our vigintile quality buckets and match the resulting repetition factor that would occur when training on 100B tokens drawn from a theoretical 4.51T pool. For the upsampling approach, we apply the same methodology but set the target pool size to 100B tokens directly. Our results show that quality-aware upsampling consistently outperforms flat filtering across all repetition factors.
+
+\paragraph{Reconciling upsampling and mixing} Finally, we evaluate how to best combine our mixing and upsampling methodologies, which address complementary aspects of data selection. Data mixing determines the distribution across topics, while quality upsampling determines the distribution within a single source. To conceptualize this, imagine the dataset as a two-dimensional matrix of buckets where rows represent WebOrganizer topics and columns represent the quality buckets. Then the mixing strategy can be thought of as imposing row-wise (topic) constraints only. The quality-aware upsampling experiments in the preceding paragraph impose column-wise (quality) constraints only.
+
+We considered several techniques that did not work quite as well as the truncated power-exponential forms described in \S~\ref{sec:commoncrawl-mixing}. On one hand, the \olmix framework samples data from each topic (row) according only to the natural quality distribution. On the other, quality upsampling samples data from each quality bucket (column) and does not consider reweighting topic distributions. For a theoretical target token yield, each of these strategies prescribes a target token count to be taken from each \texttt{(topic, quality)} bucket. Naive ways to rectify these strategies is to take an arithmetic or geometric mean between the target token counts from each bucket. We also note that the theoretical framework defining upsampling curves above is not necessarily restricted to the concept class of truncated power-exponential families. We could just as easily consider the family of exponential functions like $f_\lambda(x) = Ce^{\lambda(x-a)}$. Upon considering each of these techniques on small 1B models, we found that the truncated power-exponential family performed the best. Results are contained in Table \ref{tab:resolving-upsampling-mixing}.
+
+
+\begin{table*}[tbp]
+\centering
+
+\begin{minipage}{0.48\linewidth}
+\centering
+\small
+\begin{tabular}{@{}l ccc@{}} %
+\toprule
+&
+{$\textbf{\fontsize{8}{8}\selectfont~QA}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Math}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Code}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} \\
+\midrule
+\rowcolor{lightgrey} Natural Distribution & 1.017 & 0.719 & 0.592 \\
+\rowcolor{lightgrey} QA-heavy Mix         & {\bf{0.972}} & 0.643 & 0.535 \\
+\rowcolor{lightgrey} Math-heavy Mix       & 0.979 & {\bf{0.586}} & 49.65 \\
+\rowcolor{lightgrey} Code-heavy Mix       & {0.986} & 0.619 & {\bf{0.481}} \\
+\rowcolor{ai2lightpink} \olmix            & {0.995} & {0.617} & {0.489} \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Token-constrained mixing allows optimizing different evaluation objectives}. We use our swarms to optimize a QA-, Math- and Code-heavy data mix and train 1B models to 100B tokens. Results are on the \olmothreeeval Easy suite. Scores are expressed in bits-per-byte (BPB), lower is better (see Section~\S\ref{sec:experimental-design} for details).
+}
+\label{tab:token-constrained-mixing}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\linewidth}
+\centering
+\small
+\begin{tabular}{@{}l ccc@{}}
+\toprule
+&
+{$\textbf{\fontsize{8}{8}\selectfont~QA}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Math}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Code}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} \\
+\midrule
+\rowcolor{lightgrey} Top 50\% (1.1x repeat) & 1.042 & 0.863 & 0.943 \\
+\rowcolor{lightgrey} Top 30\% (1.8x repeat) & 1.031 & 0.870 & 0.880 \\
+\rowcolor{lightgrey} Top 10\% (5.6x repeat) & 1.041 & 0.858 & 0.939 \\
+\rowcolor{lightgrey} Top 5\% (11.1x repeat) & 1.065 & 0.843 & 0.930 \\
+\rowcolor{ai2lightpink} \olmothree Upsampling  & {\bf{1.000}} & {\bf{0.740}} & {\bf{0.719}} \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Quality-aware upsampling outperforms naive data filtering}. We simulate data-constrained training using 1B models trained to 100B tokens where we match the repetition of a 4.51T training run. Results are on the \olmothreeeval Easy suite. Scores are expressed in bits-per-byte (BPB), lower is better (see Section~\S\ref{sec:experimental-design} for details).
+}
+\label{tab:quality-aware-upsampling}
+\end{minipage}
+
+\end{table*}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{@{}l ccc@{}}
+\toprule
+&
+{$\textbf{\fontsize{8}{8}\selectfont~QA}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Math}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} &
+{$\textbf{\fontsize{8}{8}\selectfont~Code}_\textbf{\fontsize{6}{6}\selectfont~Easy}$} \\
+\midrule
+\rowcolor{lightgrey} Mixing Only             & 1.005 & 0.778 & 0.872 \\
+\rowcolor{lightgrey} Quality Upsampling Only & 1.022 & 0.821 & 0.809 \\
+\rowcolor{lightgrey} Arithmetic Mean         & 1.004 & 0.792 & 0.828 \\
+\rowcolor{lightgrey} Geometric Mean          & 1.004 & 0.782 & 0.813 \\
+\rowcolor{lightgrey} Truncated exponential family         & 1.002 & 0.782 & 0.787 \\
+\rowcolor{ai2lightpink} Truncated power-exponential family (\olmothree) & {\bf{0.993}} & {\bf{0.758}} & {\bf{0.783}} \\
+\bottomrule
+\end{tabular}
+\caption{
+\textbf{Different methods of combining quality-aware upsampling and token-constrained mixing} to arrive at the final \olmothree pretrain mix. Results are on the \olmothreeeval Easy suite. Scores are expressed in bits-per-byte (BPB), lower is better (see Section~\S\ref{sec:experimental-design} for details).
+}
+\label{tab:resolving-upsampling-mixing}
+\end{table}
+
+
+
+\subsection{Base Model Additional Data Details: Midtraining}\label{app:sec:midtraining-data}
+
+This section provides further detail on curation processes for \dolminostoo. Additional replication resources, including prompts for synthetic data generation, are available in the Dolma3 GitHub repository.
+
+\subsubsection{Math Capabilities}
+\begin{table}[t]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+ & {\bf\#~Toks} & ~{\bf\#~Toks} & & & & \\
+ {\bf Model} & {\bf Seen (B)} & ~{\bf Total (B)} & {\bf$\mathbf{\Delta}$~MMLU} & {\bf$\mathbf{\Delta}$~Math} & {\bf$\mathbf{\Delta}$~MATH} & {\bf$\mathbf{\Delta}$~GSM8K}\\
+
+\midrule
+\rowcolor{ai2offwhite} tinyMATH (PoT)     & 0.24 & 0.24 & -2.90 & {\bf{16.58}} & {\bf{20.70}} & {\bf{25.33}} \\
+tinyMATH (MIND)    & 0.90 & 0.90 & -1.75 & 11.62 & 12.48 & 14.80 \\
+\rowcolor{ai2offwhite} tinyMATH (Both)    & 1.15 & 1.15 & -1.68 & 9.98  & 11.40 & 12.07 \\
+CraneMath          & 4.34 & 4.34 & 0.01  & 4.86  & 4.26  & 6.32 \\
+\rowcolor{ai2offwhite} SwallowMath        & 3.65 & 3.65 & {\bf{0.33}}  & 4.84  & 4.38  & 6.72 \\
+Dolminos Math      & 5.00 & 10.70 & -0.60 & 4.68 & 2.08  & 7.65 \\
+\rowcolor{ai2offwhite} MegaMatt           & 2.69 & 21.78 & 0.32  & 3.39 & 3.91  & 4.85 \\
+MM-Web-Pro        & 5.00 & 15.10 & 0.09  & 2.31 & 1.92  & 3.49 \\
+\rowcolor{ai2offwhite} MM-Web-Pro-Max         & 5.00 & 73.85 & -0.10 & 1.70 & 1.40  & 2.67 \\
+FineMath4+      & 6.89 & 9.61  & 0.03  & 1.51 & 1.21  & 2.19 \\
+\rowcolor{ai2offwhite} MM-Web        & 5.00 & 263.90 & 0.03 & 1.30 & 0.69 & 2.16 \\
+\bottomrule
+\end{tabular}
+\caption{\textbf{Results from math microanneals}, with normalized per-token differences in scores relative to pre-anneal baseline. All anneals were run with a 50/50 mixture of web text data and the high quality data source. Numbers were arrived at by taking the difference from the pre-anneal baseline \emph{and dividing by the number of tokens seen during training.}}
+\label{tab:midtraining-math-normalized}
+\end{table}
+
+Similar to \olmotoo, we take particular care to curate math-specific mixes of data during the midtraining phase of training. In this section we discuss some of the procedures used to generate, as well as validate, the math-specific data sources. It should be noted, that while there has been a flurry of research on high-quality, open-source, STEM-focused datasets, many of these are synthetic data generated using LLama-models, which carry with them a restrictive Llama license. We produce several reproductions of these with more permissive licensing and urge the community to take care in the licensing of the data they release if they wish to see adoption for research or commercial purposes.
+
+\paragraph{TinyMATH}
+In \olmotoo, great strides were made in performance on the GSM8K~\citep{cobbe2021gsm8k} dataset by generating synthetic math problems seeded from the original GSM training set, and then generating both python code (PoT) and natural language discussions of solutions (MIND). We adopt a similar strategy here, to target the MATH dataset~\citep{hendrycksmath2021}. Namely, we adopt the TinyGSM protocol~\citep{liu2023tinygsmachieving80gsm8k} and prompts to generate 100 new problems for each existing MATH problem, and then generate pythonic solutions for each of these new problems. Then we apply the MIND rewrite prompt~\citep{akter2024mindmathinformedsynthetic}, using the two-student and problem-solving variants. This yields the PoT dataset (241M tokens) and the MIND dataset (899M tokens). To assess the potency of these new datasets, we ran annealing runs and evaluated fine-grained math related benchmarks as well as MMLU, to keep an eye on generalization. These results are summarized in TABLE:
+
+
+\paragraph{CraneMath}
+SwallowMath~\citep{fujii2025rewriting} is a 2.3 Billion token dataset, generated from rewriting FineMath4$+$~\citep{allal2025smollm2smolgoesbig}. Unfortunately the data was rewritten using a Llama model, which would require that any model trained on this data would need to have "Llama" in the name, according to the Llama Community License. To provide truly open data, we mirror the generation of this dataset, but use Qwen3 32B~\cite{qwen3} to rewrite FineMath4$+$ using the prompt presented in the SwallowMath paper. This yields a 5.62B token dataset we refer to as CraneMath. Compared to the 9.6B tokens contained in FineMATH4$+$, CraneMath is a distillation into fewer tokens, but not as few as SwallowMath (2.3B) -- we posit that this is because using Qwen3 as a rewrite model is slightly "chattier" than Llama.
+
+To evaluate performance of this rewrite procedure, we ran several anneals, starting from a base model that had seen 6T tokens of our pre-training mix, we ran several anneals, always with 50\% token from the pretraining mix and 50\% tokens from the data-source of interest. In the case where the anneals have different token counts, driving the learning rate linearly down to the same final learning rate. Then we compare the following runs: i) The pre-anneal baseline, ii) FineMath4$+$, but just an incomplete subset; iii) the original SwallowMath dataset; iv) our version, CraneMath; v) two copies of CraneMath; vi) a copy of CraneMath and all their original documents from FineMath4$+$.
+
+
+\paragraph{MegaMatt}
+OctoThinker~\citep{wang2025octothinker} generated a 70B token data pool dubbed Megamath-Web-Pro-Max, intended to be a rewrite of LLM360's MegaMath data pool~\citep{liu2023llm360}, with quality mirroring that of the MegaMath-Web-Pro quality. Again, unfortunately, MegaMath-Web-Pro-Max was rewritten using Llama, and an independent recreation needed to be performed for fully-open usage in training. Since our initial ablations showed that the Megamath-Web-Pro-Max pool wasn't as high of quality as, say, SwallowMath, we didn't need a recreation of the full 70B pool. Instead, we generated a recreation of just the documents from Megamath-Web-Pro-Max that occured in CommonCrawl dumps from dump \texttt{CC-MAIN-2023-23} and later, since more recent data was shown in the OctoThinker paper to be of higher quality. We ultimately generated 3.9B tokens of data, dubbed MegaMatt. To verify the efficacy, we ran ablations on: i) MegaMath-Web, ii) MegaMath-Web-Pro-Max (both to 10B and 25B tokens), and iii) MegaMatt.
+
+
+
+\paragraph{OMR Rewrites}
+Inspired by the success of Nvidia's OpenMathReasoning dataset on the AIO-2 Kaggle competition, we experimented with various rewrites sourced from AoPS forums \cite{moshkov2025aimo2}. See Dolma3 repo for further details.
+
+\paragraph{Key Findings and Results} We summarize the annealing results for the math datasets in Table \ref{tab:midtraining-math-normalized}. Each value reflects the change in the evaluation score relative to the pre-anneal baseline, normalized by the number of training tokens. Presenting the results this way highlights several distinct tiers of math-data quality, stratified by the effect-per-token. Notably, these quality tiers anticorrelate with the number of available tokens: the highest-quality sources are also the smallest. While it is true that there are diminishing returns of evaluation scores as more tokens are added, we claim that amongst these high-quality data sources, some higher quality than others.
+
+At the top of the quality-spectrum are the tinyMATH variants. Although each contains less than a billion tokens, they deliver the strongest improvement per token -- this is perhaps not surprising as these tokens were specifically crafted to augment the MATH evaluation score. Next in the tier-list of quality are the synthetic rewrites of natural high-quality data: the Crane, SwallowMath and MegaMatt sources which are each rewrites of FineMath4+ and MegaMathWeb-Pro. These provide a markedly weaker lift to the math evaluation metrics than the tinyMATH variants but also have a much larger pool of tokens to draw from. Finally, the largest data sources, including those of naturally occurring data such as FineMath4+ and MegamathWeb, also yield improvements, but their effect-per-token is noticeably smaller than that of the highly curated synthetic data. Finally we note that the effect of math midtraining on MMLU is generally neutral to negative, but is more strongly negative the more targeted the data pool is to Math evals, suggesting ``overcooking'', where increased specialization comes at the expense of broader general-purpose performance.
+
+
+
+
+\subsubsection{Code Capabilities}
+During pretraining, we relied entirely on stack-edu~\citep{allal2025smollm2smolgoesbig} for providing coding data. This data came in the form of naturally-occurring source code from github scraps with limited extra preprocessing. During midtraining, we focused on improving Python and code-completion capabilities. To this end, we incorporated 10B tokens of FIM-transformed data form the same source as the pretraining code mixture. Inspired by improvements in math metrics by incorporating synthetic data, we also created a fully-open replica of SwallowCode~\citep{fujii2025rewriting}, which we call CraneCode.
+
+\paragraph{CraneCode}
+Of the off-the-shelf synthetic code data sources we considered, SwallowCode provided the greatest lift to coding evaluation metrics. Unfortunately, SwallowCode was generated using Llama models and thus had the less-permissive Llama license attached. We created a replica of SwallowCode by starting with just the python files from The Stack v2 Smol~\citep{lozhkov2024starcoder}, and applying the compilation and linting filters just as in SwallowCode. Then we applied a two-stage rewriting process, first to generate code data that is more compliant to the python style guides (SGCR), and then to generate optimized code (SCOR); both using the prompts from the original SwallowCode paper and Qwen/Qwen2.5-Coder-32B-Instruct~\citep{qwen2.5}. To verify the quality of the reproduced dataset, we ran several anneals, where results are displayed in Table \ref{tab:microanneal_code}.
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lrrrrr}
+\hline
+{\bf Model} & {\bf \#Tokens} & {\bf Crux-Eval} & {\bf HumanEval} & {\bf MBPP} & {\bf MMLU} \\
+\hline
+\rowcolor{ai2offwhite} CraneCode (25B) & 18.87B & 35.92 & \textbf{35.06} & 31.72 & 54.30 \\
+CraneCode SGCR & 18.87B & \textbf{41.75} & 33.78 & \textbf{36.76} & 54.18 \\
+\rowcolor{ai2offwhite} SwallowCode & 10.0B & 35.74 & 31.80 & 34.67 & 55.03 \\
+CraneCode (10B) & 10.0B & 33.28 & 26.51 & 34.94 & 54.98 \\
+\rowcolor{ai2offwhite} Pre-anneal Baseline & N/A & 35.46 & 21.51 & 27.11 & \textbf{56.60} \\
+\hline
+\end{tabular}
+\caption{\textbf{Microanneal results for CraneCode ablations}. For each annealing run, we ran with a 50/50 mixture of web text and high-quality synthetic code data. We note several observations: 1) Both SwallowCode and CraneCode provide a lift to coding evaluation metrics at the expense of MMLU metrics; 2) SwallowCode provides a larger lift normalized for tokens than the CraneCode dataset; 3) CraneCode continues to provide lift to HumanEval as more data is provided, indicating that this data source is not yet exhausted.}
+\label{tab:microanneal_code}
+\end{table}
+
+
+\subsubsection{Thinking Capabilities}
+
+\paragraph{Meta-reasoning}
+
+Recent work demonstrates that structured meta reasoning capabilities present during pre-training and mid-training serve as the foundation for successful reinforcement learning in complex reasoning tasks. \citet{gandhi2025cognitive} showed that models exhibiting verification and backtracking behaviors during base training achieved dramatically superior performance trajectories during mathematical reasoning RL. %
+Therefore, we begin by identifying structured reasoning capabilities that are critical for mathematical problem-solving. We select seven core capabilities that are foundational to mathematical and programming expertise: self-awareness~\citep{toy2024metacognitionneedusingintrospection,bfa322bf36e54a4ca19f9a73bee6184b}, self-evaluation~\citep{Fleming2017-FLESOD}, goal management~\citep{ACKERMAN2017607,GRIFFITHS201924}, hierarchical organization~\citep{Haupt2018}, backward chaining~\citep{Olieslagers2024}, backtracking and conceptual reasoning \citep{Markovits2015}. We then design specific tasks that systematically target these capabilities, as shown in Table~\ref{tab:math-meta}, and \ref{tab:code-meta}. For instance, Math Error Recovery specifically targets self-awareness, verification, and backtracking by requiring models to experience authentic mistakes and demonstrate recovery processes. Strategy Selection focuses purely on meta-cognitive choice processes, while Conversation Generation integrates all capabilities through educational dialogue. %
+For data generation, we start with existing math \citep{deepscaler2025,moshkov2025aimo2} and coding \citep{tacoli,hendrycksapps2021,ahmad2025opencodereasoning} problems and their corresponding correct answers. Following Pandalla dataset,\footnote{\href{https://huggingface.co/datasets/pandalla/pandalla-math-dataset-v1.0}{\path{huggingface.co/datasets/pandalla/pandalla-math-dataset-v1.0}}} we automatically augment each problem with detailed  annotations\footnote{We provide the problem and the correct answer as inputs to \texttt{o4-mini} with high reasoning, to synthesize the annotations following the Pandalla-math annotation schema.} covering `problem classification', `difficulty analysis', `solution approaches', `common pitfalls', and `verification methods'. These rich annotations serve as inputs for our capability-targeted tasks. For example, the `common pitfalls' field directly informs math error recovery generation, while steps in `solution approach' provides structure for backward chaining tasks. Using the annotated datasets as foundation, we employ \texttt{GPT-4.1} and \texttt{o4-mini} to generate training data at scale for each capability-targeted task.
+
+
+
+\input{tables/base_data/math-meta-reasoning}
+\input{tables/base_data/code-meta-reasoning}
+
+\paragraph{Existing thinking traces}
+The full list of existing thinking traces is as follows:
+
+\begin{enumerate}
+    \item \textbf{General reasoning mix} is a compilation of three existing datasets: GeneralThought-430K\footnote{\href{https://huggingface.co/datasets/RJT1990/GeneralThoughtArchive}{\path{huggingface.co/datasets/RJT1990/GeneralThoughtArchive}}}, \texttt{OpenThoughts-114k}~\citep{guha2025openthoughtsdatarecipesreasoning}, and \texttt{Open-R1-Math-220k}\footnote{\href{https://huggingface.co/datasets/open-r1/OpenR1-Math-220k}{\path{huggingface.co/datasets/open-r1/OpenR1-Math-220k}}}. The resulting dataset contains questions, thinking traces, and answers for topics spanning math, code, natural sciences, humanities, social sciences, and puzzles.
+    \item \textbf{Gemini reasoning traces}, introduced by \citet{muennighoff2025s1simpletesttimescaling}, contains thinking traces covering domains of math, astronomy, biology, chemistry, computer science, geography, physics, English, law, logic, and more.
+    \item \textbf{OpenThoughts2 reasoning traces} from \citet{guha2025openthoughtsdatarecipesreasoning} contains thinking traces in domains of math, science, code, and puzzles.
+    \item \textbf{Llama Nemotron reasoning traces} \citep{bercovich2025llamanemotronefficientreasoningmodels} contains thinking trace data for math, code, general reasoning, and instruction following.
+    \item \textbf{QwQ reasoning traces} consists of the QwQ subset of the OpenMathReasoning dataset~\citep{moshkov2025aimo2}.
+\end{enumerate}
+
+Filtering steps included subselecting for permissively-licensed generations, filtering to remove empty and truncated responses, performing checks of verifiable claims and safety, filtering overt LLM self-references, filtering heavily repeated sentences, paragraphs, and phrases, and remove reasoning traces consisting of greater than 5\% Chinese characters.
+
+
+\subsection{Base Model Additional Evaluation Details}
+\label{sec:eval-suite}
+
+The \olmothreeeval suite expands on the 11 tasks in the \olmotoo iteration of OLMES \citep{olmo20242olmo2furious,olmes}, to include 43 tasks across new families of capabilities. Here, we enumerate details from Section~\S\ref{sec:experimental-design}.
+All task suites are publicly available at \texttt{\href{https://github.com/allenai/olmes\#olmo-3-eval-suite}{github.com/allenai/olmes\#olmo-3-eval-suite}}.
+
+
+\paragraph{Expanding OLMES tasks} We expanded our evaluation to target specific capabilities: new QA tasks focusing on science knowledge (SciQ, QASPER, SciRIFF), medical/lab knowledge (ProtocolQA, DBQA, MedMCQA, MedQA), math tasks (GSM Symbolic, Minerva MATH) and coding tasks (DS 1000, BigCodeBench, Deepseek LeetCode\footnote{We use `Deepseek LeetCode' to refer to the 180 LeetCode problems used during development in \citet{guo2024deepseek}}, MultiPL-E HumanEval, MultiPL-E MBPP). We use MultiPL-E to evaluate our multilingual code execution, limited to six core programming languages. Additionally, we track fill-in-the-middle (FIM) performance using HumanEval with the three settings from \citet{bavarian2022efficient}: single-line infilling, multi-line infilling and random span infilling.
+
+We support code execution in Python, C++, Java, JavaScript, PHP, Rust and Shell using AWS Lambda functions to grade instances in parallel, isolated environments of up to 50K generations simultaneously. In total, our environments graded 17.2 million generated code samples during \olmothree development, with up to 1.5K simultaneously. To ensure reproducibility, we release a lightweight Docker library for code execution without AWS infrastructure\footnote{Our code execution environments are publicly available at \texttt{\href{https://github.com/allenai/olmes-docker}{github.com/allenai/olmes-docker}}.}.
+
+
+Additionally, \olmotoo only tracked math and code capabilities after mid-training, as small models exhibit random-chance pass@1 performance on math and code tasks \citep{wei2022emergent}. Our base easy suite tracks perplexity over human-written math and code solutions \citep{huang2024compression}, which allows us to broadens the scope of capabilities we track during pre-training.
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/base_eval/snr_midtrain}
+    \caption{
+    \textbf{Training curves of midtraining} on canonical language model benchmarks (top), and our proposed base main task suites (bottom) for QA, Math and Code.
+    We used the signal-to-noise ratio of early mid-training runs to make decisions about aggregating evaluation scores. Our resulting task averages had a better signal-to-noise ratio than individual benchmarks.
+    }
+    \label{fig:snr-midtrain}
+\end{figure}
+
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/base_eval/scaling_analysis}
+    \caption{
+    \textbf{Scaling analysis for the \olmothree base evaluation suite}. At the largest scale used to run from-scratch data ablations (grey line, a 1B model trained to 100B tokens), our `base main' evaluation suite is too difficult to show improvement (top figures). Instead, we introduce a `base easy' suite to compare models at small scales (bottom figures).
+    }
+    \label{fig:scaling-analysis}
+\end{figure}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\textwidth]{figures/base_eval/easy_to_main}
+    \caption{
+    \textbf{Relationship between bits-per-byte using the Easy suite and final metrics on the Main eval suite}. We use the `Easy' suite to make decisions at a small scale, which corresponds to an improvement at the large scale.
+    }
+    \label{fig:easy-to-main}
+\end{figure}
+
+\subsubsection{Base Evaluation suites}
+
+Using the analysis tools described in the previous section, we construct two evaluation suite for decision making in pre-training: the {\bf{Base Easy}} suite for small-scale data decisions and the {\bf{Base Main}} suite for in-loop evaluation and mid-training data decisions. We kept the number of in-context examples and generation arguments consistent within each family of tasks, when possible.\footnote{We perform all evaluation using vLLM. To prevent performance discrepancies between versions, we pin to \texttt{v0.9.0.1} for evaluation during development, and pin to \texttt{v0.11.0} for all evaluation in the final report.}
+
+Table~\ref{tab:task-details} describes the task configuration and metrics for the \olmothree Base Main evaluation suite. 
+Table~\ref{tab:easy-task-details} provides an overview of the Base Easy suite.
+
+\paragraph{Base Easy suite}
+For multiple-choice BPB, we simply use the correct answer as the continuation.
+For math BPB, we use the provided human-written solutions from Minerva MATH \citep{lewkowycz2022solving}.
+For code BPB, we use the gold `canontical' solution as provided in HumanEval and MBPP \citep{chen2021codex,austin2021program}.
+For BPB over non-Python coding tasks, MultiPL-E did not release gold solutions \citep{cassano2022multipl}, so we generate silver continuations for 16 languages using \texttt{o4-mini-medium}\footnote{We release this generation set at \texttt{\href{https://huggingface.co/datasets/allenai/multilingual_mbpp}{huggingface.co/datasets/allenai/multilingual\_mbpp}}}.
+Figure \ref{fig:scaling-analysis} shows the scaling behavior of the three base easy task clusters, where we see signal even at very small (190M parameter) model sizes.
+
+One important property of the Base eval suite is that a ranking of two small models on the base easy suite agrees with their ranking on the downstream base main suite. We validate this by measuring rank correlation between the easy and main task suites, as pictured in Figure \ref{fig:easy-to-main}.
+
+\paragraph{Base Main suite} As a result of the clustering procedure, the base main suite tracks 6 task groups: MCQA STEM, MCQA Non-STEM, Gen, Math, Code, Code FIM. Unlike \olmotoo, we are tracking generative math and code tasks at pre-training. We chose to evaluate pass@k with the largest number of samples such that each task could evaluate on \olmotoo 7B on 1 H100 in under 30 minutes, in order to ensure the eval speed is not bottlenecked by any particular task. For tasks with a large enough $n$, we set $k=16$ to match the GRPO group size, which we observed to act as an empirical upper-bound on the possible improvement from RL training. To decide on the the temperature and top-p, we ran a sweep and evaluated 5 models (\olmotoo 7B, 13B; Qwen 2.5 7B, 13B; Qwen 3 8B; \citealp{qwen2.5,qwen3}) to find an adequate configuration setting for high scores on both pass@1 and pass@k. Results are shown in Figure \ref{fig:temperature-sweep}, and we select temperature and top-p of 0.6 for all base math and code evaluation.
+
+\begin{wrapfigure}{r}{0.45\linewidth}
+    \centering
+    \vspace{-10pt}
+    \includegraphics[width=\linewidth]{figures/base_eval/temperature_sweep}
+    \caption{\textbf{To select generation arguments for base evaluation, we run a temperature and top-p sweep across 5 models}. We use a reasonable configuration such that we can calculate both pass@1 and pass@k using the results of a single evaluation job.}
+    \label{fig:temperature-sweep}
+    \vspace{-10pt}
+\end{wrapfigure}
+
+\paragraph{Base Chat suite} During mid-training, we refashion the Chat eval suite (\S\ref{sec:posttrain_eval}) for use evaluating base models, which served as a reference as to whether we expect our model to perform well after the adaptation pipeline. To do this, we used a standard, simple chat template (\texttt{Question: \{text\}\textbackslash nAnswer:}) across all base models (both \olmothree and baseline models) and we included stop tokens to prevent degenerate responses. We also excluded tasks which required an API-based judge (AlpacaEval, SimpleQA) due to cost. In practice, we noticed most of the disagreements between the base main and base chat evaluation suites were due to noise, so we primarily used the base suite for making decisions.
+
+\paragraph{Base Long-Context suite} During the long-context extension phase, we evaluate long-context capability using RULER \citep{hsieh2024rulerwhatsrealcontext} as our primary development signal. As a complementary held-out set, we also use HELMET \citep{yen2025helmet}, noting that the HELMET \emph{Recall} task directly implements several RULER evaluations (specifically, ruler-niah-mk-2, ruler-niah-mk-3, and ruler-niah-mv). Because we evaluate only base models at this stage, we disable chat templates within HELMET to ensure consistent scoring across models. For HELMET tasks requiring an LLM-as-a-judge, we use its default judge configuration (gpt-4o-2024-05-13). Taken together, RULER guides most model-selection decisions during long-context development, with HELMET providing an additional check on generalization.
+
+\paragraph{Base Held-out Suite} We targeted one held-out evaluation task to match each family of capability: MMLU Pro for QA \citep{wang2024mmlu}, LBPP for code \citep{matton-etal-2024-leakage}, Deepmind Math for math \citep{saxton2019analysing}, and BigBench Hard to measure broad coverage across unseen task types \citep{suzgun2022challenging}.
+
+\subsubsection{New Evaluation Benchmarks}
+\label{sec:new-evaluation-benchmarks}
+
+\paragraph{Basic Skills} We developed a new benchmark, \textsc{BasicSkills}, to measure whether core capabilities are being acquired during pretraining. \textsc{BasicSkills} consists of 6 subtasks: basic arithmetic, string manipulation, simple coding, elementary logical reasoning, basic common sense, and simple pattern recognition. Each task isolates a single skill using a self-contained context that requires no external knowledge or additional information and can be completed through natural text continuation without relying on instruction-following abilities.
+
+\paragraph{Gen2MC} One takeaway from \olmotoo development was a sensitivity to task format. The clustering procedure furhter confirmed this, finding that generative scores rank models similarly as rank choice (RC) QA tasks, disagreeing with ranking of single-token multiple choice (MC) QA tasks (see Figure \ref{fig:clustering_dendrogram}). In particular, the short-form generative QA tasks (GenQA in Table \ref{tab:task-details}) evaluate by comparing a generated answer to a bank of plausible answers, but these answer banks are often not complete, leading to false negatives. To address this, we introduce the \textbf{Gen2MC} benchmarks, which were constructed by taking the original question/answer pairs and generating incorrect multiple-choice distractor answers using a strong LLM. For each set of generated distractors, we manually review a set of 200 sample questions from the validation set before generating the full dataset. We create Gen2MC tasks for DROP, Jeopardy, NaturalQs, SQuAD, CoQA using GPT-4o for generating distractors, and fall-back to GPT-4.1 in cases where output parsing failed.
+
+\paragraph{Masked perplexity} We want our model to perform well on the diversity of requests from real user chat data; however, we don’t want to overfit to the ``style'' of chat outputs.
+To avoid this, we use a simple token masking strategy, inspired by work in loss masking \citep{mindermann2022prioritized}:
+
+\begin{enumerate}
+\item Fine-tune a 1B model on a tiny subset of the dataset (\~5\%) with a small learning rate. The key idea is that we `warm up' to the format of the target set without learning a lot of new knowledge.
+\item Compute the token losses of the base model and the fine-tuned model on every sequence in the dataset and compute the difference: $\log p_{\text{SFT}}(y | x) - \log p_\text{base}(y | x)$
+\item Mask tokens where the difference is greater than some threshold (found by inspection)
+\item Also mask the user responses and tool calls (we don’t want to model these for data selection)
+Use the loss at all the non-masked tokens positions for perplexity evaluations
+\end{enumerate}
+
+In practice, we use \olmotoo 1B and the trained \olmotoo 1B SFT to compute the loss difference on target tokens. We use UltraChat and WildChat \citep{ding2023enhancing,zhao2024wildchat} as our masked perplexity sets.
+
+\input{tables/base_eval/easy_eval_config}
+\input{tables/base_eval/eval_config}
+\FloatBarrier
+
+\subsection{Base Model Additional Decontamination Details}
+\label{app:decon}
+
+\textit{{\bf{Important}:} this section is adapted from the documentation of the \href{https://github.com/allenai/decon}{\texttt{decon}} package; for up to date information, please consults the official documentation: } \href{https://github.com/allenai/decon/blob/main/doc/simple-details.md}{\path{github.com/allenai/decon/doc/simple-details.md}}
+\vspace{1em}
+
+Evals provide measurable outcomes for model capabilities. We hope that these are meaningful measurements. When evals leak into training data we run the risk of overfitting on evals.
+
+\subsubsection{Definitions and Preliminaries}
+
+Training data and evals both consist of variable length token sequences. Contamination is a sufficient presence of a given eval sequence $e$ in a given training sequence $t$.
+
+We characterize the problem as an approximate substring search for $e$ in $t$ for all $e \in E, t \in T$.
+
+Our goal is to partition the set $T \times E$ into the set of contaminated documents, denoted as $C$, and the set of pure documents, denoted as $P$.
+
+We note that $|T| \gg |E|$ and generally $C$ is very sparse within $T$, as $|C| \ll |P|$.
+
+Our goal is to call whether any training sequence $t$ is derived directly from an eval sequence $e$. This involves distinguishing direct derivation of $t$ to $e$ from both noise and any source material for $e$.
+
+\subsubsection{Example of Contamination}
+
+There is great diversity in the format and purpose of evaluation suites.
+
+\texttt{decon} is fundamentally counting tokens, so it does not consider the intent or semantics of eval instances. But it does leverage the inherent structure of evals to better distinguish between sequences that originate from source material and those that are derived directly from evals.
+
+\begin{figure}[ht]
+\begin{lstlisting}
+// Eval
+{"question": "What year was the Eiffel Tower constructed?", "answer": "1889"}
+
+// Training Document
+{"text": "Welcome to 1000facts. 1. What year was the Eiffel Tower constructed? A: 1889"}
+\end{lstlisting}
+\caption{Example of knowledge eval task.}
+\label{fig:json-config}
+\end{figure}
+
+Knowledge evals frequently have shorter answers.
+
+
+\begin{figure}[ht]
+\begin{lstlisting}
+// Eval
+{
+  "question": "Solve for x: 2x + 5 = 15",
+  "answer": "To solve 2x + 5 = 15, subtract 5 from both sides to get 2x = 10, then divide by 2 to get x = 5"
+}
+
+// Training Document
+{"text": "Here's a math problem solution: To solve 2x + 5 = 15, subtract 5 from both sides to get 2x = 10, then divide by 2 to get x = 5. This demonstrates basic algebraic manipulation."}
+\end{lstlisting}
+\caption{Example of reasoning eval eval task.}
+\label{fig:json-config}
+\end{figure}
+
+Reasoning evals frequently have longer answers with a much larger sets of potential token sequences.
+
+
+\begin{figure}[ht]
+\begin{lstlisting}
+// Eval
+{
+  "passage": "The Eiffel Tower, a landmark in Paris, France, was constructed in 1889. It is a global cultural icon. It receives over 6 million visitors each year.",
+  "question": "What year was the Eiffel Tower constructed?",
+  "answer": "1889"
+}
+\end{lstlisting}
+\caption{Example of retrieval eval task.}
+\label{fig:json-config}
+\end{figure}
+
+Retrieval evals frequently have a substantial passage from source material which acts as an almost input to a program selected by the question component.
+
+\subsubsection{Eval Normalization}
+
+\texttt{decon} normalizes all eval instances into question (Q), answer (A), and passage (P) components. A given eval split may hold out an answer and may or may not contain a passage depending on the task.
+
+An eval instance can be described as having a Q, QA, QP, or QAP composition.
+
+\begin{itemize}
+    \item {\bf{Question}} All eval instances to be decontaminated contain a question, and it serves as the primary vessel for information to describe the task. \texttt{decon} uses the question field for initial identification of contamination clusters. Questions with substantial information content and a strong match are sufficient to call contamination.
+    \item {\bf{Answer}} While the answer of an eval is important for measuring whether a model has learned a specific task, in the context of decontamination the answer primarily serves to provide supporting evidence of contamination. This is particularly important for questions with low information content or those that have edits.
+    \item {\bf{Passage}} The passage, often derived from reference documents, is not a strong indicator of contamination, but in conjunction with a substantial question and answer match, further supports a contamination call.
+\end{itemize}
+
+
+\subsubsection{Decon Implementation}
+
+We can now describe a computational tractable definition of contamination.
+We start with the simplest scenario, evals that only have a question component Q, and later extend the approach for QA, QP, and QAP scenarios.
+
+\paragraph{Detecting contamination} Scoring segments of training documents against evals is somewhat problematic because there is substantial variation in the length of eval and training documents.
+
+\paragraph{Cluster discovery} We start by defining a contamination cluster as a substring of a training document and a set of candidate evals which have at least 1 matching ngram.
+
+We discover clusters by sequentially sampling training document ngrams and checking for a hit in an inverted index which resolves ngrams to eval document ids. Upon an initial hit we expand left and right from the initial hit index until we observe a certain number misses, representing inserts, deletions, or edits.
+
+The initial hit produces a set of matching document ids, which we call the active set. Each subsequent ngram lookup on traversal produces a set of matching documents from the inverted index, which we call the step set. We use the intersection between the active set and the step set to identify which documents in the active set hit for a given step. Once a specific document reaches 11 misses, it is removed from the active set. We repeat this process until the active set is empty or we reach the training document boundaries. At each step we accumulate the unique ngrams matched scoped by eval document id. The end result is a map of document ids to a set of unique ngram shingle matches.
+
+\paragraph{IDF-weighted overlap}
+Contamination scoring uses inverse document frequency (IDF) weighting:
+
+\begin{equation*}
+O = \frac{\sum_{x \in U_t \cap U_e} \text{idf}(x)}{\sum_{y \in U_e} \text{idf}(y)}
+\end{equation*}
+
+where $U_t$ is the set of unique n-grams in the training document segment and $U_e$ is the set of unique n-grams in the evaluation document.
+
+\paragraph{Cluster match length decay} Less informative short texts require stronger matches.
+
+\begin{equation*}
+O' = O \times \begin{cases} 1 & \text{if } L \le L_\text{start} \\ 1 - 0.2 \frac{L - L_\text{start}}{L_\text{end} - L_\text{start}} & \text{if } L_\text{start} < L < L_\text{end} \\ 0.8 & \text{if } L \ge L_\text{end} \end{cases}
+\end{equation*}
+
+By default \texttt{L\_start} is set by the configuration \texttt{perfect\_match\_decay\_start: 20} and \texttt{L\_end} is set by the configuration \texttt{perfect\_match\_decay\_end: 50}.
+
+\paragraph{Cluster discovery threshold} For efficiency we check that the question match $O'$ exceeds the minimum question match required to ultimately call contamination. Every candidate contamination that exceeds this value will get a complete scoring, which includes answer and passage information.
+
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{figures/worked-example.png}
+    \caption{\textbf{Example of trigram processing} for \texttt{decon} pipeline.}
+\end{figure}
+
+\paragraph{Non-comparative} Note that we pre-compute the idf sums for evals during index construction. At detection time we sum the calculated idfs for matching ngrams to produce the overlap ratios. There is no string to string comparison. We rely on the nature of n-gram shingles for sequence matching. The probability of having a substantial ngram shingle overlap is low, and while degenerate cases are possible, they have not been observed in practice.
+
+\paragraph{Inverted index} Because $|E|$ is relatively small, we build an inverted index in memory which maps ngrams to document ids.  We use a two tiered index, the first maps a \texttt{u64} hash to a \texttt{u32} sequential id assigned at index construction. And the second tier maps the n-gram id to a set of document ids. This oddity is done to achieve performant membership tests of training ngrams in the significantly smaller set of observed eval ngrams. Consider that the $|G_\text{tn}| \ll |G_\text{en}|$, so the supermajority of ngram lookups are misses, and skipped. The \texttt{u32} sequential id is empirically more performant than a one-tiered lookup with document id sets as values.
+
+\paragraph{Hot n-grams} Cluster discovery begins with an initial hit in the inverted index. While the supermajority of ngrams samples are misses, there are some extremely common ngrams present in the eval texts. Because the ngrams are so common, the probability of a initial hit leading to a true instance of contamination is low. As an optimization we do not start contamination cluster expansion on hot ngram hits, but rather switch our sampling rate to 1, and traverse the training document by single tokens until we observe a miss or non-hot ngram hit.
+
+
+\subsubsection{Scoring System}
+
+Scores combine question, answer, and passage overlaps with adaptive weights based on the length of components:
+
+\begin{itemize}
+    \item {\bf{QAP}} (all components): 0.7 question, 0.2 answer, 0.1 passage
+    \item {\bf{QA}} (no passage): 0.75 question, 0.25 answer
+    \item {\bf{QP}} (no answer): 0.85 question, 0.15 passage
+    \item {\bf{Q}} (question only): 1.0 question
+\end{itemize}
+
+\paragraph{Length penalty} We penalize short matches based on the length of Q+A+P by scaling down scores for shorter texts, making the contamination threshold effectively harder to reach. Shorter texts get their scores scaled down before threshold comparison. The scaling factor depends on the total token length $L_\text{total}$:
+
+\begin{equation*}
+S_\text{final} = S_\text{base} \times \text{scaleFactor}(L_\text{total})
+\end{equation*}
+
+Where the scaling factor decreases for shorter texts, making the threshold effectively harder to reach. Perfect scores (1.0) are never penalized.
+
+\paragraph{Confidence adjusted weight} The question component is the core of a contaminated prompt and carries the most weight. But in some cases an eval will have short questions and long answers or a long passage followed by a short question about it.
+
+Because longer sequences with more informative content provide stronger contamination evidence, we adjust component weights based on confidence factors derived from length by reducing the question weight and redistributing it to the answer or passage.
+
+Question confidence, based on unique n-gram count:
+\begin{equation*}
+C_q = \begin{cases} 0.5 + 0.5 \frac{N_q}{20} & \text{if } N_q < 20 \\ 1 & \text{if } N_q \ge 20 \end{cases}
+\end{equation*}
+
+Base weights are adjusted by confidence factors:
+
+\begin{equation*}
+W_\text{adjusted} = W_\text{default} \cdot C + W_\text{redistributed}
+\end{equation*}
+
+Where low-confidence components redistribute their weight to higher-confidence ones.
+
+\paragraph{Base scores}
+
+\begin{itemize}
+    \item {\bf{Q composition}}: $S_\text{base} = O_q$
+    \item {\bf{QA composition}}: $S_\text{base} = O_q \cdot W_{q,\text{adjusted}} + O_a \cdot W_{a,\text{adjusted}}$
+    \item {\bf{QP composition}}: $S_{base} = O_q \cdot W_{q,\text{adjusted}} + O_p \cdot W_{p,\text{adjusted}}$ 
+    \item {\bf{QAP composition}}: $S_\text{base} = O_q \cdot W_{q,\text{adjusted}} + O_a \cdot W_{a,\text{adjusted}} + O_p \cdot W_{p,\text{adjusted}}$
+\end{itemize}
+
+\paragraph{Answer proximity}
+For QA datasets, contamination requires the answer appears near the question cluster. Short answers use exact token matching; long answers use n-gram overlap with IDF weighting.
+
+\paragraph{Passage proximity}
+For datasets with passages, contamination checks if the passage appears within a configurable distance (\texttt{min\_passage\_distance}) from the question cluster. Passages use n-gram overlap with IDF weighting and can tolerate gaps (\texttt{passage\_max\_consecutive\_misses}).
+
+
+
+
+
+
+
+
+
+
+
+
+
+

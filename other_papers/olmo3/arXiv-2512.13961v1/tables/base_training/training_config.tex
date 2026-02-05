@@ -1,0 +1,29 @@
+\begin{table}[!h]
+    \centering
+    \begin{small}
+    \begin{tabular}{lccc}
+        \toprule
+        \rowcolor{ai2lightpink}  \textbf{\olmothreebase 7B} & \textbf{Pretraining} & \textbf{Midtraining} & \textbf{Long-context ext} \\[2pt]
+        {DP-rep} & 64 & 16 & 32 \\
+        \rowcolor{midgrey} {DP-shard} & 8 & 8 & - \\
+        {CP} & - & - & 8 \\
+        \rowcolor{midgrey} {Num devices} & 512 & 128 & 256 \\
+        {Throughput (TPS/device)} & 7.7K & 8.5K & 4.0K \\[2pt]
+        
+        \midrule
+
+        \rowcolor{ai2lightpink}  \textbf{\olmothreebase 32B} & \textbf{Pretraining} & \textbf{Midtraining} & \textbf{Long-context ext} \\[2pt]
+        {DP-rep} & 16 & 8 & 16 \\
+        \rowcolor{midgrey} {DP-shard} & 64 & 64 & 8 \\
+        {CP} & - & - & 8 \\
+        \rowcolor{midgrey} {Num devices} & 1024 & 512 & 1024 \\
+        {Throughput (TPS/device)} & 2.0K & 2.0K & 1.3K \\
+
+        
+        \bottomrule
+    \end{tabular}
+    \end{small}
+    \caption{\textbf{Training configuration and throughput for \olmothreebase models} across different training stages. DP-shard refers to the sharding dimension for Hybrid-Sharded Data Parallelism (HSDP)~\citep{zhao2023pytorchfsdpexperiencesscaling}, DP-rep refers to the replication dimension, and CP refers to Llama3-style context parallelism \citep{scalingllama3}. We train on a cluster containing 8$\times$ NVIDIA H100 (80GB HBM3) nodes, connected via TCPXO (200 Gbps/GPU). Throughput numbers reflect the end of each phase, as, in some cases, we made improvements while the runs were ongoing.}
+    \label{tab:training-config}
+\end{table}
+

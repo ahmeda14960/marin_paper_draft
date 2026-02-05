@@ -1,0 +1,73 @@
+\begin{table*}[t]
+  \centering
+
+\begin{scriptsize}
+\renewcommand{\arraystretch}{1}
+\adjustbox{max width=\linewidth}{
+\begin{tabular}{llHHlllllHllHl} %
+\toprule
+& {\bf Task} & {\bf Capability} & {\bf \# inst} & {\bf ICL} & {\bf Format} & {\bf Metric} & {\bf Temp} & {\bf Top-p} & {\bf Extract} & {\bf Max toks} & {\bf P@k (n)} & {\bf N} & {\bf \# sub} \\
+\midrule
+
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\textbf{Base Main Suite}} \\
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2offwhite} & GSM8K* (\citeyear{cobbe2021gsm8k}) & Math Gen & - & 8$^\alpha$ & CoT EM & pass@k & 0.6 & 0.6 & GSM & 512 & 1, 4 (8) & 8 & - \\
+\rowcolor{ai2offwhite} & GSM Symbolic* (\citeyear{gsm-symbolic}) & Math Gen & - & 8$^\alpha$ & CoT EM & pass@k & 0.6 & 0.6 & GSM & 512 & 1, 4 (8) & 8 & 3 \\
+\rowcolor{ai2offwhite} & Minerva MATH* (\citeyear{lewkowycz2022solving}) & Math Gen & - & 4$^\alpha$ & CoT EM & pass@k & 0.6 & 0.6 & Minerva & 1024 & 1, 4 (4) & 4 & 7 \\
+\rowcolor{ai2offwhite} \multirow{-4}{*}{\rotatebox[origin=c]{90}{\textit{Math}}} & MATH 500* (\citeyear{lewkowycz2022solving,lightman2023lets}) & Math Gen & - & 4$^\alpha$ & CoT EM & pass@k & 0.6 & 0.6 & Minerva & 1024 & 1, 16 (32) & 32 & - \\
+\rowcolor{lightgrey} & HumanEval* (\citeyear{chen2021codex}) & Code Gen & - & 3 & Code Exec & pass@k & 0.6 & 0.6 & - & 512 & 1, 16 (32) & 32 & - \\
+\rowcolor{lightgrey} & MBPP* (\citeyear{austin2021program}) & Code Gen & - & 3 & Code Exec & pass@k & 0.6 & 0.6 & - & 512 & 1, 16 (32) & 32 & - \\
+\rowcolor{lightgrey} & BigCodeBench* (\citeyear{zhuo2024bigcodebench}) & Code Gen & - & 3 & Code Exec & pass@k & 0.6 & 0.6 & - & 1280 & 1 (5) & 5 & - \\
+\rowcolor{lightgrey} & DS 1000* (\citeyear{Lai2022DS1000}) & Code Gen & - & 3 & Code Exec & pass@k & 0.6 & 0.6 & - & 1024 & 1 (5) & 5 & - \\
+\rowcolor{lightgrey} & Deepseek LeetCode* (\citeyear{guo2024deepseek}) & Code Gen & - & 0 & Code Exec & pass@k & 0.6 & 0.6 & - & 512 & 1, 16 (32) & 32 & - \\
+\rowcolor{lightgrey} & MultiPL-E HumanEval* (\citeyear{cassano2022multipl}) & Code Gen (6 Lang) & - & 0 & Code Exec & pass@k & 0.6 & 0.6 & - & 1024 & 1, 16 (32) & 32 & 6 \\
+\rowcolor{lightgrey} \multirow{-7}{*}{\rotatebox[origin=c]{90}{\textit{Code}}} & MultiPL-E MBPP* (\citeyear{cassano2022multipl}) & Code Gen (6 Lang) & - & 0 & Code Exec & pass@k & 0.6 & 0.6 & - & 1024 & 1, 16 (32) & 32 & 6 \\
+\rowcolor{ai2offwhite} & HumEval FIM Single* (\citeyear{bavarian2022efficient}) & Code FIM & - & 0 & FIM & pass@1 & 0.8 & 0.95 & - & 512 & 1 (10) & 10 & - \\
+\rowcolor{ai2offwhite} & HumEval FIM Random* (\citeyear{bavarian2022efficient}) & Code FIM & - & 0 & FIM & pass@1 & 0.8 & 0.95 & - & 512 & 1 (5) & 5 & - \\
+\rowcolor{ai2offwhite} \multirow{-3}{*}{\rotatebox[origin=c]{90}{\textit{FIM}}} & HumEval FIM Multi* (\citeyear{bavarian2022efficient}) & Code FIM & - & 0 & FIM & pass@1 & 0.8 & 0.95 & - & 512 & 1 (1) & 1 & - \\
+\rowcolor{lightgrey} & ARC (\citeyear{clark2018think}) & Science QA & - & 5 & MC & Acc & - & - & - & - & - & - & 2 \\
+\rowcolor{lightgrey} & MMLU STEM (\citeyear{hendryckstest2021}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & 19 \\
+\rowcolor{lightgrey} & MedMCQA* (\citeyear{pmlr-v174-pal22a}) & Medical QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} & MedQA* (\citeyear{jin2021disease}) & Medical QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} \multirow{-5}{*}{\rotatebox[origin=c]{90}{\textit{STEM QA}}} & SciQ* (\citeyear{welbl-etal-2017-crowdsourcing}) & Science QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & MMLU Humanities (\citeyear{hendryckstest2021}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & 13 \\
+\rowcolor{ai2offwhite} & MMLU Social Sci. (\citeyear{hendryckstest2021}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & 12 \\
+\rowcolor{ai2offwhite} & MMLU Other (\citeyear{hendryckstest2021}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & 14 \\
+\rowcolor{ai2offwhite} & CSQA (\citeyear{talmor-etal-2019-commonsenseqa}) & Commonsense QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & PiQA (\citeyear{Bisk_Zellers_Le_bras_Gao_Choi_2020}) & Physical QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & SocialIQA (\citeyear{sap-etal-2019-social}) & Social QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & DROP Gen2MC* (\S\ref{sec:new-evaluation-benchmarks}; \citeyear{dua-etal-2019-drop}) & Passage QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & Jeopardy Gen2MC* (\S\ref{sec:new-evaluation-benchmarks}; \citeyear{mosaic-jeopardy}) & Trivia QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & NaturalQs Gen2MC* (\S\ref{sec:new-evaluation-benchmarks}; \citeyear{kwiatkowski-etal-2019-natural}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & SQuAD Gen2MC* (\S\ref{sec:new-evaluation-benchmarks}; \citeyear{rajpurkar-etal-2016-squad}) & General QA & - & 5 & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} & CoQA Gen2MC* (\S\ref{sec:new-evaluation-benchmarks}; \citeyear{reddy-etal-2019-coqa}) & Conversation QA & - & 0$^\dagger$ & MC & Acc & - & - & - & - & - & - & - \\
+\rowcolor{ai2offwhite} \multirow{-12}{*}{\rotatebox[origin=c]{90}{\textit{Non-STEM QA}}} & Basic Skills* (\S\ref{sec:new-evaluation-benchmarks}) & Basic QA & - & 5 & MC & Acc & - & - & - & - & - & - & 6 \\
+\rowcolor{lightgrey} & HellaSwag (\citeyear{zellers-etal-2019-hellaswag}) & Language Modeling & - & 5 & RC$_\text{per-char}$ & Acc & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} & WinoGrande (\citeyear{Sakaguchi_Le_Bras_Bhagavatula_Choi_2020}) & Language Modeling & - & 5 & RC$_\text{none}$ & Acc & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} & Lambada (\citeyear{paperno2016lambada}) & Language Modeling & - & 0 & RC$_\text{per-char}$ & Acc & - & - & - & - & - & - & - \\
+\rowcolor{lightgrey} & Basic Skills* (\S\ref{sec:new-evaluation-benchmarks}) & Basic QA & - & 5 & RC$_\text{per-token}$ & Acc & - & - & - & - & - & - & 6 \\
+\rowcolor{lightgrey} & DROP (\citeyear{dua-etal-2019-drop}) & Passage QA & - & 5 & GenQA & F1 & 0 & 1 & - & 100 & - & - & - \\
+\rowcolor{lightgrey} & Jeopardy (\citeyear{mosaic-jeopardy}) & Trivia QA & - & 5 & GenQA & F1 & 0 & 1 & - & 50 & - & - & - \\
+\rowcolor{lightgrey} & NaturalQs (\citeyear{kwiatkowski-etal-2019-natural}) & General QA & - & 5 & GenQA & F1 & 0 & 1 & - & 50 & - & - & - \\
+\rowcolor{lightgrey} & SQuAD (\citeyear{rajpurkar-etal-2016-squad}) & General QA & - & 5 & GenQA & F1 & 0 & 1 & - & 50 & - & - & - \\
+\rowcolor{lightgrey} \multirow{-9}{*}{\rotatebox[origin=c]{90}{\textit{GenQA}}} & CoQA (\citeyear{reddy-etal-2019-coqa}) & Conversation QA & - & 0$^\dagger$ & GenQA & F1 & 0 & 1 & - & 50 & - & - & - \\
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\textbf{Base Held-out Suite}} \\
+\rowcolor{ai2midwhite}\multicolumn{14}{c}{\rule{0pt}{1pt}} \\[-9pt]
+\rowcolor{ai2offwhite} & MMLU Pro (\citeyear{wang2024mmlu}) & - & - & 5 & MC & Acc & - & - & - & - & - & - & 13 \\
+\rowcolor{ai2offwhite} & LBPP* (\citeyear{matton-etal-2024-leakage}) & - & - & 0 & Code Exec & pass@k & 0.6 & 0.6 & - & 4096 & 1 (32) & - & - \\
+\rowcolor{ai2offwhite} & Deepmind Math* (\citeyear{saxton2019analysing}) & 5500 & - & 5 & CoT EM & pass@k & 0.6 & 0.6 & - & 2048 & 1 (1) & - & - \\
+\rowcolor{ai2offwhite} & BigBench Hard (\citeyear{suzgun2022challenging}) & - & - & 3 & CoT EM & Acc & 0.6 & 0.6 & - & 512 & 1 (1) & - & 55 \\
+
+\bottomrule
+\end{tabular}
+}
+\end{scriptsize}
+  \caption{
+  \textbf{Details of the \olmothree base evaluation suite}. 
+  Tasks were formatted as multiple-choice (MC), rank choice (RC, following the setup in \citet{olmes}), short-form generative (GenQA), chain-of-thought with exact-match scoring (CoT EM), code execution (Code Exec) or fill-in-the-middle coding (FIM).
+  We use * to indicate new additions to the base \olmotoo suite \citep{olmo20242olmo2furious}, $^\dagger$ for  tasks with few-shot examples already specified within each instance, and $^\alpha$ for tasks with human-written few-shot examples.
+  }
+  \label{tab:task-details}
+\end{table*}

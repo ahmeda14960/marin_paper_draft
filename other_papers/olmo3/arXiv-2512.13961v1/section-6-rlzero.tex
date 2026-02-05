@@ -1,0 +1,146 @@
+\section{\olmothreerlzero}
+\label{sec:rlzero}
+
+
+RL has become a key part of recent LLM pipelines in part due to prominent open models such Deepseek R1-Zero \citep{guo2025deepseek}, which notably leverages RL training on top of a base model to bootstrap complex reasoning behavior \citep{marjanović2025deepseekr1thoughtologyletsthink}, and due to the rapid adoption of closed reasoning models such as OpenAI's o1-series and Gemini with Thinking.
+This has made RLVR finetuning from a base model the standard large-scale benchmark for RL algorithms \citep{liu2025prorl,yu2025dapo,luo2025deepscaler}.
+To date, leading open RLVR benchmarks and algorithms train on top of open-weights models that do not reveal their pretraining or midtraining data \citep{scalingllama3,qwen3}.
+This limits the ability for the community to study the role of pretraining data on RLVR performance.
+It can lead to a myriad of issues with benchmark evaluations being contaminated, e.g., midtraining data containing data from the evaluation set, which makes spurious rewards as effective as true rewards~\citep{shao2025spuriousrewardsrethinkingtraining,wu2025reasoning}, or improvements from fixing prompt templates outweighing the improvements from RL~\citep{liu2025understanding}.
+
+
+We therefore release a fully-open dataset \dolcirlzero, an algorithmic RL zero setup for \olmothree, and open-source \olmothreerl code to enable clear benchmarking for the ecosystem.
+We perform RLVR from \olmothreebase over five benchmarking domains to create the \olmothreerlzero family: math, code, precise instruction following (IF), general chat, and a mix of all listed sub-domains.
+In all cases, we further decontaminate \dolcirlzero from pretraining and midtraining data to guarantee our setup carefully studies the effect of RLVR without data leakage confounding our conclusions.
+
+
+\subsection{Reinforcement Learning From Base with \dolcirlzero}
+\label{sub:rlzero-data-setup}
+
+\paragraph{Data}
+
+We create \dolcirlzero, an effective RL-Zero training dataset.
+For math, we aggressively filter DAPO Math \citep{yu2025dapo}, Klear-Reasoner Math \citep{su2025klear},  Open-Reasoner-Zero (Orz)~\citep{hu2025open}, and  Omega~\citep{Sun2025OMEGACL}.
+We deduplicate DAPO and remove all non-English examples. As Klear-Reasoner, Orz, and Omega are much larger datasets, we further group questions via semantic clustering across Klear-Reasoner, Orz, and Omega, and select one representative question per cluster, in addition to including DAPO.
+We further decontaminate against both pretraining and evaluation data following \autoref{sec:think-sft} and perform offline filtering, removing prompts fully solved in 8 out of 8 sample completions by the final base model.
+This results in a dataset of 13.3K math prompts. Data for code, instruction-following, and general chat are subsampled from \dolcithinkrl (Section~\S\ref{subsec:rl-thinking-data}).
+
+
+\paragraph{Prompt and eval template}
+Confirming the findings of \citet{liu2025understanding}, we find that ``simple'' prompt templates greatly outperform standard post-trained templates (e.g., \texttt{<think></think>}) when training from a purely midtrained model, as \dolminostoo excluded most special formatting.
+We develop a simple custom prompt for each domain, using the zero-shot pass@k performance as our metric.
+We end up with a prompt similar to \citet{yu2025dapo}, shown in \autoref{fig:rlzero-math-prompt}.
+We furthermore ``clean'' all our evaluation prompts to remove special formatting (i.e., \texttt{\textbackslash boxed\{\}}) to make evaluation prompts more similar to our training prompts.
+
+
+\paragraph{RL algorithm} We follow Section~\S\ref{olmo3think-rl} in all RL details except (i) we train with a response length of 16K tokens to better accommodate long chain-of-thought reasoning in the math and code domains and (ii) we evaluate with a response length of 32K tokens and temperature 1.0 to encourage diversity as we report pass@k.
+See \autoref{tab:rlvr_training_settings} for hyperparameter details.
+
+
+
+
+
+\subsection{Key Findings}
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_pass_at_1.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_pass_at_32.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_math_reward.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_code_reward.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_ifeval_reward.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rl_zero_general_reward.pdf}
+    \end{subfigure}
+    \caption{\textbf{Different domain runs of RL-Zero on \olmothreebase}: math, precise instruction-following, code, and a mix of all three plus general chat.
+    We show the main evaluation for the math domain: AIME 2024 and 2025 with pass@1, computed as a bootstrapped average over 32 samples, and pass@32.
+    For all domains, we show reward over training.
+    For Mix, we separate out the individual rewards for each domain.}
+    \label{fig:rlzero-eval}
+\end{figure}
+
+\paragraph{\olmothreerlzero can strongly improve on reasoning} As shown in Figure~\ref{fig:rlzero-eval}, our base model can greatly improve on training reward across the different domains when leveraging RL on our datasets. To demonstrate out-of-domain improvements, we evaluate our math run on the decontaminated evals AIME 2024 and 2025. We find that \olmothreebase drastically improves in the first couple hundred steps of training and then improves steadily but slowly.
+We also see a decent improvement in pass@32 results, demonstrating that our run maintains diversity and RLVR pushes the model beyond its initial capabilities.
+Our initial scores and final scores with the 7B model are, notably, close to DAPO \citep{yu2025dapo} which leverages the larger Qwen 2.5 32B and trains for an order of magnitude more steps, see Figure~\ref{fig:rlzero-vs-dapo} in Appendix~\ref{ssub:rl-zero}.
+This demonstrates how \olmothreerlzero can be a more efficient alternative to existing RLVR experiments.
+
+
+\paragraph{\olmothreerlzero mix can benchmark challenges in multi-objective RL}
+Most studies have focused exclusively on RLHF \citep{stiennon2020learning} or single-domain RLVR \citep{yu2025dapo,deepscaler2025}.
+Our mix of math, code, instruction-following, and general chat is a more challenging RLVR benchmark for models.
+\autoref{fig:rlzero-eval} demonstrates that our general run has improved performance across different domains, but each domain is under-optimized compared to the single-domain setup. Future work can leverage this setup to investigate the interactions between domains in multi-objective RLVR.
+
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rlzero_midtrain_len.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_rlzero_midtrain_reward.pdf}
+    \end{subfigure}
+    \caption{
+    \textbf{The response length and math reward over RL training} for two early midtrained base models. This demonstrates how base model midtraining can determine whether RL-Zero learns longer, more complex reasoning and increases response length.
+    }
+    \label{fig:rlzero-midtrain}
+\end{figure}
+
+
+\paragraph{\olmothreerlzero can benchmark reasoning data mixes in midtraining} Midtraining and \olmothreerlzero offer a chance to ablate specific data sources, unlike the large-scale effort behind \olmothreethinking. We leverage RL-Zero to evaluate midtraining data mixes for their ability to develop downstream reasoning with RL. For example, we compare two early models in Figure~\ref{fig:rlzero-midtrain}. As evidenced by the stagnant response length, the model with insufficient reasoning data does not leverage backtracking, answer verification, and other cognitive skills \citep{gandhi2025cognitive}. \olmothreerlzero can therefore serve as a testbed for downstream performance of alternative midtraining approaches and improvements over \dolminostoo.
+
+
+\begin{figure}[t]
+    \centering
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_active_sampling_ratio.pdf}
+    \end{subfigure}
+    \begin{subfigure}{0.48\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{figures/rlzero/olmo3_active_sampling_loss.pdf}
+    \end{subfigure}
+\caption{\textbf{Active sampling maintains a full batch of non-zero-advantage samples} by continuously pulling prompt–completion pairs from the result queue after filtering. We plot the percentage of the batch with non-zero advantage as well as the train loss for an RL-Zero Math run with and without active sampling.}
+    \label{fig:rlzero-active-sampling}
+\end{figure}
+
+
+\paragraph{Active sampling stabilizes training}
+\olmothreerlzero also offers a simpler testbed for ablating RL algorithm and infrastructure decisions.
+We ablate active sampling, our novel method for continuously resampling prompts after filtering for non-zero advantage (see Section~\S\ref{sec:posttraining_infra} for details).
+Running on our math domain, Figure~\ref{fig:rlzero-active-sampling} shows that active sampling does indeed maintain a consistently full batch of completions with non-zero advantage.
+These consistent batch sizes have a stabilizing effect on training, and we see greatly reduced loss variance.
+
+\paragraph{Eval decontamination is verified via spurious rewards}
+Recent RLVR benchmarks have shown substantial improvements from training with spurious rewards that are not correlated with model utility. This can suggest that the RLVR task may have been \textit{contaminated}, i.e., the model was exposed to evaluation data during pretraining or midtraining. RLVR with a spurious reward can elicit this memorized knowledge, differentiating it from genuine learning of reasoning capabilities \citep{shao2025spuriousrewardsrethinkingtraining}.
+To verify that \olmothreerlzero evaluation is not contaminated, we conduct a negative control experiment by training \olmothreebase with spurious rewards.
+Specifically, we train on \dolcirlzero, but instead of rewarding correct answers, we assign random binary rewards to model generations independent of response quality following the protocol in \citet{shao2025spuriousrewardsrethinkingtraining}.
+If our pretraining or midtraining data contained significant overlap with our evaluation sets, we would expect spurious reward training to elicit these memorized solutions and improve benchmark performance.
+
+As shown in Figure~\ref{fig:spurious-rewards}, training with random rewards does not improve performance on any of our benchmark evaluations. Performance either remains flat with random fluctuations or degrades, which is consistent with the model learning arbitrary patterns unrelated to the task. This negative result is evidence that our data decontamination successfully removed overlaps between our base-model pipeline and RLVR evaluation data.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=\linewidth]{figures/spurious_rewards_dapo.pdf}
+    \caption{\textbf{RL training on \olmothreebase on random, signal-free rewards produces no performance gains}, suggesting successful decontamination of training data.
+    }
+    \label{fig:spurious-rewards}
+\end{figure}

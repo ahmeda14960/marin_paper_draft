@@ -1,0 +1,36 @@
+\begin{table}[t!]
+\centering
+\setlength\tabcolsep{5pt}
+{\small
+\begin{tabular}{ll R{2.0cm} l}
+\toprule
+{\bf Category} & {\bf Prompt Dataset} & {\bf \# Prompts used in DPO} & {\bf Reference} \\
+\midrule
+\rowcolor{ai2offwhite} Chat \&  & WildChat & 40,701 & \citet{zhao2024wildchat} \\
+\rowcolor{ai2offwhite} Precise IF & \dolciinstruct Precise IF & 19,365 & -- \\
+\rowcolor{ai2offwhite}  & \tulu Persona IF & 3,486 & \cite{lambert2024tulu3} \\
+\rowcolor{ai2offwhite}  & OpenAssistant & 1,762 & \citet{kopf2024openassistant} \\
+Math & \tulu Persona MATH & 10,657 & \citet{lambert2024tulu3} \\
+ & \tulu Persona Algebra & 1,417 & \citet{lambert2024tulu3} \\
+ & \tulu Persona GSM & 3,681 & \citet{lambert2024tulu3} \\
+ & OpenMathInstruct 2 & 3,615 & \citet{toshniwal2024openmathinstruct} \\
+\rowcolor{ai2offwhite} Coding & \dolciinstruct Python Algorithms  & 13,236 & -- \\
+ \rowcolor{ai2offwhite}  & \tulu Persona Python & 2,514 & \citet{lambert2023entangled} \\
+\rowcolor{ai2offwhite}  & Evol CodeAlpaca & 7,634 & \cite{luo2023wizardcoder} \\
+Safety & CoCoNot & 927 & \citet{brahman2024art} \\
+ & WildGuardMix & 5,338 & \citet{han2024wildguard} \\
+ & WildJailbreak & 5,616 & \citet{jiang2024wildteaming} \\
+\rowcolor{ai2offwhite} Science & SciRiff & 2,253 & \citet{wadden2024sciriff} \\
+\rowcolor{ai2offwhite} & OpenThoughts3 Science & 19,023 & \cite{guha2025openthoughts} \\
+Multilingual & Aya & 4,078 & \citet{singh2024aya} \\
+\rowcolor{ai2offwhite} Other & TableGPT & 1,170 & \citet{zha2023tablegpt} \\
+\rowcolor{ai2offwhite} & FLAN & 19,660 & \citet{wei2021flan} \\
+Not used in SFT & DaringAnteater & 1,089 & \cite{wang2024helpsteer2} \\
+& UltraFeedback & 32,778 & \cite{cui2023ultrafeedback} \\
+\rowcolor{ai2offwhite} {\bf{Total}} &  & 200,000 & \\ 
+\bottomrule
+\end{tabular}}
+\vspace{3pt}
+\caption{\textbf{\olmothreethinking DPO prompt sources}. See Section~\S\ref{sec:dpo_think_data} for data details.}
+\label{tab:olmo3_think_dpo_mix}
+\end{table}

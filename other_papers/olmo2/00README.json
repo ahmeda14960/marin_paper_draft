@@ -1,0 +1,53 @@
+{
+   "sources" : [
+      {
+         "usage" : "toplevel",
+         "filename" : "neurips_2023.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/defns.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/manrope.sty"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/manrope/Manrope-Bold.ttf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/manrope/Manrope-Regular.ttf"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/plainnat.bst"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "ai2style/template_content.tex"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "manropebold.tfm"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "manroperegular.tfm"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "neurips_2023.bib"
+      },
+      {
+         "usage" : "ignore",
+         "filename" : "neurips_2023.sty"
+      }
+   ],
+   "spec_version" : 1,
+   "texlive_version" : "2025",
+   "process" : {
+      "compiler" : "pdflatex"
+   }
+}

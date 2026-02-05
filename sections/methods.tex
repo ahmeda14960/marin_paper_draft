@@ -1,0 +1,106 @@
+\section{Methods and Open Artifacts}
+\label{sec:methods}
+
+This section summarizes the Marin ``model flow'' components that are necessary for reproduction: open artifacts, data sources and mixes, model architectures, and training/evaluation setup.
+Where possible we cite public specifications and the official retrospectives for exact numbers and plots~\citep{Hall2025marin,marin8bretro,marin32bretro}.
+
+\subsection{Fully Open Artifacts (Model Flow)}
+Marin aims to be more than an ``open weights'' release.
+For each major run, the project publishes:
+(i) training code and experiment specifications,
+(ii) explicit data mixture manifests (dataset IDs and weights),
+(iii) intermediate checkpoints, and
+(iv) a public issue-driven record of experiments and regressions.
+This framing is aligned with fully open releases such as OLMo/OLMo 2~\citep{Groeneveld2024OLMoAT,olmo20242olmo2furious}.
+
+\subsection{Data Sources}
+\label{subsec:data}
+
+Marin's base-model runs draw from widely used open corpora:
+
+\begin{itemize}[leftmargin=*]
+\item \textbf{DCLM Baseline and DCLM HQ}~\citep{dclm}: used heavily in the early 8B phases.
+\item \textbf{Dolma subsets}~\citep{soldaini2024dolma}: Wikipedia, StackExchange, ArXiv, and other web-derived sources; used in the 8B cooldown mixture.
+\item \textbf{Nemotron-CC}~\citep{su2025nemotroncctransformingcommoncrawl}: a refined Common Crawl corpus; used as the backbone of the 8B Phoenix/Starling phases and the 32B pretraining mix.
+\item \textbf{Code data (StarCoder/Stack)}~\citep{lozhkov2024starcoder}: used throughout to preserve coding capability.
+\item \textbf{Math-focused corpora}: FineMath-3+ and curated math bundles used in cooldowns, including Dolmino math (which surfaced a cached GSM8K contamination incident) and later MegaMath and Common Pile EDU-filtered Python~\citep{marin32bretro,megamath,commonpile}.
+\item \textbf{New Marin datasets}: Markdownified corpora (ArXiv/StackExchange/Wikipedia) and Marin Datashop Science QA introduced in the 8B Starling cooldown.
+\end{itemize}
+
+\paragraph{Why format diversity matters.}
+The 8B retrospective reports that changing data formatting (e.g., trailing whitespace conventions and Markdown structure) can move evaluation perplexity substantially (e.g., Paloma \texttt{c4\_en}), suggesting that format diversity is a meaningful axis of distribution shift even when benchmark accuracy differences are small~\citep{magnusson2024palomabenchmarkevaluatinglanguage,marin8bretro}.
+
+\subsection{Model Architectures}
+\label{subsec:arch}
+
+\paragraph{Marin 8B.}
+Marin 8B uses a Llama-style decoder-only Transformer implemented in Levanter~\citep{marin8bretro}.
+The run standardizes on sequence length 4096 and the Llama 3 tokenizer.
+
+\paragraph{Marin 32B.}
+Marin 32B begins with a Llama-3-style 32B configuration and later switches to a Qwen3-style attention stack that adds QK-norm~\citep{qwen3,Dehghani2023ScalingVT,marin32bretro}.
+The key outcome is that QK-norm provided headroom against loss spikes at 32B, while warm-starting preserved progress in embeddings/MLPs.
+
+\subsection{Optimization, Schedules, and Stability Tooling}
+\label{subsec:optim}
+
+\paragraph{Optimizer.}
+Both 8B and 32B runs use AdamW~\citep{loshchilov2017decoupled}.
+For 8B, the retrospective reports mixed precision (parameters and optimizer states in float32, compute in bfloat16) and no weight decay on embeddings or layer norms~\citep{marin8bretro}.
+
+\paragraph{Learning-rate schedules: WSD-S and WSD.}
+The 8B run begins with a cyclic warmup-stable-decay schedule (WSD-S) and later switches to a more standard warmup-stable-decay schedule (WSD) during and after major transitions~\citep{marin8bretro,wen2024wsds}.
+WSD-S enables periodic cooldown probes during a long high-LR plateau, providing more frequent signals for intervention.
+
+\paragraph{EMA monitoring.}
+During 8B Phase 2, Marin adds an exponential moving average (EMA) of weights for monitoring evaluation loss.
+The retrospective highlights a surprisingly stable ``EMA gap'' (difference between hot and EMA eval loss) during high learning rates~\citep{marin8bretro}.
+
+\paragraph{z-loss for deep cooldowns.}
+While z-loss is commonly used as a stability regularizer in large-scale training~\citep{palm,chameleon,mitch}, Marin's 8B retrospective emphasizes its practical value during deep cooldowns: adding a z-loss term prevented an \texttt{lm\_head} norm blow-up observed in the Spoonbill cooldown~\citep{marin8bretro}.
+
+\subsection{Hardware, Attention Kernels, and Checkpointing}
+\label{subsec:infra}
+
+Marin training runs use TPU hardware (TPU Research Cloud).
+The 8B run uses 2x v5e-256 slices coordinated via multislice in Phase 1 and a v4-2048 slice thereafter, using JAX Splash Attention~\citep{marin8bretro}.
+The 32B run begins on preemptible v5p-512 multislices and later migrates to a reserved v4-2048 slice, with a batch schedule adjusted for divisibility across slice count~\citep{marin32bretro}.
+
+The 8B run saves permanent full checkpoints every 20k steps, with more frequent temporary checkpoints pruned over time~\citep{marin8bretro}.
+
+\subsection{Shuffling and Sampling Permutations}
+\label{subsec:shuffle}
+
+\paragraph{Motivation.}
+At multi-trillion-token scales, it is not enough for the training order to be a bijection over indices; it must also mix well locally so that contiguous steps see approximately i.i.d. batches.
+The 32B retrospective motivates this as reducing within-batch correlation (avoiding long correlated stretches that can bias updates) and reducing gradient variance from batch to batch.
+The Marin 32B cooldown surfaced a concrete failure mode: training loss ``phase-shifted'' late in cooldown while validation remained stable, indicating a data-ordering artifact rather than model divergence~\citep{marin32bretro}.
+
+\paragraph{Stateless PRP shuffling in Levanter.}
+Marin trains with Levanter's deterministic, resume-friendly data pipeline, which supports applying a pseudo-random permutation (PRP) to dataset indices inside the loader rather than materializing a full shuffle table.
+In the Levanter implementation used by Marin, the permutation is computed on-the-fly from a small set of parameters (keys), enabling random access and exact reproducibility across preemption/resume~\citep{levanterprp}.
+Concretely, Levanter exposes a permutation type switch (``linear'' vs ``feistel'') so that experiments can change mixing behavior without changing the underlying datasets~\citep{levanterprp}.
+
+\paragraph{Linear/LCG (affine) permutation.}
+The original permutation used in the 32B run was an affine map modulo the dataset length $N$:
+\begin{equation}
+p(x) = (a x + b) \bmod N,\qquad \gcd(a, N)=1,
+\label{eq:lcg_perm}
+\end{equation}
+with $a$ and $b$ sampled once per dataset from a PRNG seed~\citep{marin32bretro,levanterprp}.
+Equation~\ref{eq:lcg_perm} is a valid permutation because $a$ is invertible modulo $N$, and it is extremely cheap: each index requires only a multiply, add, and modulo.
+However, the induced visit order $p(0),p(1),\dots$ is an arithmetic progression on the ring $\mathbb{Z}_N$ (a fixed ``stride'' $a$ and offset $b$).
+In particular, adjacent positions are always separated by the same modular distance, $p(x+1)-p(x)\equiv a\pmod N$, so the mapping provides no local ``avalanche'' behavior.
+If the underlying dataset is stored with structure (e.g., blocks grouped by source, shard, or preprocessing epoch) and is not itself pre-shuffled, a single-stride walk can yield long correlated stretches.
+Operationally this can manifest as non-stationary ``phases'' in training loss even when mixture weights over datasets remain constant~\citep{marin32bretro}.
+
+\paragraph{Feistel permutation.}
+In the Mantis cooldown, Marin switched to a Feistel-network PRP, which mixes the bit representation of indices through multiple rounds.
+Levanter's Feistel permutation embeds the domain $[0,N)$ into $[0,m)$ where $m=2^{\lceil \log_2 N\rceil}$, splits the $\log_2 m$ bits into left/right halves, and applies several Feistel rounds with per-round keys; for non power-of-two $N$ it uses cycle-walking (reapplying the network until the output falls back in $[0,N)$) to preserve bijectivity~\citep{levanterprp}.
+In a standard Feistel construction, each round updates $(L,R)$ as $(R,\, L \oplus F(R,k_i))$, so information from the right half is repeatedly mixed into the left and vice versa.
+Concretely, Levanter uses $r=5$ rounds by default and a simple round function over the right half,
+$F(R,k)=((R \cdot 2654435761)+k)\bmod 2^{|R|}$, which is sufficient to destroy the linear structure of Equation~\ref{eq:lcg_perm} while retaining the same stateless/random-access property~\citep{levanterprp}.
+Empirically, this switch removed the cooldown phase shift and improved validation losses (including Paloma corpus-fit metrics)~\citep{marin32bretro}.
+
+\paragraph{Takeaway.}
+Marin's experience suggests treating shuffle quality as a testable systems component: a permutation can be correct (a bijection) and still be a poor shuffle when the data source itself is structured.
